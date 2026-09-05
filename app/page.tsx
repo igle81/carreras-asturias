@@ -1,7 +1,13 @@
 import { HomeView } from "@/components/home-view";
 import { getEventos } from "@/lib/events";
+import { parseModalidadFilter } from "@/lib/modalidad";
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams: Promise<{ modalidad?: string }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
   const events = await getEventos();
-  return <HomeView events={events} />;
+  const params = await searchParams;
+  return <HomeView events={events} modalidad={parseModalidadFilter(params.modalidad)} />;
 }

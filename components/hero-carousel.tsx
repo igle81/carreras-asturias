@@ -25,12 +25,12 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
     return (
       <section className="relative overflow-hidden bg-forest px-4 py-20 text-white">
         <div className="mx-auto max-w-6xl">
-          <p className="text-sm uppercase tracking-[0.2em] text-gold">Asturias running</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-gold">A pie y ciclismo</p>
           <h1 className="mt-3 max-w-2xl font-display text-4xl font-black">
-            El calendario de las montañas y el asfalto
+            El calendario de las montañas, el asfalto y la bici
           </h1>
           <p className="mt-4 max-w-xl text-white/75">
-            Aún no hay dorsales cargados. Vuelve en un rato o entra al calendario.
+            Aún no hay dorsales en esta modalidad. Prueba Todas o entra al calendario.
           </p>
         </div>
       </section>

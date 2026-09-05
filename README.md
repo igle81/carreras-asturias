@@ -1,6 +1,6 @@
 # Carreras Asturias
 
-Portal público del calendario de trail, asfalto y dorsales en Asturias. Lee en directo la tabla `public.eventos` de Supabase y destaca las inscripciones recién abiertas.
+Portal público del calendario de carreras a pie y ciclismo en Asturias. Lee en directo la tabla `public.eventos` de Supabase y destaca las inscripciones recién abiertas.
 
 ## Stack
 
@@ -43,9 +43,10 @@ En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos
 
 - Home con carrusel (máx. 6), banner de recién abiertas, tira horizontal, «Esta quincena», mapa y bloque VIP.
 - Geolocalización discreta: `📍 Encontrar carreras cerca de mí`. Si se concede, ordena por Haversine y muestra km. Si se deniega, filtra por concejo.
-- `/calendario` con filtros: recién abierta, ventana 14 días, disciplina, concejo y orden fecha/distancia.
+- Pestañas **Todas | A pie | Ciclismo** (home y `/calendario`). Si `modalidad` aún no existe o viene vacía, se infiere por `disciplina_normalizada` (las actuales van a `a_pie`; carretera/mtb/btt/gravel/cicloturismo → `ciclismo`).
+- `/calendario` con filtros: modalidad, recién abierta, ventana 14 días, disciplina, concejo y orden fecha/distancia.
 - Ficha `/evento/[id]`.
 
 ## Datos
 
-Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
+Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.

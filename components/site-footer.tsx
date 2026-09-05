@@ -7,8 +7,8 @@ export function SiteFooter() {
         <div>
           <p className="font-display text-2xl font-bold">Carreras Asturias</p>
           <p className="mt-2 max-w-md text-sm text-fog/75">
-            El calendario vivo de las montañas y el asfalto. Inscripciones,
-            concejos y la próxima dorsal que no se te puede escapar.
+            El calendario vivo de las montañas, el asfalto y el ciclismo.
+            Inscripciones, concejos y la próxima dorsal que no se te puede escapar.
           </p>
         </div>
         <div className="flex flex-wrap gap-4 text-sm text-fog/80">

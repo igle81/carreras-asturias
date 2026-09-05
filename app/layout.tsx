@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · Carreras Asturias",
   },
   description:
-    "Calendario vivo de trail, asfalto y dorsales en Asturias. Inscripciones recién abiertas, mapa y filtros por concejo.",
+    "Calendario vivo de carreras a pie y ciclismo en Asturias. Trail, asfalto, bici, inscripciones recién abiertas y mapa por concejo.",
 };
 
 export const revalidate = 180;

@@ -4,7 +4,7 @@ import { getEventos } from "@/lib/events";
 
 export const metadata = {
   title: "Calendario",
-  description: "Filtra las carreras de Asturias por inscripción, disciplina, concejo y fecha.",
+  description: "Filtra carreras a pie y ciclismo en Asturias por modalidad, inscripción, disciplina, concejo y fecha.",
 };
 
 function CalendarFallback() {

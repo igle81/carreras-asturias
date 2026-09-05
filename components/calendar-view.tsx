@@ -6,9 +6,12 @@ import { DisciplineChips } from "./discipline-chips";
 import { EventCard } from "./event-card";
 import { EventMap } from "./event-map";
 import { GeoButton } from "./geo-button";
+import { ModalityTabs } from "./modality-tabs";
 import { useGeo } from "./geo-provider";
 import { daysUntil, isWithinDays } from "@/lib/dates";
+import { disciplineMatches } from "@/lib/disciplines";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
+import { matchesModalidad, parseModalidadFilter } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
 export function CalendarView({ events }: { events: Evento[] }) {
@@ -20,6 +23,7 @@ export function CalendarView({ events }: { events: Evento[] }) {
 
   const recien = searchParams.get("recien") === "1";
   const ventana = searchParams.get("ventana") === "14";
+  const modalidad = parseModalidadFilter(searchParams.get("modalidad"));
   const disciplina = searchParams.get("disciplina") ?? "";
   const concejo = searchParams.get("concejo") ?? "";
   const sort = searchParams.get("sort") === "distancia" ? "distancia" : "fecha";
@@ -36,9 +40,10 @@ export function CalendarView({ events }: { events: Evento[] }) {
 
   const filtered = useMemo(() => {
     const rows = events.filter((event) => {
+      if (!matchesModalidad(event, modalidad)) return false;
       if (recien && !event.recien_abierta) return false;
       if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
-      if (disciplina && event.disciplina_normalizada !== disciplina) return false;
+      if (disciplina && !disciplineMatches(event, disciplina)) return false;
       if (concejo && !matchesConcejo(event, concejo)) return false;
       return true;
     });
@@ -53,20 +58,21 @@ export function CalendarView({ events }: { events: Evento[] }) {
       }
       return (daysUntil(a.fecha_inicio) ?? 9999) - (daysUntil(b.fecha_inicio) ?? 9999);
     });
-  }, [concejo, coords, disciplina, events, recien, sort, ventana]);
+  }, [concejo, coords, disciplina, events, modalidad, recien, sort, ventana]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Calendario</p>
-        <h1 className="font-display text-3xl font-black text-ink">Todas las carreras</h1>
+        <h1 className="font-display text-3xl font-black text-ink">A pie y ciclismo</h1>
         <p className="mt-2 text-ink/65">
-          Filtra por inscripción recién abierta, quincena, disciplina o concejo.
+          Filtra por modalidad, inscripción recién abierta, quincena, disciplina o concejo.
         </p>
       </div>
 
       <div className="mb-6 space-y-4 rounded-3xl border border-forest/10 bg-white p-4">
-        <DisciplineChips />
+        <ModalityTabs basePath="/calendario" />
+        <DisciplineChips events={events} />
         <div className="flex flex-wrap gap-2">
           <button
             type="button"

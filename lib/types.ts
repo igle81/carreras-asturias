@@ -15,6 +15,7 @@ export type Evento = {
   localidad: string | null;
   provincia: string | null;
   disciplina_normalizada: string | null;
+  modalidad: string | null;
   distancias: Distancia[] | null;
   organizador: string | null;
   url_oficial: string | null;

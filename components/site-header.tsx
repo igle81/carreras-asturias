@@ -22,7 +22,7 @@ export function SiteHeader({ concejos }: { concejos: string[] }) {
               Carreras Asturias
             </span>
             <span className="hidden text-[11px] text-ink/55 sm:block">
-              Trail, asfalto y dorsales del Principado
+              A pie, bici y dorsales del Principado
             </span>
           </span>
         </Link>

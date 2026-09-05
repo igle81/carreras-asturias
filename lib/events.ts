@@ -1,11 +1,13 @@
 import { cache } from "react";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
+import { isMissingModalidadColumn } from "./modalidad";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
 
 const EVENT_COLUMNS =
   "id_canonico,nombre,fecha_inicio,fecha_fin,municipio,municipio_meta,localidad,provincia,disciplina_normalizada,distancias,organizador,url_oficial,estado_inscripcion,lat,lng,etiquetas,recien_abierta,calidad_score";
+const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 
 const EMBLEMATIC_HINTS = [
   "angliru",
@@ -42,6 +44,7 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     localidad: (row.localidad as string | null) ?? null,
     provincia: (row.provincia as string | null) ?? null,
     disciplina_normalizada: (row.disciplina_normalizada as string | null) ?? null,
+    modalidad: typeof row.modalidad === "string" && row.modalidad.trim() ? row.modalidad : null,
     distancias: asDistancias(row.distancias),
     organizador: (row.organizador as string | null) ?? null,
     url_oficial: (row.url_oficial as string | null) ?? null,
@@ -55,17 +58,25 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
 }
 
 export const getEventos = cache(async (): Promise<Evento[]> => {
-  const { data, error } = await getSupabase()
+  const client = getSupabase();
+  const withModalidad = await client
     .from("eventos")
-    .select(EVENT_COLUMNS)
+    .select(EVENT_COLUMNS_WITH_MODALIDAD)
     .order("fecha_inicio", { ascending: true });
 
-  if (error) {
-    console.error("No se pudieron cargar los eventos", error.message);
+  const result = withModalidad.error && isMissingModalidadColumn(withModalidad.error)
+    ? await client
+        .from("eventos")
+        .select(EVENT_COLUMNS)
+        .order("fecha_inicio", { ascending: true })
+    : withModalidad;
+
+  if (result.error) {
+    console.error("No se pudieron cargar los eventos", result.error.message);
     return [];
   }
 
-  return (data ?? []).map((row) => normalizeEvent(row as Record<string, unknown>));
+  return (result.data ?? []).map((row) => normalizeEvent(row as Record<string, unknown>));
 });
 
 export async function getEvento(id: string): Promise<Evento | null> {

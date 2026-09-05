@@ -3,10 +3,10 @@ import Link from "next/link";
 export function HomeBanner({ count }: { count: number }) {
   const headline =
     count === 0
-      ? "Hoy no hay inscripciones recién abiertas, pero el calendario sigue caliente."
+      ? "Hoy no hay inscripciones recién abiertas, pero el calendario de pie y bici sigue caliente."
       : count === 1
         ? "Hay 1 inscripción recién abierta. Si la quieres, el dorsal no espera."
-        : `Hay ${count} inscripciones recién abiertas. Ponte las zapatillas antes de que vuelen.`;
+        : `Hay ${count} inscripciones recién abiertas. Ponte las zapatillas o la bici antes de que vuelen.`;
 
   return (
     <section className="border-y border-gold/30 bg-gold/15">
