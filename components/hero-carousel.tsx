@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
 import { eventCta } from "@/lib/events";
@@ -153,32 +153,26 @@ export function HeroCarousel({
       <div className="hero-mountains pointer-events-none absolute inset-0 opacity-40" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/10" />
 
-      <button
-        type="button"
-        aria-label="Carrera anterior"
+      <HeroArrow
+        label="Carrera anterior"
         onClick={prev}
-        onMouseEnter={holdPause}
-        onMouseLeave={releasePause}
-        onFocus={holdPause}
-        onBlur={releasePause}
-        className="absolute top-1/2 left-3 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-bold text-forest shadow-lg ring-1 ring-black/10 hover:bg-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:left-5 sm:h-14 sm:w-14"
+        onHold={holdPause}
+        onRelease={releasePause}
+        className="absolute top-1/2 left-4 z-20 hidden h-12 w-12 -translate-y-1/2 bg-white/90 text-forest shadow-md ring-1 ring-black/5 hover:bg-white sm:grid sm:h-14 sm:w-14"
       >
-        <span aria-hidden="true">‹</span>
-      </button>
-      <button
-        type="button"
-        aria-label="Carrera siguiente"
+        ‹
+      </HeroArrow>
+      <HeroArrow
+        label="Carrera siguiente"
         onClick={next}
-        onMouseEnter={holdPause}
-        onMouseLeave={releasePause}
-        onFocus={holdPause}
-        onBlur={releasePause}
-        className="absolute top-1/2 right-3 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-bold text-forest shadow-lg ring-1 ring-black/10 hover:bg-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-5 sm:h-14 sm:w-14"
+        onHold={holdPause}
+        onRelease={releasePause}
+        className="absolute top-1/2 right-4 z-20 hidden h-12 w-12 -translate-y-1/2 bg-white/90 text-forest shadow-md ring-1 ring-black/5 hover:bg-white sm:grid sm:h-14 sm:w-14"
       >
-        <span aria-hidden="true">›</span>
-      </button>
+        ›
+      </HeroArrow>
 
-      <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-16 sm:py-14">
+      <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-20 sm:py-14">
         <div className="max-w-2xl text-white">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
             {kicker}
@@ -228,21 +222,72 @@ export function HeroCarousel({
           </div>
         </div>
 
-        <div className="mt-8 flex items-center gap-2">
-          {slides.map((slide, slideIndex) => (
-            <button
-              key={slide.id_canonico}
-              type="button"
-              aria-label={`Ver ${slide.nombre}`}
-              aria-current={slideIndex === index ? "true" : undefined}
-              onClick={() => setIndex(slideIndex)}
-              className={`h-2.5 rounded-full transition-all ${
-                slideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
-              }`}
-            />
-          ))}
+        <div className="mt-8 flex items-center justify-between gap-3 sm:justify-start">
+          <HeroArrow
+            label="Carrera anterior"
+            onClick={prev}
+            onHold={holdPause}
+            onRelease={releasePause}
+            className="grid h-9 w-9 shrink-0 bg-white/15 text-white backdrop-blur-sm ring-1 ring-white/25 hover:bg-white/25 sm:hidden"
+          >
+            ‹
+          </HeroArrow>
+          <div className="flex flex-1 items-center justify-center gap-2 sm:flex-none sm:justify-start">
+            {slides.map((slide, slideIndex) => (
+              <button
+                key={slide.id_canonico}
+                type="button"
+                aria-label={`Ver ${slide.nombre}`}
+                aria-current={slideIndex === index ? "true" : undefined}
+                onClick={() => setIndex(slideIndex)}
+                className={`h-2.5 rounded-full transition-all ${
+                  slideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
+          <HeroArrow
+            label="Carrera siguiente"
+            onClick={next}
+            onHold={holdPause}
+            onRelease={releasePause}
+            className="grid h-9 w-9 shrink-0 bg-white/15 text-white backdrop-blur-sm ring-1 ring-white/25 hover:bg-white/25 sm:hidden"
+          >
+            ›
+          </HeroArrow>
         </div>
       </div>
     </section>
+  );
+}
+
+function HeroArrow({
+  label,
+  onClick,
+  onHold,
+  onRelease,
+  className,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  onHold: () => void;
+  onRelease: () => void;
+  className: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      onMouseEnter={onHold}
+      onMouseLeave={onRelease}
+      onFocus={onHold}
+      onBlur={onRelease}
+      className={`place-items-center rounded-full text-2xl font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${className}`}
+    >
+      <span aria-hidden="true">{children}</span>
+    </button>
   );
 }
