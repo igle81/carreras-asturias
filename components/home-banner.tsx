@@ -1,12 +1,13 @@
 import Link from "next/link";
+import type { Section } from "@/lib/sections";
 
-export function HomeBanner({ count }: { count: number }) {
+export function HomeBanner({ count, section }: { count: number; section: Section }) {
   const headline =
     count === 0
-      ? "Hoy no hay inscripciones recién abiertas, pero el calendario de pie y bici sigue caliente."
+      ? section.bannerZero
       : count === 1
-        ? "Hay 1 inscripción recién abierta. Si la quieres, el dorsal no espera."
-        : `Hay ${count} inscripciones recién abiertas. Ponte las zapatillas o la bici antes de que vuelen.`;
+        ? section.bannerOne
+        : section.bannerMany.replace("{n}", String(count));
 
   return (
     <section className="border-y border-gold/30 bg-gold/15">
@@ -14,13 +15,13 @@ export function HomeBanner({ count }: { count: number }) {
         <p className="font-display text-lg font-bold text-forest">{headline}</p>
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/calendario?recien=1"
+            href={`${section.calendar}?recien=1`}
             className="rounded-full bg-fire px-4 py-2 text-sm font-bold text-white"
           >
             Ver recién abiertas
           </Link>
           <Link
-            href="/calendario?ventana=14"
+            href={`${section.calendar}?ventana=14`}
             className="rounded-full border border-forest/20 bg-white px-4 py-2 text-sm font-semibold text-forest"
           >
             Próximos 14 días

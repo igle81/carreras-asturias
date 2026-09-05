@@ -5,7 +5,13 @@ import { useGeo } from "./geo-provider";
 import { distanceToEvent } from "@/lib/geo";
 import type { Evento } from "@/lib/types";
 
-export function RecienAbiertasStrip({ events }: { events: Evento[] }) {
+export function RecienAbiertasStrip({
+  events,
+  calendarHref = "/correr/calendario?recien=1",
+}: {
+  events: Evento[];
+  calendarHref?: string;
+}) {
   const { coords } = useGeo();
 
   if (!events.length) {
@@ -27,7 +33,7 @@ export function RecienAbiertasStrip({ events }: { events: Evento[] }) {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-fire">Dorsales calientes</p>
           <h2 className="font-display text-2xl font-bold text-ink">Recién abiertas</h2>
         </div>
-        <a href="/calendario?recien=1" className="text-sm font-semibold text-atlantic">
+        <a href={calendarHref} className="text-sm font-semibold text-atlantic">
           Ver todas
         </a>
       </div>

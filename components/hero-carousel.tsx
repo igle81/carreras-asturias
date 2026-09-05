@@ -11,7 +11,15 @@ import type { Evento } from "@/lib/types";
 const INTERVAL_MS = 5500;
 const SWIPE_THRESHOLD = 48;
 
-export function HeroCarousel({ slides }: { slides: Evento[] }) {
+export function HeroCarousel({
+  slides,
+  calendarHref = "/correr/calendario",
+  kicker = "A pie y ciclismo en Asturias",
+}: {
+  slides: Evento[];
+  calendarHref?: string;
+  kicker?: string;
+}) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const interactPause = useRef(0);
@@ -173,7 +181,7 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
       <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-16 sm:py-14">
         <div className="max-w-2xl text-white">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            A pie y ciclismo en Asturias
+            {kicker}
           </p>
           {event.recien_abierta ? (
             <p className="mb-3">
@@ -212,7 +220,7 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
               </Link>
             )}
             <Link
-              href="/calendario"
+              href={calendarHref}
               className="inline-flex items-center justify-center rounded-full border border-white/40 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
             >
               Ver calendario

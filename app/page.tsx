@@ -1,13 +1,13 @@
-import { HomeView } from "@/components/home-view";
+import { Landing } from "@/components/landing";
 import { getEventos } from "@/lib/events";
-import { parseModalidadFilter } from "@/lib/modalidad";
+import { filterByModalidad } from "@/lib/modalidad";
 
-type HomePageProps = {
-  searchParams: Promise<{ modalidad?: string }>;
-};
-
-export default async function HomePage({ searchParams }: HomePageProps) {
+export default async function HomePage() {
   const events = await getEventos();
-  const params = await searchParams;
-  return <HomeView events={events} modalidad={parseModalidadFilter(params.modalidad)} />;
+  return (
+    <Landing
+      pieCount={filterByModalidad(events, "pie").length}
+      biciCount={filterByModalidad(events, "ciclismo").length}
+    />
+  );
 }

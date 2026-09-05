@@ -4,7 +4,8 @@ import { EventMap } from "@/components/event-map";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, formatDistancias, getEvento, getEventos } from "@/lib/events";
-import { modalidadLabel } from "@/lib/modalidad";
+import { modalidadLabel, resolveModalidad } from "@/lib/modalidad";
+import { calendarPath } from "@/lib/sections";
 
 type EventPageProps = {
   params: Promise<{ id: string }>;
@@ -38,7 +39,10 @@ export default async function EventoPage({ params }: EventPageProps) {
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-8">
-      <Link href="/calendario" className="text-sm font-semibold text-atlantic">
+      <Link
+        href={calendarPath(resolveModalidad(event))}
+        className="text-sm font-semibold text-atlantic"
+      >
         ← Volver al calendario
       </Link>
 
@@ -95,7 +99,7 @@ export default async function EventoPage({ params }: EventPageProps) {
           </a>
         ) : null}
         <Link
-          href="/calendario"
+          href={calendarPath(resolveModalidad(event))}
           className="rounded-full border border-forest/20 px-5 py-3 text-sm font-semibold text-forest"
         >
           Ver calendario

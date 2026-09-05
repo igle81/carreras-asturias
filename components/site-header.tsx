@@ -1,14 +1,52 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
+import { SECTIONS, sectionFromPath } from "@/lib/sections";
 
-export function SiteHeader({ concejos }: { concejos: string[] }) {
+export function SiteHeader({
+  concejosPie,
+  concejosBici,
+}: {
+  concejosPie: string[];
+  concejosBici: string[];
+}) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const { showConcejoFallback } = useGeo();
+  const section = sectionFromPath(pathname ?? "");
+  const concejos = section?.id === "ciclismo" ? concejosBici : concejosPie;
+  const calendarHref = section?.calendar ?? SECTIONS.pie.calendar;
+  const mapHref = section ? `${section.home}#mapa` : "/correr#mapa";
+
+  const nav = (
+    <>
+      <Link
+        href={SECTIONS.pie.home}
+        className={section?.id === "pie" ? "font-bold text-forest" : "hover:text-forest"}
+      >
+        Correr
+      </Link>
+      <Link
+        href={SECTIONS.ciclismo.home}
+        className={section?.id === "ciclismo" ? "font-bold text-forest" : "hover:text-forest"}
+      >
+        Ciclismo
+      </Link>
+      <Link href={calendarHref} className="hover:text-forest">
+        Calendario
+      </Link>
+      {section ? (
+        <Link href={mapHref} className="hover:text-forest">
+          Mapa
+        </Link>
+      ) : null}
+    </>
+  );
 
   return (
     <header className="sticky top-0 z-40 border-b border-forest/10 bg-fog/90 backdrop-blur-md">
@@ -22,26 +60,16 @@ export function SiteHeader({ concejos }: { concejos: string[] }) {
               Carreras Asturias
             </span>
             <span className="hidden text-[11px] text-ink/55 sm:block">
-              A pie, bici y dorsales del Principado
+              A pie o bici. Tú eliges el calendario.
             </span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 text-sm font-medium text-ink/80 md:flex">
-          <Link href="/calendario" className="hover:text-forest">
-            Calendario
-          </Link>
-          <Link href="/#mapa" className="hover:text-forest">
-            Mapa
-          </Link>
-          <Link href="/#vip" className="hover:text-forest">
-            Canal VIP
-          </Link>
-        </nav>
+        <nav className="hidden items-center gap-5 text-sm font-medium text-ink/80 md:flex">{nav}</nav>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <GeoButton compact />
-          {showConcejoFallback ? <ConcejoSelect concejos={concejos} className="max-w-48" /> : null}
+          {section ? <GeoButton compact /> : null}
+          {section && showConcejoFallback ? <ConcejoSelect concejos={concejos} className="max-w-48" /> : null}
         </div>
 
         <button
@@ -55,18 +83,16 @@ export function SiteHeader({ concejos }: { concejos: string[] }) {
       </div>
 
       {open ? (
-        <div className="space-y-3 border-t border-forest/10 px-4 py-3 md:hidden">
-          <Link href="/calendario" className="block text-sm font-medium" onClick={() => setOpen(false)}>
-            Calendario
-          </Link>
-          <Link href="/#mapa" className="block text-sm font-medium" onClick={() => setOpen(false)}>
-            Mapa
-          </Link>
-          <Link href="/#vip" className="block text-sm font-medium" onClick={() => setOpen(false)}>
-            Canal VIP
-          </Link>
-          <GeoButton />
-          <ConcejoSelect concejos={concejos} />
+        <div className="space-y-3 border-t border-forest/10 px-4 py-3 text-sm font-medium md:hidden">
+          <div className="flex flex-col gap-3" onClick={() => setOpen(false)}>
+            {nav}
+          </div>
+          {section ? (
+            <>
+              <GeoButton />
+              <ConcejoSelect concejos={concejos} />
+            </>
+          ) : null}
         </div>
       ) : null}
     </header>

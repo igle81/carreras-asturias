@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
+import { filterByModalidad } from "@/lib/modalidad";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -29,13 +30,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const events = await getEventos();
-  const concejos = uniqueConcejos(events);
+  const concejosPie = uniqueConcejos(filterByModalidad(events, "pie"));
+  const concejosBici = uniqueConcejos(filterByModalidad(events, "ciclismo"));
 
   return (
     <html lang="es">
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
-          <SiteHeader concejos={concejos} />
+          <SiteHeader concejosPie={concejosPie} concejosBici={concejosBici} />
           <main>{children}</main>
           <SiteFooter />
         </GeoProvider>

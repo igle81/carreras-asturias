@@ -11,7 +11,7 @@ export default function NotFound() {
         No encontramos esa ficha. Vuelve al calendario y elige otro dorsal.
       </p>
       <Link
-        href="/calendario"
+        href="/"
         className="mt-6 inline-flex rounded-full bg-forest px-5 py-3 text-sm font-bold text-white"
       >
         Ir al calendario
