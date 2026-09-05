@@ -57,17 +57,24 @@ export function NearbySection({ events }: { events: Evento[] }) {
         <EventMap events={listed} userCoords={coords} selectedId={selectedId} />
         <div className="grid max-h-[32rem] gap-3 overflow-y-auto pr-1">
           {listed.map((event) => (
-            <button
+            <div
               key={event.id_canonico}
-              type="button"
-              onClick={() => setSelectedId(event.id_canonico)}
-              className="text-left"
+              className={`rounded-[1.6rem] ${
+                selectedId === event.id_canonico ? "ring-2 ring-atlantic/50" : ""
+              }`}
             >
               <EventCard
                 event={event}
                 distanceKm={coords ? distanceToEvent(coords, event) : null}
               />
-            </button>
+              <button
+                type="button"
+                onClick={() => setSelectedId(event.id_canonico)}
+                className="w-full px-4 pb-3 text-left text-xs font-semibold text-atlantic hover:text-forest"
+              >
+                Ver en el mapa
+              </button>
+            </div>
           ))}
           {!listed.length ? (
             <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-ink/60">

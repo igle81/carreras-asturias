@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
+import { disciplineLabel } from "./disciplines";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
 
@@ -124,7 +125,7 @@ export function formatDistancias(event: Evento): string | null {
   if (!event.distancias?.length) return null;
   return event.distancias
     .map((item) => {
-      if (item.etiqueta) return item.etiqueta.replaceAll("_", " ");
+      if (item.etiqueta) return disciplineLabel(item.etiqueta);
       if (item.km) return `${Number.isInteger(item.km) ? item.km : item.km.toFixed(1)} km`;
       return null;
     })
