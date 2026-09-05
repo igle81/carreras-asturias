@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
-import { isMissingModalidadColumn } from "./modalidad";
+import { isMissingModalidadColumn, resolveModalidad } from "./modalidad";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
 
@@ -15,6 +15,17 @@ const EMBLEMATIC_HINTS = [
   "media maraton",
   "jovellanos",
   "oviedo",
+];
+
+const HERO_PINNED = [
+  "enduro-degollada-open-endurastur-2026",
+  "cicloturista-el-gamoniteiro-2026",
+];
+
+const QUINCENA_FEATURED = [
+  "marcha-solidaria-monteareo-btt-2026",
+  "quedada-btt-san-martin-de-luina-2026",
+  "marcha-solidaria-rober-contra-el-cancer-2026",
 ];
 
 function asDistancias(value: unknown): Distancia[] | null {
@@ -93,9 +104,10 @@ export function recienAbiertas(events: Evento[]) {
 }
 
 export function estaQuincena(events: Evento[], from = new Date()) {
-  return upcomingEvents(events, from).filter((event) =>
-    isWithinDays(event.fecha_inicio, 14, from),
-  );
+  return upcomingEvents(events, from).filter((event) => {
+    if (isWithinDays(event.fecha_inicio, 14, from)) return true;
+    return QUINCENA_FEATURED.includes(event.id_canonico) && isWithinDays(event.fecha_inicio, 16, from);
+  });
 }
 
 export function isEmblematic(event: Evento) {
@@ -104,17 +116,32 @@ export function isEmblematic(event: Evento) {
   return EMBLEMATIC_HINTS.some((hint) => name.includes(hint));
 }
 
+function isCiclismoUrgente(event: Evento, from: Date) {
+  if (resolveModalidad(event) !== "ciclismo") return false;
+  if (!isWithinDays(event.fecha_inicio, 14, from)) return false;
+  return Boolean(event.recien_abierta) || event.estado_inscripcion === "abierta";
+}
+
 function compareHero(a: Evento, b: Evento, from: Date) {
   const bucket = (event: Evento) => {
+    if (HERO_PINNED.includes(event.id_canonico)) return -1;
     const days = daysUntil(event.fecha_inicio, from);
     if (days !== null && days <= 7) return 0;
-    if (days !== null && days <= 14) return 1;
-    if (isEmblematic(event)) return 2;
-    return 3;
+    if (isCiclismoUrgente(event, from)) return 1;
+    if (days !== null && days <= 14) return 2;
+    if (isEmblematic(event)) return 3;
+    return 4;
   };
 
   const bucketDiff = bucket(a) - bucket(b);
   if (bucketDiff !== 0) return bucketDiff;
+
+  const pinDiff = Number(HERO_PINNED.includes(b.id_canonico)) - Number(HERO_PINNED.includes(a.id_canonico));
+  if (pinDiff !== 0) return pinDiff;
+  const pinOrder = HERO_PINNED.indexOf(a.id_canonico) - HERO_PINNED.indexOf(b.id_canonico);
+  if (HERO_PINNED.includes(a.id_canonico) && HERO_PINNED.includes(b.id_canonico) && pinOrder !== 0) {
+    return pinOrder;
+  }
 
   const recienDiff = Number(Boolean(b.recien_abierta)) - Number(Boolean(a.recien_abierta));
   if (recienDiff !== 0) return recienDiff;

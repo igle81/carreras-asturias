@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventMap } from "@/components/event-map";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
-import { disciplineLabel } from "@/lib/disciplines";
+import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, formatDistancias, getEvento, getEventos } from "@/lib/events";
+import { modalidadLabel } from "@/lib/modalidad";
 
 type EventPageProps = {
   params: Promise<{ id: string }>;
@@ -60,7 +61,7 @@ export default async function EventoPage({ params }: EventPageProps) {
       </div>
 
       <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-atlantic">
-        {disciplineLabel(event.disciplina_normalizada)}
+        {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
       </p>
       <h1 className="mt-1 font-display text-4xl font-black text-ink">{event.nombre}</h1>
       <p className="mt-3 text-lg text-ink/70">

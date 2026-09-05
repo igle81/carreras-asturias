@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatFechaHumana } from "@/lib/dates";
-import { disciplineLabel, disciplineTone } from "@/lib/disciplines";
+import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
 import { eventCta } from "@/lib/events";
+import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
 const INTERVAL_MS = 5500;
@@ -52,19 +53,18 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
 
       <div className="relative mx-auto flex min-h-[34rem] max-w-6xl flex-col justify-end px-4 py-10 sm:min-h-[36rem] sm:py-14">
         <div className="max-w-2xl text-white">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+            A pie y ciclismo en Asturias
+          </p>
           {event.recien_abierta ? (
             <p className="mb-3">
               <span className="inline-flex items-center rounded-full bg-fire px-3 py-1 text-xs font-extrabold uppercase tracking-wide">
                 🔥 ¡RECIÉN ABIERTA!
               </span>
             </p>
-          ) : (
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-              Próxima dorsal
-            </p>
-          )}
+          ) : null}
           <p className="text-sm font-medium text-white/80">
-            {disciplineLabel(event.disciplina_normalizada)}
+            {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
             {event.municipio ? ` · ${event.municipio}` : ""}
           </p>
           <h1 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xl">

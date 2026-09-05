@@ -43,7 +43,7 @@ En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos
 
 - Home con carrusel (máx. 6), banner de recién abiertas, tira horizontal, «Esta quincena», mapa y bloque VIP.
 - Geolocalización discreta: `📍 Encontrar carreras cerca de mí`. Si se concede, ordena por Haversine y muestra km. Si se deniega, filtra por concejo.
-- Pestañas **Todas | A pie | Ciclismo** (home y `/calendario`). Si `modalidad` aún no existe o viene vacía, se infiere por `disciplina_normalizada` (las actuales van a `a_pie`; carretera/mtb/btt/gravel/cicloturismo → `ciclismo`).
+- Pestañas **Todas | A pie | Ciclismo** (home y `/calendario`). Filtran por `modalidad` (`pie` | `ciclismo`). Si el campo viene vacío, se infiere por `disciplina_normalizada`.
 - `/calendario` con filtros: modalidad, recién abierta, ventana 14 días, disciplina, concejo y orden fecha/distancia.
 - Ficha `/evento/[id]`.
 

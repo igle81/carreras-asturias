@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
-import { disciplineLabel } from "@/lib/disciplines";
+import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
+import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
 type EventCardProps = {
@@ -54,7 +55,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-atlantic">
-            {disciplineLabel(event.disciplina_normalizada)}
+            {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
           </p>
           <h3 className="mt-1 font-display text-lg font-bold leading-snug text-ink">
             <Link href={`/evento/${event.id_canonico}`} className="hover:text-forest">

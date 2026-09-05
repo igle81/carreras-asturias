@@ -1,16 +1,15 @@
 import type { Evento } from "./types";
 
-export type ModalidadId = "a_pie" | "ciclismo";
+export type ModalidadId = "pie" | "ciclismo";
 export type ModalidadFilter = "todas" | ModalidadId;
 
 export const MODALIDAD_TABS: { id: ModalidadFilter; label: string }[] = [
   { id: "todas", label: "Todas" },
-  { id: "a_pie", label: "A pie" },
+  { id: "pie", label: "A pie" },
   { id: "ciclismo", label: "Ciclismo" },
 ];
 
 const FOOT_DISCIPLINES = new Set([
-  "a_pie",
   "asfalto",
   "cross",
   "marcha",
@@ -28,7 +27,9 @@ const CYCLING_DISCIPLINES = new Set([
   "bike",
   "btt",
   "carretera",
+  "ciclista_carretera",
   "ciclismo",
+  "ciclismo_otro",
   "ciclocross",
   "cicloturismo",
   "criterium",
@@ -49,30 +50,33 @@ export function normalizeDisciplineKey(value: string): string {
     .replace(/[\s-]+/g, "_");
 }
 
-function parseModalidadValue(value: string): ModalidadId | null {
+function parseStoredModalidad(value: string): ModalidadId | null {
   const key = normalizeDisciplineKey(value);
-  if (FOOT_DISCIPLINES.has(key) || key === "foot" || key === "apie") return "a_pie";
-  if (CYCLING_DISCIPLINES.has(key) || key === "cycling" || key === "ciclista") return "ciclismo";
-  if (key.includes("cicl") || key.includes("mtb") || key.includes("btt") || key.includes("gravel")) {
-    return "ciclismo";
-  }
+  if (key === "pie" || key === "a_pie" || key === "apie") return "pie";
+  if (key === "ciclismo" || key === "cycling" || key === "ciclista") return "ciclismo";
   return null;
 }
 
 export function inferModalidadFromDiscipline(disciplina: string | null | undefined): ModalidadId {
-  if (!disciplina) return "a_pie";
-  return parseModalidadValue(disciplina) ?? "a_pie";
+  if (!disciplina) return "pie";
+  const key = normalizeDisciplineKey(disciplina);
+  if (CYCLING_DISCIPLINES.has(key) || key.includes("cicl") || key.includes("mtb") || key.includes("btt") || key.includes("gravel")) {
+    return "ciclismo";
+  }
+  if (FOOT_DISCIPLINES.has(key)) return "pie";
+  return "pie";
 }
 
 export function resolveModalidad(event: Pick<Evento, "modalidad" | "disciplina_normalizada">): ModalidadId {
   if (event.modalidad && event.modalidad.trim()) {
-    return parseModalidadValue(event.modalidad) ?? inferModalidadFromDiscipline(event.disciplina_normalizada);
+    return parseStoredModalidad(event.modalidad) ?? inferModalidadFromDiscipline(event.disciplina_normalizada);
   }
   return inferModalidadFromDiscipline(event.disciplina_normalizada);
 }
 
 export function parseModalidadFilter(value: string | null | undefined): ModalidadFilter {
-  if (value === "a_pie" || value === "ciclismo") return value;
+  if (value === "pie" || value === "ciclismo") return value;
+  if (value === "a_pie") return "pie";
   return "todas";
 }
 
@@ -99,4 +103,8 @@ export function isMissingModalidadColumn(error: { message?: string; code?: strin
     code === "PGRST204" ||
     (message.includes("column") && message.includes("does not exist"))
   );
+}
+
+export function modalidadLabel(event: Pick<Evento, "modalidad" | "disciplina_normalizada">): string {
+  return resolveModalidad(event) === "ciclismo" ? "Ciclismo" : "A pie";
 }
