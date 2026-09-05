@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f1ea;
+  --foreground: #12231c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-forest: #0b3d2e;
+  --color-pine: #14532d;
+  --color-atlantic: #0e7490;
+  --color-fog: #f4f1ea;
+  --color-ink: #12231c;
+  --color-fire: #ff3b30;
+  --color-gold: #e0b44a;
+  --color-moss: #d7e3d4;
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-outfit);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+.hero-mountains {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, transparent 42%, rgba(0, 0, 0, 0.25) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 360' preserveAspectRatio='none'%3E%3Cpath fill='%23081314' fill-opacity='0.35' d='M0 280 140 170 260 230 420 90 560 200 720 60 880 190 1040 110 1200 210 1200 360 0 360z'/%3E%3Cpath fill='%23081314' fill-opacity='0.45' d='M0 320 180 220 340 280 520 160 700 250 900 140 1200 260 1200 360 0 360z'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: bottom;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background: #e8efe8;
+}
