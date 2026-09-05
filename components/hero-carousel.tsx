@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
 import { eventCta } from "@/lib/events";
@@ -9,10 +9,43 @@ import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
 const INTERVAL_MS = 5500;
+const SWIPE_THRESHOLD = 48;
 
 export function HeroCarousel({ slides }: { slides: Evento[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const interactPause = useRef(0);
+  const drag = useRef({
+    active: false,
+    startX: 0,
+    dragged: false,
+  });
+  const slideKey = slides.map((slide) => slide.id_canonico).join("|");
+
+  const go = useCallback(
+    (direction: -1 | 1) => {
+      if (slides.length <= 1) return;
+      setIndex((current) => (current + direction + slides.length) % slides.length);
+    },
+    [slides.length],
+  );
+
+  const prev = useCallback(() => go(-1), [go]);
+  const next = useCallback(() => go(1), [go]);
+
+  function holdPause() {
+    interactPause.current += 1;
+    setPaused(true);
+  }
+
+  function releasePause() {
+    interactPause.current = Math.max(0, interactPause.current - 1);
+    if (interactPause.current === 0) setPaused(false);
+  }
+
+  useEffect(() => {
+    setIndex(0);
+  }, [slideKey]);
 
   useEffect(() => {
     if (slides.length <= 1 || paused) return;
@@ -21,6 +54,59 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
     }, INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [paused, slides.length]);
+
+  function pointerFromControl(target: EventTarget | null) {
+    return Boolean((target as HTMLElement | null)?.closest("a, button"));
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (pointerFromControl(event.target)) return;
+    drag.current = { active: true, startX: event.clientX, dragged: false };
+    holdPause();
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLElement>) {
+    if (!drag.current.active) return;
+    if (Math.abs(event.clientX - drag.current.startX) > 8) {
+      drag.current.dragged = true;
+    }
+  }
+
+  function endDrag(event: React.PointerEvent<HTMLElement>) {
+    if (!drag.current.active) return;
+    const delta = event.clientX - drag.current.startX;
+    const didDrag = drag.current.dragged;
+    drag.current.active = false;
+    releasePause();
+    if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+      if (delta < 0) next();
+      else prev();
+    }
+    if (didDrag) {
+      window.setTimeout(() => {
+        drag.current.dragged = false;
+      }, 0);
+    }
+  }
+
+  function onClickCapture(event: React.MouseEvent<HTMLElement>) {
+    if (!drag.current.dragged) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      prev();
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      next();
+    }
+  }
 
   if (!slides.length) {
     return (
@@ -43,15 +129,48 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
 
   return (
     <section
-      className="relative overflow-hidden"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      className="relative touch-pan-y overflow-hidden select-none"
+      role="region"
+      aria-roledescription="carrusel"
+      aria-label="Carreras destacadas a pie y ciclismo"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClickCapture={onClickCapture}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${disciplineTone(event.disciplina_normalizada)}`} />
       <div className="hero-mountains pointer-events-none absolute inset-0 opacity-40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/10" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/10" />
 
-      <div className="relative mx-auto flex min-h-[34rem] max-w-6xl flex-col justify-end px-4 py-10 sm:min-h-[36rem] sm:py-14">
+      <button
+        type="button"
+        aria-label="Carrera anterior"
+        onClick={prev}
+        onMouseEnter={holdPause}
+        onMouseLeave={releasePause}
+        onFocus={holdPause}
+        onBlur={releasePause}
+        className="absolute top-1/2 left-3 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-bold text-forest shadow-lg ring-1 ring-black/10 hover:bg-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:left-5 sm:h-14 sm:w-14"
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
+      <button
+        type="button"
+        aria-label="Carrera siguiente"
+        onClick={next}
+        onMouseEnter={holdPause}
+        onMouseLeave={releasePause}
+        onFocus={holdPause}
+        onBlur={releasePause}
+        className="absolute top-1/2 right-3 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-bold text-forest shadow-lg ring-1 ring-black/10 hover:bg-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-5 sm:h-14 sm:w-14"
+      >
+        <span aria-hidden="true">›</span>
+      </button>
+
+      <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-16 sm:py-14">
         <div className="max-w-2xl text-white">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
             A pie y ciclismo en Asturias
@@ -107,9 +226,10 @@ export function HeroCarousel({ slides }: { slides: Evento[] }) {
               key={slide.id_canonico}
               type="button"
               aria-label={`Ver ${slide.nombre}`}
+              aria-current={slideIndex === index ? "true" : undefined}
               onClick={() => setIndex(slideIndex)}
-              className={`h-2 rounded-full transition-all ${
-                slideIndex === index ? "w-8 bg-white" : "w-2 bg-white/40"
+              className={`h-2.5 rounded-full transition-all ${
+                slideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
               }`}
             />
           ))}
