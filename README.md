@@ -1,6 +1,6 @@
 # Carreras Asturias
 
-Portal público del calendario de trail, asfalto y dorsales en Asturias. Lee en directo la tabla `public.eventos` de Supabase y destaca las inscripciones recién abiertas.
+Portal público del calendario de carreras a pie y ciclismo en Asturias. Lee en directo la tabla `public.eventos` de Supabase y destaca las inscripciones recién abiertas.
 
 ## Stack
 
@@ -39,13 +39,23 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 
 En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos valores como fallback de build para no romper el deploy si aún no están ligadas.
 
-## Qué verás
+## Rutas
 
-- Home con carrusel (máx. 6), banner de recién abiertas, tira horizontal, «Esta quincena», mapa y bloque VIP.
-- Geolocalización discreta: `📍 Encontrar carreras cerca de mí`. Si se concede, ordena por Haversine y muestra km. Si se deniega, filtra por concejo.
-- `/calendario` con filtros: recién abierta, ventana 14 días, disciplina, concejo y orden fecha/distancia.
-- Ficha `/evento/[id]`.
+| Ruta | Qué es |
+| --- | --- |
+| `/` | Landing corta: **Carreras a pie** o **Ciclismo** |
+| `/correr` | Portal a pie (`modalidad = pie`): hero, recién, quincena, mapa |
+| `/ciclismo` | Portal de bici (`modalidad = ciclismo`) |
+| `/correr/calendario` | Calendario solo a pie |
+| `/ciclismo/calendario` | Calendario solo ciclismo |
+| `/calendario` | Redirige al calendario de correr (o al de bici si `?modalidad=ciclismo`) |
+| `/evento/[id]` | Ficha |
+
+Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero (arrastre, swipe y flechas), tiras y mapa.
+
+- Geolocalización: `📍 Encontrar carreras cerca de mí`.
+- Badge `🔥 ¡RECIÉN ABIERTA!` en ambas modalidades.
 
 ## Datos
 
-Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
+Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.

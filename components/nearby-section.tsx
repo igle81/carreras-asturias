@@ -10,7 +10,7 @@ import { daysUntil } from "@/lib/dates";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
 import type { Evento } from "@/lib/types";
 
-export function NearbySection({ events }: { events: Evento[] }) {
+export function NearbySection({ events, title }: { events: Evento[]; title?: string }) {
   const { coords, concejo, status, showConcejoFallback } = useGeo();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const concejos = uniqueConcejos(events);
@@ -37,7 +37,7 @@ export function NearbySection({ events }: { events: Evento[] }) {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Mapa</p>
           <h2 className="font-display text-2xl font-bold text-ink">
-            {coords ? "Más cercanas a ti" : "Carreras por el Principado"}
+            {coords ? "Más cercanas a ti" : title ?? "Carreras por el Principado"}
           </h2>
           <p className="mt-1 text-sm text-ink/60">
             {status === "granted"

@@ -8,15 +8,20 @@ import { EventMap } from "./event-map";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
 import { daysUntil, isWithinDays } from "@/lib/dates";
+import { disciplineMatches } from "@/lib/disciplines";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
+import { filterByModalidad } from "@/lib/modalidad";
+import { SECTIONS, type Section } from "@/lib/sections";
 import type { Evento } from "@/lib/types";
 
-export function CalendarView({ events }: { events: Evento[] }) {
+export function CalendarView({ events, section }: { events: Evento[]; section: Section }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { coords, status } = useGeo();
-  const concejos = uniqueConcejos(events);
+  const scoped = useMemo(() => filterByModalidad(events, section.id), [events, section.id]);
+  const concejos = uniqueConcejos(scoped);
+  const other = SECTIONS[section.other];
 
   const recien = searchParams.get("recien") === "1";
   const ventana = searchParams.get("ventana") === "14";
@@ -35,10 +40,10 @@ export function CalendarView({ events }: { events: Evento[] }) {
   }
 
   const filtered = useMemo(() => {
-    const rows = events.filter((event) => {
+    const rows = scoped.filter((event) => {
       if (recien && !event.recien_abierta) return false;
       if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
-      if (disciplina && event.disciplina_normalizada !== disciplina) return false;
+      if (disciplina && !disciplineMatches(event, disciplina)) return false;
       if (concejo && !matchesConcejo(event, concejo)) return false;
       return true;
     });
@@ -53,20 +58,23 @@ export function CalendarView({ events }: { events: Evento[] }) {
       }
       return (daysUntil(a.fecha_inicio) ?? 9999) - (daysUntil(b.fecha_inicio) ?? 9999);
     });
-  }, [concejo, coords, disciplina, events, recien, sort, ventana]);
+  }, [concejo, coords, disciplina, recien, scoped, sort, ventana]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Calendario</p>
-        <h1 className="font-display text-3xl font-black text-ink">Todas las carreras</h1>
-        <p className="mt-2 text-ink/65">
-          Filtra por inscripción recién abierta, quincena, disciplina o concejo.
-        </p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">{section.eyebrow}</p>
+          <h1 className="font-display text-3xl font-black text-ink">{section.calendarTitle}</h1>
+          <p className="mt-2 text-ink/65">{section.calendarLead}</p>
+        </div>
+        <a href={other.calendar} className="text-sm font-semibold text-atlantic">
+          Calendario de {other.nav} →
+        </a>
       </div>
 
       <div className="mb-6 space-y-4 rounded-3xl border border-forest/10 bg-white p-4">
-        <DisciplineChips />
+        <DisciplineChips events={scoped} modalidad={section.id} />
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -123,7 +131,7 @@ export function CalendarView({ events }: { events: Evento[] }) {
       </div>
 
       <p className="mb-4 text-sm text-ink/55">
-        {filtered.length} {filtered.length === 1 ? "carrera" : "carreras"}
+        {filtered.length} {filtered.length === 1 ? "prueba" : "pruebas"}
       </p>
 
       <div className="mb-8 hidden h-80 lg:block">
@@ -141,7 +149,7 @@ export function CalendarView({ events }: { events: Evento[] }) {
       </div>
       {!filtered.length ? (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
-          Ninguna carrera encaja con esos filtros. Prueba a soltar alguno.
+          Ninguna prueba encaja con esos filtros. Prueba a soltar alguno.
         </p>
       ) : null}
     </div>

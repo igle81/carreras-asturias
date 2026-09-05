@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { DISCIPLINE_FILTERS } from "@/lib/disciplines";
+import { visibleDisciplineFilters } from "@/lib/disciplines";
+import type { ModalidadId } from "@/lib/modalidad";
+import type { Evento } from "@/lib/types";
 
 function chipClass(active: boolean) {
   return `shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
@@ -12,11 +14,26 @@ function chipClass(active: boolean) {
   }`;
 }
 
-export function DisciplineLinkChips() {
+export function DisciplineLinkChips({
+  events,
+  calendarPath,
+  modalidad,
+}: {
+  events: Evento[];
+  calendarPath: string;
+  modalidad: ModalidadId;
+}) {
+  const chips = visibleDisciplineFilters(events, modalidad);
+  if (!chips.length) return null;
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
-      {DISCIPLINE_FILTERS.map((item) => (
-        <Link key={item.id} href={`/calendario?disciplina=${item.id}`} className={chipClass(false)}>
+      {chips.map((item) => (
+        <Link
+          key={item.id}
+          href={`${calendarPath}?disciplina=${item.id}`}
+          className={chipClass(false)}
+        >
           {item.label}
         </Link>
       ))}
@@ -24,11 +41,20 @@ export function DisciplineLinkChips() {
   );
 }
 
-export function DisciplineChips() {
+export function DisciplineChips({
+  events,
+  modalidad,
+}: {
+  events: Evento[];
+  modalidad: ModalidadId;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const current = searchParams.get("disciplina") ?? "";
+  const chips = visibleDisciplineFilters(events, modalidad);
+
+  if (!chips.length) return null;
 
   function toggle(id: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -40,7 +66,7 @@ export function DisciplineChips() {
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
-      {DISCIPLINE_FILTERS.map((item) => (
+      {chips.map((item) => (
         <button
           key={item.id}
           type="button"
