@@ -1,18 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { recordVipCtaClick } from "@/lib/vip-cta";
 
 const TOAST_MS = 4000;
 
 function recordClick() {
-  const path = typeof window === "undefined" ? "/" : window.location.pathname || "/";
-  void fetch("/api/vip-cta", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path }),
-    keepalive: true,
-  }).catch(() => {
-    // Fire-and-forget: the CTA never waits on tracking.
+  void recordVipCtaClick({
+    path: window.location.pathname,
+    userAgent: window.navigator.userAgent,
   });
 }
 

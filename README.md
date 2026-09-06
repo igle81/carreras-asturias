@@ -65,9 +65,11 @@ Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`,
 El botón **Quiero el Canal VIP** (`#vip` en `/correr` y `/ciclismo`) no abre Telegram: el canal aún no existe. Cada clic:
 
 1. Se queda en la sección VIP y muestra «Te avisaremos — canal en breve».
-2. Registra un evento en `public.vip_cta_clicks` (`clicked_at`, `path`, `user_agent`) vía `POST /api/vip-cta` (fire-and-forget; si la tabla o el RLS aún no están, la UI no se rompe).
+2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
 
-No hace falta login. No hay `service_role` en este repo: el insert usa la clave anon (RLS: `INSERT` público, `SELECT` solo autenticado).
+`POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.
+
+No hace falta login. No hay `service_role` en este repo (RLS: `INSERT` público, `SELECT` solo autenticado).
 
 ### Cómo ve Javier el recuento
 
