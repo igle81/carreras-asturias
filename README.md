@@ -59,3 +59,22 @@ Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero
 ## Datos
 
 Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
+
+## Canal VIP — clics de interés
+
+El botón **Quiero el Canal VIP** (`#vip` en `/correr` y `/ciclismo`) no abre Telegram: el canal aún no existe. Cada clic:
+
+1. Se queda en la sección VIP y muestra «Te avisaremos — canal en breve».
+2. Registra un evento en `public.vip_cta_clicks` (`clicked_at`, `path`, `user_agent`) vía `POST /api/vip-cta` (fire-and-forget; si la tabla o el RLS aún no están, la UI no se rompe).
+
+No hace falta login. No hay `service_role` en este repo: el insert usa la clave anon (RLS: `INSERT` público, `SELECT` solo autenticado).
+
+### Cómo ve Javier el recuento
+
+Cualquiera de estas tres, en el proyecto Supabase `fdpzepqhkdyfnorremce`:
+
+1. **Table Editor** → `vip_cta_clicks` → el contador de filas arriba a la izquierda.
+2. **SQL Editor**: `select public.vip_cta_clicks_count();` (RPC anon, solo el número, sin filas).
+3. En el portal desplegado: `GET /api/vip-cta` → `{ "count": 12 }`. Devuelve `{ "count": null }` si el RPC aún no existe.
+
+No recrear el proyecto Vercel: el deploy existente coge la ruta `/api/vip-cta` en el siguiente build.
