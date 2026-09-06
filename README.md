@@ -62,9 +62,11 @@ Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`,
 
 ## Canal VIP — clics de interés
 
-El botón **Quiero el Canal VIP** (`#vip` en `/correr` y `/ciclismo`) no abre Telegram: el canal aún no existe. Cada clic:
+El control de `#vip` en `/correr` y `/ciclismo` es **solo medición**: un `<button>` sin `href`, con chip **Próximamente**. No hay enlace `t.me` ni al canal privado. No activar el join público hasta OK explícito de Javier.
 
-1. Se queda en la sección VIP y muestra «Te avisaremos — canal en breve».
+Cada clic:
+
+1. Se queda en la página y muestra «Te avisaremos — canal en breve».
 2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
 
 `POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.

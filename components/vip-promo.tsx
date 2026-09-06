@@ -12,6 +12,10 @@ function recordClick() {
   });
 }
 
+/**
+ * Interest-only placeholder. Do not add a t.me / Telegram href until Javier
+ * explicitly activates the public channel.
+ */
 export function VipPromo() {
   const [toast, setToast] = useState(false);
   const hideTimer = useRef<number | null>(null);
@@ -32,13 +36,16 @@ export function VipPromo() {
           Cuando se abre una inscripción, te avisamos al momento. Sin ruido, sin
           quedarte sin dorsal. El canal llega en breve — deja el sitio marcado.
         </p>
-        <a
-          href="#vip"
+        <button
+          type="button"
           onClick={handleClick}
-          className="mt-6 inline-flex rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
         >
           Quiero el Canal VIP
-        </a>
+          <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink/70">
+            Próximamente
+          </span>
+        </button>
         {toast ? (
           <p role="status" className="mt-3 text-sm font-semibold text-gold">
             Te avisaremos — canal en breve
