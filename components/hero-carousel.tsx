@@ -6,7 +6,8 @@ import { AperturaBadge } from "./apertura-badge";
 import { resolveAperturaBadge } from "@/lib/apertura-badge";
 import { formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
-import { eventCta } from "@/lib/events";
+import { EventPoster, useBrokenPoster } from "./event-poster";
+import { eventCta, eventPosterUrl } from "@/lib/events";
 import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
@@ -31,6 +32,9 @@ export function HeroCarousel({
     dragged: false,
   });
   const slideKey = slides.map((slide) => slide.id_canonico).join("|");
+  const current = slides[index];
+  const poster = current ? eventPosterUrl(current) : null;
+  const backdrop = useBrokenPoster(poster);
 
   const go = useCallback(
     (direction: -1 | 1) => {
@@ -136,6 +140,7 @@ export function HeroCarousel({
 
   const event = slides[index];
   const cta = eventCta(event);
+  const showPoster = Boolean(poster) && backdrop.show;
 
   return (
     <section
@@ -151,9 +156,28 @@ export function HeroCarousel({
       onPointerCancel={endDrag}
       onClickCapture={onClickCapture}
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${disciplineTone(event.disciplina_normalizada)}`} />
-      <div className="hero-mountains pointer-events-none absolute inset-0 opacity-40" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/10" />
+      {showPoster && poster ? (
+        <EventPoster
+          src={poster}
+          alt=""
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+          onError={backdrop.onError}
+        />
+      ) : null}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${disciplineTone(event.disciplina_normalizada)} ${
+          showPoster ? "opacity-45" : ""
+        }`}
+      />
+      {showPoster ? null : <div className="hero-mountains pointer-events-none absolute inset-0 opacity-40" />}
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-t ${
+          showPoster ? "from-black/70 via-black/35 to-black/20" : "from-black/55 via-black/15 to-black/10"
+        }`}
+      />
 
       <HeroArrow
         label="Carrera anterior"

@@ -26,6 +26,8 @@ export type Evento = {
   etiquetas: string[] | null;
   recien_abierta: boolean | null;
   calidad_score: number | null;
+  imagen_url?: string | null;
+  imagen_fuente?: string | null;
 };
 
 export type Coords = {

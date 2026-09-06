@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AperturaBadge } from "@/components/apertura-badge";
+import { EventDetailPoster } from "@/components/event-poster";
 import { EventMap } from "@/components/event-map";
 import { JsonLd } from "@/components/json-ld";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
-import { eventCta, formatDistancias, getEvento, getEventos } from "@/lib/events";
+import { eventCta, eventPosterCredit, eventPosterUrl, formatDistancias, getEvento, getEventos } from "@/lib/events";
 import { modalidadLabel, resolveModalidad } from "@/lib/modalidad";
 import { calendarPath } from "@/lib/sections";
 import { eventMetadata, sportsEventJsonLd } from "@/lib/seo";
@@ -38,6 +39,8 @@ export default async function EventoPage({ params }: EventPageProps) {
   const distances = formatDistancias(event);
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
+  const poster = eventPosterUrl(event);
+  const credit = eventPosterCredit(event);
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-8">
@@ -49,33 +52,47 @@ export default async function EventoPage({ params }: EventPageProps) {
         ← Volver al calendario
       </Link>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <AperturaBadge event={event} size="hero" />
-        {thisWeek ? (
-          <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-bold uppercase text-forest">
-            Esta semana
-          </span>
-        ) : null}
-        {event.estado_inscripcion === "cerrada" ? (
-          <span className="rounded-full bg-ink/10 px-3 py-1 text-xs font-bold uppercase text-ink/70">
-            Inscripción cerrada
-          </span>
+      <div
+        className={
+          poster
+            ? "mt-4 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(220px,20rem)]"
+            : "mt-4"
+        }
+      >
+        <div>
+          <div className="flex flex-wrap gap-2">
+            <AperturaBadge event={event} size="hero" />
+            {thisWeek ? (
+              <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-bold uppercase text-forest">
+                Esta semana
+              </span>
+            ) : null}
+            {event.estado_inscripcion === "cerrada" ? (
+              <span className="rounded-full bg-ink/10 px-3 py-1 text-xs font-bold uppercase text-ink/70">
+                Inscripción cerrada
+              </span>
+            ) : null}
+          </div>
+
+          <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-atlantic">
+            {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
+          </p>
+          <h1 className="mt-1 font-display text-4xl font-black text-ink">{event.nombre}</h1>
+          <p className="mt-3 text-lg text-ink/70">
+            {formatRangoFecha(event.fecha_inicio, event.fecha_fin)}
+            {event.municipio ? ` · ${event.municipio}` : ""}
+          </p>
+          {event.localidad ? <p className="text-ink/55">{event.localidad}</p> : null}
+          {distances ? <p className="mt-2 font-medium text-forest">{distances}</p> : null}
+          {event.organizador ? (
+            <p className="mt-2 text-sm text-ink/55">Organiza: {event.organizador}</p>
+          ) : null}
+        </div>
+
+        {poster ? (
+          <EventDetailPoster src={poster} alt={`Cartel de ${event.nombre}`} credit={credit} />
         ) : null}
       </div>
-
-      <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-atlantic">
-        {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
-      </p>
-      <h1 className="mt-1 font-display text-4xl font-black text-ink">{event.nombre}</h1>
-      <p className="mt-3 text-lg text-ink/70">
-        {formatRangoFecha(event.fecha_inicio, event.fecha_fin)}
-        {event.municipio ? ` · ${event.municipio}` : ""}
-      </p>
-      {event.localidad ? <p className="text-ink/55">{event.localidad}</p> : null}
-      {distances ? <p className="mt-2 font-medium text-forest">{distances}</p> : null}
-      {event.organizador ? (
-        <p className="mt-2 text-sm text-ink/55">Organiza: {event.organizador}</p>
-      ) : null}
 
       <div className="mt-6 flex flex-wrap gap-3">
         {cta.external ? (

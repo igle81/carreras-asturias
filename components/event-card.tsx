@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { AperturaBadge } from "./apertura-badge";
+import { EventPoster } from "./event-poster";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
-import { eventCta, formatDistancias } from "@/lib/events";
+import { eventCta, eventPosterUrl, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
 import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
@@ -19,13 +20,25 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
   const closed = event.estado_inscripcion === "cerrada";
+  const poster = eventPosterUrl(event);
 
   return (
     <article
-      className={`flex h-full flex-col rounded-3xl border border-forest/10 bg-white shadow-[0_10px_30px_-18px_rgba(11,61,46,0.45)] ${
+      className={`flex h-full flex-col overflow-hidden rounded-3xl border border-forest/10 bg-white shadow-[0_10px_30px_-18px_rgba(11,61,46,0.45)] ${
         compact ? "min-w-[260px] max-w-[280px]" : ""
       }`}
     >
+      {poster ? (
+        <EventPoster
+          src={poster}
+          alt={`Cartel de ${event.nombre}`}
+          href={`/evento/${event.id_canonico}`}
+          fill
+          frameClassName="relative block aspect-[16/10] bg-moss/40"
+          className="object-cover"
+          sizes={compact ? "280px" : "(max-width: 768px) 100vw, 33vw"}
+        />
+      ) : null}
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex flex-wrap gap-1.5">
           <AperturaBadge event={event} />
