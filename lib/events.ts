@@ -81,23 +81,36 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
 
 export const getEventos = cache(async (): Promise<Evento[]> => {
   const client = getSupabase();
-  const query = (columns: string) =>
-    client.from("eventos").select(columns).order("fecha_inicio", { ascending: true });
 
-  let result = await query(EVENT_COLUMNS_FULL);
-  if (result.error && isMissingAperturaColumn(result.error)) {
-    result = await query(EVENT_COLUMNS_WITH_MODALIDAD);
-  }
-  if (result.error && isMissingModalidadColumn(result.error)) {
-    result = await query(EVENT_COLUMNS);
-  }
+  const withApertura = await client
+    .from("eventos")
+    .select(EVENT_COLUMNS_FULL)
+    .order("fecha_inicio", { ascending: true });
+
+  const afterApertura =
+    withApertura.error && isMissingAperturaColumn(withApertura.error)
+      ? await client
+          .from("eventos")
+          .select(EVENT_COLUMNS_WITH_MODALIDAD)
+          .order("fecha_inicio", { ascending: true })
+      : withApertura;
+
+  const result =
+    afterApertura.error && isMissingModalidadColumn(afterApertura.error)
+      ? await client
+          .from("eventos")
+          .select(EVENT_COLUMNS)
+          .order("fecha_inicio", { ascending: true })
+      : afterApertura;
 
   if (result.error) {
     console.error("No se pudieron cargar los eventos", result.error.message);
     return [];
   }
 
-  return (result.data ?? []).map((row) => normalizeEvent(row as Record<string, unknown>));
+  return (result.data ?? []).map((row) =>
+    normalizeEvent(row as unknown as Record<string, unknown>),
+  );
 });
 
 export async function getEvento(id: string): Promise<Evento | null> {
