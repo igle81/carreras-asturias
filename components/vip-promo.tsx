@@ -39,7 +39,7 @@ export function VipPromo() {
         <button
           type="button"
           onClick={handleClick}
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
+          className="mt-6 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
         >
           Quiero el Canal VIP
           <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink/70">
