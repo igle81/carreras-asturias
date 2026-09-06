@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { CookieBanner } from "@/components/cookie-banner";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -70,6 +71,7 @@ export default async function RootLayout({
           <SiteHeader concejosPie={concejosPie} concejosBici={concejosBici} />
           <main>{children}</main>
           <SiteFooter />
+          <CookieBanner />
         </GeoProvider>
       </body>
     </html>
