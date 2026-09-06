@@ -4,7 +4,7 @@ export const LEGAL_PLACEHOLDERS = {
   titular: "[NOMBRE/RAZÓN SOCIAL]",
   nif: "[completar]",
   domicilio: "[completar]",
-  email: "[EMAIL]",
+  email: "iaaviles2026@gmail.com",
 } as const;
 
 export const COOKIE_CONSENT_KEY = "ca-cookie-consent";
