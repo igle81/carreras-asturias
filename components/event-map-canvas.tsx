@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
+import { hasAperturaReciente } from "@/lib/apertura-badge";
 import { disciplineLabel, disciplineMarkerColor } from "@/lib/disciplines";
 import { ASTURIAS_CENTER } from "@/lib/geo";
 import { formatFechaCorta } from "@/lib/dates";
@@ -80,8 +81,8 @@ export default function EventMapCanvas({ events, userCoords, selectedId }: Event
             center={[event.lat, event.lng]}
             radius={event.id_canonico === selectedId ? 11 : 8}
             pathOptions={{
-              color: event.recien_abierta ? "#FF3B30" : disciplineMarkerColor(event.disciplina_normalizada),
-              fillColor: event.recien_abierta ? "#FF3B30" : disciplineMarkerColor(event.disciplina_normalizada),
+              color: hasAperturaReciente(event) ? "#FF3B30" : disciplineMarkerColor(event.disciplina_normalizada),
+              fillColor: hasAperturaReciente(event) ? "#FF3B30" : disciplineMarkerColor(event.disciplina_normalizada),
               fillOpacity: 0.88,
               weight: event.id_canonico === selectedId ? 3 : 1,
             }}

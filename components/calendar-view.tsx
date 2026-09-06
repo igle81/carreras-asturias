@@ -7,6 +7,7 @@ import { EventCard } from "./event-card";
 import { EventMap } from "./event-map";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
+import { hasAperturaReciente } from "@/lib/apertura-badge";
 import { daysUntil, isWithinDays } from "@/lib/dates";
 import { disciplineMatches } from "@/lib/disciplines";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
@@ -41,7 +42,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
 
   const filtered = useMemo(() => {
     const rows = scoped.filter((event) => {
-      if (recien && !event.recien_abierta) return false;
+      if (recien && !hasAperturaReciente(event)) return false;
       if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
       if (disciplina && !disciplineMatches(event, disciplina)) return false;
       if (concejo && !matchesConcejo(event, concejo)) return false;
@@ -149,7 +150,9 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       </div>
       {!filtered.length ? (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
-          Ninguna prueba encaja con esos filtros. Prueba a soltar alguno.
+          {recien
+            ? "No hay aperturas en los últimos 4 días."
+            : "Ninguna prueba encaja con esos filtros. Prueba a soltar alguno."}
         </p>
       ) : null}
     </div>
