@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     "Calendario vivo de carreras a pie y ciclismo en Asturias. Trail, asfalto, bici, inscripciones recién abiertas y mapa por concejo.",
 };
 
-export const revalidate = 180;
+export const revalidate = 60;
 
 export default async function RootLayout({
   children,
