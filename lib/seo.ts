@@ -97,6 +97,8 @@ export function eventMetadata(event: Evento): Metadata {
     "Asturias",
   ].filter((value): value is string => Boolean(value));
 
+  const image = event.imagen_url ?? undefined;
+
   return {
     title: event.nombre,
     description,
@@ -109,11 +111,13 @@ export function eventMetadata(event: Evento): Metadata {
       siteName: SITE_NAME,
       title: event.nombre,
       description,
+      ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
-      card: "summary",
+      card: image ? "summary_large_image" : "summary",
       title: event.nombre,
       description,
+      ...(image ? { images: [image] } : {}),
     },
   };
 }
@@ -171,6 +175,7 @@ export function sportsEventJsonLd(event: Evento): JsonLd {
     data.organizer = { "@type": "Organization", name: event.organizador };
   }
   if (event.url_oficial) data.sameAs = event.url_oficial;
+  if (event.imagen_url) data.image = event.imagen_url;
 
   const sport = disciplineLabelForEvent(event);
   if (sport && sport !== "Carrera") data.sport = sport;

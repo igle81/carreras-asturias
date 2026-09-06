@@ -9,11 +9,45 @@ import type { Distancia, Evento } from "./types";
 const EVENT_COLUMNS =
   "id_canonico,nombre,fecha_inicio,fecha_fin,municipio,municipio_meta,localidad,provincia,disciplina_normalizada,distancias,organizador,url_oficial,estado_inscripcion,lat,lng,etiquetas,recien_abierta,calidad_score";
 const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
-const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
+const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
+const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
   return (error.message ?? "").toLowerCase().includes("fecha_apertura_inscripcion");
+}
+
+function isMissingImagenColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return message.includes("imagen_url") || message.includes("imagen_fuente");
+}
+
+function asImageUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return trimmed;
+  } catch {
+    return null;
+  }
+}
+
+export function eventPosterUrl(event: Pick<Evento, "imagen_url">): string | null {
+  return asImageUrl(event.imagen_url);
+}
+
+export function eventPosterCredit(event: Pick<Evento, "imagen_fuente">): string | null {
+  if (typeof event.imagen_fuente !== "string") return null;
+  const trimmed = event.imagen_fuente.trim();
+  if (!trimmed || trimmed.length > 40) return null;
+  const key = trimmed.toLocaleLowerCase("es");
+  if (key === "cartel") return "Cartel";
+  if (key.includes(":")) return null;
+  return trimmed;
 }
 
 const EMBLEMATIC_HINTS = [
@@ -76,24 +110,37 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
     recien_abierta: Boolean(row.recien_abierta),
     calidad_score: row.calidad_score == null ? null : Number(row.calidad_score),
+    imagen_url: asImageUrl(row.imagen_url),
+    imagen_fuente:
+      typeof row.imagen_fuente === "string" && row.imagen_fuente.trim()
+        ? row.imagen_fuente.trim()
+        : null,
   };
 }
 
 export const getEventos = cache(async (): Promise<Evento[]> => {
   const client = getSupabase();
 
-  const withApertura = await client
+  const withImages = await client
     .from("eventos")
     .select(EVENT_COLUMNS_FULL)
     .order("fecha_inicio", { ascending: true });
 
+  const afterImages =
+    withImages.error && isMissingImagenColumn(withImages.error)
+      ? await client
+          .from("eventos")
+          .select(EVENT_COLUMNS_WITH_APERTURA)
+          .order("fecha_inicio", { ascending: true })
+      : withImages;
+
   const afterApertura =
-    withApertura.error && isMissingAperturaColumn(withApertura.error)
+    afterImages.error && isMissingAperturaColumn(afterImages.error)
       ? await client
           .from("eventos")
           .select(EVENT_COLUMNS_WITH_MODALIDAD)
           .order("fecha_inicio", { ascending: true })
-      : withApertura;
+      : afterImages;
 
   const result =
     afterApertura.error && isMissingModalidadColumn(afterApertura.error)
