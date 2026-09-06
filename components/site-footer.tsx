@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LEGAL_NAV } from "@/lib/legal";
 import { SECTIONS } from "@/lib/sections";
 
 export function SiteFooter() {
@@ -27,6 +28,16 @@ export function SiteFooter() {
           </Link>
         </div>
       </div>
+      <nav
+        aria-label="Información legal"
+        className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-fog/10 px-4 py-4 text-xs text-fog/70"
+      >
+        {LEGAL_NAV.map((item) => (
+          <Link key={item.href} href={item.href} className="hover:text-gold">
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </footer>
   );
 }
