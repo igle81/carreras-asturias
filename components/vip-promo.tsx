@@ -1,4 +1,32 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { recordVipCtaClick } from "@/lib/vip-cta";
+
+const TOAST_MS = 4000;
+
+function recordClick() {
+  void recordVipCtaClick({
+    path: window.location.pathname,
+    userAgent: window.navigator.userAgent,
+  });
+}
+
+/**
+ * Interest-only placeholder. Do not add a t.me / Telegram href until Javier
+ * explicitly activates the public channel.
+ */
 export function VipPromo() {
+  const [toast, setToast] = useState(false);
+  const hideTimer = useRef<number | null>(null);
+
+  function handleClick() {
+    recordClick();
+    setToast(true);
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setToast(false), TOAST_MS);
+  }
+
   return (
     <section id="vip" className="mx-auto max-w-6xl px-4">
       <div className="overflow-hidden rounded-[2rem] bg-ink px-6 py-8 text-white sm:px-10">
@@ -8,12 +36,21 @@ export function VipPromo() {
           Cuando se abre una inscripción, te avisamos al momento. Sin ruido, sin
           quedarte sin dorsal. El canal llega en breve — deja el sitio marcado.
         </p>
-        <a
-          href="#vip"
-          className="mt-6 inline-flex rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
+        <button
+          type="button"
+          onClick={handleClick}
+          className="mt-6 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink"
         >
           Quiero el Canal VIP
-        </a>
+          <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink/70">
+            Próximamente
+          </span>
+        </button>
+        {toast ? (
+          <p role="status" className="mt-3 text-sm font-semibold text-gold">
+            Te avisaremos — canal en breve
+          </p>
+        ) : null}
       </div>
     </section>
   );

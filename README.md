@@ -59,3 +59,26 @@ Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero
 ## Datos
 
 Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
+
+## Canal VIP — clics de interés
+
+El control de `#vip` en `/correr` y `/ciclismo` es **solo medición**: un `<button>` sin `href`, con chip **Próximamente**. No hay enlace `t.me` ni al canal privado. No activar el join público hasta OK explícito de Javier.
+
+Cada clic:
+
+1. Se queda en la página y muestra «Te avisaremos — canal en breve».
+2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
+
+`POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.
+
+No hace falta login. No hay `service_role` en este repo (RLS: `INSERT` público, `SELECT` solo autenticado).
+
+### Cómo ve Javier el recuento
+
+Cualquiera de estas tres, en el proyecto Supabase `fdpzepqhkdyfnorremce`:
+
+1. **Table Editor** → `vip_cta_clicks` → el contador de filas arriba a la izquierda.
+2. **SQL Editor**: `select public.vip_cta_clicks_count();` (RPC anon, solo el número, sin filas).
+3. En el portal desplegado: `GET /api/vip-cta` → `{ "count": 12 }`. Devuelve `{ "count": null }` si el RPC aún no existe.
+
+No recrear el proyecto Vercel: el deploy existente coge la ruta `/api/vip-cta` en el siguiente build.
