@@ -2,11 +2,20 @@ import { Suspense } from "react";
 import { CalendarView } from "@/components/calendar-view";
 import { getEventos } from "@/lib/events";
 import { SECTIONS } from "@/lib/sections";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Calendario de ciclismo",
-  description: "Filtra pruebas de ciclismo en Asturias por inscripción, disciplina, concejo y fecha.",
-};
+  description:
+    "Calendario de MTB, BTT, carretera, enduro y cicloturismo en Asturias. Filtra por inscripción, disciplina, concejo y fecha.",
+  path: "/ciclismo/calendario",
+  keywords: [
+    "calendario ciclismo Asturias",
+    "calendario MTB Asturias",
+    "BTT Asturias fechas",
+    "inscripciones ciclismo Asturias",
+  ],
+});
 
 function CalendarFallback() {
   return <div className="mx-auto max-w-6xl px-4 py-16 text-ink/50">Cargando el calendario…</div>;
