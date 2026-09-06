@@ -6,6 +6,13 @@ import { SiteHeader } from "@/components/site-header";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_KEYWORDS,
+  DEFAULT_TITLE,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/seo";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -14,12 +21,35 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Carreras Asturias",
-    template: "%s · Carreras Asturias",
+    default: DEFAULT_TITLE,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Calendario vivo de carreras a pie y ciclismo en Asturias. Trail, asfalto, bici, inscripciones recién abiertas y mapa por concejo.",
+  description: DEFAULT_DESCRIPTION,
+  keywords: DEFAULT_KEYWORDS,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  category: "sports",
 };
 
 export const revalidate = 60;

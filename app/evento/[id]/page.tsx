@@ -1,12 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { EventMap } from "@/components/event-map";
+import { JsonLd } from "@/components/json-ld";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, formatDistancias, getEvento, getEventos } from "@/lib/events";
 import { modalidadLabel, resolveModalidad } from "@/lib/modalidad";
 import { calendarPath } from "@/lib/sections";
+import { eventMetadata, sportsEventJsonLd } from "@/lib/seo";
 
 type EventPageProps = {
   params: Promise<{ id: string }>;
@@ -17,15 +20,13 @@ export async function generateStaticParams() {
   return events.map((event) => ({ id: event.id_canonico }));
 }
 
-export async function generateMetadata({ params }: EventPageProps) {
+export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
   const { id } = await params;
   const event = await getEvento(id);
-  return {
-    title: event?.nombre ?? "Carrera",
-    description: event
-      ? `${event.nombre} en ${event.municipio ?? "Asturias"}. ${formatRangoFecha(event.fecha_inicio, event.fecha_fin)}.`
-      : "Ficha de carrera",
-  };
+  if (!event) {
+    return { title: "Carrera", robots: { index: false, follow: false } };
+  }
+  return eventMetadata(event);
 }
 
 export default async function EventoPage({ params }: EventPageProps) {
@@ -40,6 +41,7 @@ export default async function EventoPage({ params }: EventPageProps) {
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-8">
+      <JsonLd data={sportsEventJsonLd(event)} />
       <Link
         href={calendarPath(resolveModalidad(event))}
         className="text-sm font-semibold text-atlantic"
