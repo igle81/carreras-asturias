@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AperturaBadge } from "@/components/apertura-badge";
 import { EventMap } from "@/components/event-map";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
@@ -47,11 +48,7 @@ export default async function EventoPage({ params }: EventPageProps) {
       </Link>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {event.recien_abierta ? (
-          <span className="rounded-full bg-fire px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-white">
-            🔥 ¡RECIÉN ABIERTA!
-          </span>
-        ) : null}
+        <AperturaBadge event={event} size="hero" />
         {thisWeek ? (
           <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-bold uppercase text-forest">
             Esta semana

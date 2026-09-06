@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AperturaBadge } from "./apertura-badge";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, formatDistancias } from "@/lib/events";
@@ -11,14 +12,6 @@ type EventCardProps = {
   distanceKm?: number | null;
   compact?: boolean;
 };
-
-function RecienBadge() {
-  return (
-    <span className="inline-flex items-center rounded-full bg-fire px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
-      🔥 ¡RECIÉN ABIERTA!
-    </span>
-  );
-}
 
 export function EventCard({ event, distanceKm, compact = false }: EventCardProps) {
   const cta = eventCta(event);
@@ -35,7 +28,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
     >
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex flex-wrap gap-1.5">
-          {event.recien_abierta ? <RecienBadge /> : null}
+          <AperturaBadge event={event} />
           {thisWeek ? (
             <span className="rounded-full bg-gold/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-forest">
               Esta semana

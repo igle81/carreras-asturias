@@ -20,7 +20,7 @@ export function RecienAbiertasStrip({
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-fire">Dorsales calientes</p>
         <h2 className="font-display text-2xl font-bold text-ink">Recién abiertas</h2>
         <p className="mt-3 rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-8 text-center text-ink/60">
-          En esta modalidad no hay inscripciones recién abiertas ahora mismo.
+          No hay aperturas en los últimos 4 días. Cuando el calendario reciba fechas reales de inscripción, aparecerán aquí.
         </p>
       </section>
     );

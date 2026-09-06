@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { AperturaBadge } from "./apertura-badge";
+import { resolveAperturaBadge } from "@/lib/apertura-badge";
 import { formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
 import { eventCta } from "@/lib/events";
@@ -177,11 +179,9 @@ export function HeroCarousel({
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
             {kicker}
           </p>
-          {event.recien_abierta ? (
+          {resolveAperturaBadge(event) ? (
             <p className="mb-3">
-              <span className="inline-flex items-center rounded-full bg-fire px-3 py-1 text-xs font-extrabold uppercase tracking-wide">
-                🔥 ¡RECIÉN ABIERTA!
-              </span>
+              <AperturaBadge event={event} size="hero" />
             </p>
           ) : null}
           <p className="text-sm font-medium text-white/80">

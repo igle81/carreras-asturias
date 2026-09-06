@@ -20,6 +20,7 @@ export type Evento = {
   organizador: string | null;
   url_oficial: string | null;
   estado_inscripcion: EstadoInscripcion | string | null;
+  fecha_apertura_inscripcion?: string | null;
   lat: number | null;
   lng: number | null;
   etiquetas: string[] | null;

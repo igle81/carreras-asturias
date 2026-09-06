@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { hasAperturaReciente } from "./apertura-badge";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
 import { isMissingModalidadColumn, resolveModalidad } from "./modalidad";
@@ -8,6 +9,12 @@ import type { Distancia, Evento } from "./types";
 const EVENT_COLUMNS =
   "id_canonico,nombre,fecha_inicio,fecha_fin,municipio,municipio_meta,localidad,provincia,disciplina_normalizada,distancias,organizador,url_oficial,estado_inscripcion,lat,lng,etiquetas,recien_abierta,calidad_score";
 const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
+const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
+
+function isMissingAperturaColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  return (error.message ?? "").toLowerCase().includes("fecha_apertura_inscripcion");
+}
 
 const EMBLEMATIC_HINTS = [
   "angliru",
@@ -60,6 +67,10 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     organizador: (row.organizador as string | null) ?? null,
     url_oficial: (row.url_oficial as string | null) ?? null,
     estado_inscripcion: (row.estado_inscripcion as Evento["estado_inscripcion"]) ?? "desconocido",
+    fecha_apertura_inscripcion:
+      typeof row.fecha_apertura_inscripcion === "string" && row.fecha_apertura_inscripcion.trim()
+        ? row.fecha_apertura_inscripcion
+        : null,
     lat: row.lat == null ? null : Number(row.lat),
     lng: row.lng == null ? null : Number(row.lng),
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
@@ -70,24 +81,36 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
 
 export const getEventos = cache(async (): Promise<Evento[]> => {
   const client = getSupabase();
-  const withModalidad = await client
+
+  const withApertura = await client
     .from("eventos")
-    .select(EVENT_COLUMNS_WITH_MODALIDAD)
+    .select(EVENT_COLUMNS_FULL)
     .order("fecha_inicio", { ascending: true });
 
-  const result = withModalidad.error && isMissingModalidadColumn(withModalidad.error)
-    ? await client
-        .from("eventos")
-        .select(EVENT_COLUMNS)
-        .order("fecha_inicio", { ascending: true })
-    : withModalidad;
+  const afterApertura =
+    withApertura.error && isMissingAperturaColumn(withApertura.error)
+      ? await client
+          .from("eventos")
+          .select(EVENT_COLUMNS_WITH_MODALIDAD)
+          .order("fecha_inicio", { ascending: true })
+      : withApertura;
+
+  const result =
+    afterApertura.error && isMissingModalidadColumn(afterApertura.error)
+      ? await client
+          .from("eventos")
+          .select(EVENT_COLUMNS)
+          .order("fecha_inicio", { ascending: true })
+      : afterApertura;
 
   if (result.error) {
     console.error("No se pudieron cargar los eventos", result.error.message);
     return [];
   }
 
-  return (result.data ?? []).map((row) => normalizeEvent(row as Record<string, unknown>));
+  return (result.data ?? []).map((row) =>
+    normalizeEvent(row as unknown as Record<string, unknown>),
+  );
 });
 
 export async function getEvento(id: string): Promise<Evento | null> {
@@ -100,7 +123,7 @@ export function upcomingEvents(events: Evento[], from = new Date()) {
 }
 
 export function recienAbiertas(events: Evento[]) {
-  return events.filter((event) => event.recien_abierta);
+  return events.filter((event) => hasAperturaReciente(event));
 }
 
 export function estaQuincena(events: Evento[], from = new Date()) {
@@ -119,7 +142,7 @@ export function isEmblematic(event: Evento) {
 function isCiclismoUrgente(event: Evento, from: Date) {
   if (resolveModalidad(event) !== "ciclismo") return false;
   if (!isWithinDays(event.fecha_inicio, 14, from)) return false;
-  return Boolean(event.recien_abierta) || event.estado_inscripcion === "abierta";
+  return hasAperturaReciente(event) || event.estado_inscripcion === "abierta";
 }
 
 function compareHero(a: Evento, b: Evento, from: Date) {
@@ -143,7 +166,7 @@ function compareHero(a: Evento, b: Evento, from: Date) {
     return pinOrder;
   }
 
-  const recienDiff = Number(Boolean(b.recien_abierta)) - Number(Boolean(a.recien_abierta));
+  const recienDiff = Number(hasAperturaReciente(b)) - Number(hasAperturaReciente(a));
   if (recienDiff !== 0) return recienDiff;
 
   const daysA = daysUntil(a.fecha_inicio, from) ?? 9999;
