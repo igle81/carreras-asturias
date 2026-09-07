@@ -124,7 +124,20 @@ export function pushUnsupportedMessage(): string {
 }
 
 export function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim()) return error.message;
-  if (typeof error === "string" && error.trim()) return error;
-  return "No se pudo activar el push VIP de prueba.";
+  const raw =
+    error instanceof Error
+      ? error.message.trim()
+      : typeof error === "string"
+        ? error.trim()
+        : "";
+  const lower = raw.toLowerCase();
+
+  if (lower.includes("not configured for web push")) {
+    return "OneSignal no tiene web push para este origen. Haz la prueba en https://carrerasasturias.es (HTTPS, no modo privado).";
+  }
+  if (lower.includes("the app id is not valid") || lower.includes("invalid app id")) {
+    return "El App ID de OneSignal no es válido.";
+  }
+
+  return raw || "No se pudo activar el push VIP de prueba.";
 }

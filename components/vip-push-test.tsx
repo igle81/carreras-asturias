@@ -64,7 +64,9 @@ export function VipPushTest() {
       <h2 className="mt-2 font-display text-2xl font-black">Push VIP de prueba</h2>
       <p className="mt-3 max-w-xl text-white/75">
         Activa las notificaciones en este navegador y asócialas al perfil VIP de
-        prueba. No hay enlace público ni canal Telegram.
+        prueba. No hay enlace público ni canal Telegram. Usa
+        https://carrerasasturias.es (HTTPS, no modo privado): localhost y
+        previews no suelen estar dados de alta en OneSignal.
       </p>
 
       <button
