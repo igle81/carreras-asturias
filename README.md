@@ -32,6 +32,9 @@ npm start
 | `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` | URL de checkout VIP (preferida). En PRE: Payment Link de test de Stripe |
 | `VIP_CHECKOUT_URL` | Alternativa server-only a la URL de checkout |
 | `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED` | `true` fuerza el Payment Link de test si no hay URL configurada |
+| `STRIPE_SECRET_KEY` | Secret de **test** (`sk_test_…`) en Vercel PRE. Nunca `sk_live_`. Hace falta para `/api/vip/portal` |
+| `NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL` | Login URL del Customer Portal de test, si Stripe ya la ha generado. No inventar |
+| `VIP_CUSTOMER_PORTAL_URL` | Alternativa server-only a la login URL del portal |
 
 Valores del proyecto vivo:
 
@@ -53,6 +56,8 @@ En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos
 | `/ciclismo/calendario` | Calendario solo ciclismo |
 | `/calendario` | Redirige al calendario de correr (o al de bici si `?modalidad=ciclismo`) |
 | `/evento/[id]` | Ficha |
+| `/vip/cancelar` | PRE: email → Customer Portal de Stripe (test). No indexar |
+| `/api/vip/portal` | PRE: crea Billing Portal Session y redirige |
 
 Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero (arrastre, swipe y flechas), tiras y mapa.
 
@@ -65,7 +70,11 @@ Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`,
 
 ## Canal VIP — checkout PRE y clics
 
-En **PRE / preview / local** el CTA `#vip` de `/correr` y `/ciclismo` es un enlace activo («Quiero el Canal VIP») que abre el Stripe **test** Payment Link en una pestaña nueva. Success/cancel se configuran en Stripe; la web no monta checkout embebido. El precio público sigue oculto. **No hay enlace `t.me` ni invite permanente de Telegram.**
+En **PRE / preview / local** el bloque `#vip` de `/correr` y `/ciclismo` muestra **1,99 €/mes**, qué incluye (aviso la víspera, aviso el mismo día por Telegram VIP privado, push y correo), cupo 100 y **Cancelar suscripción**. El CTA es un enlace activo («Quiero el Canal VIP») que abre el Stripe **test** Payment Link en una pestaña nueva. Success/cancel se configuran en Stripe; la web no monta checkout embebido. **No hay enlace `t.me` ni invite permanente de Telegram.** En **producción (`main`)** este cambio no se fusiona: el precio sigue oculto y el botón permanece en **Próximamente** salvo URL de checkout.
+
+**Cancelar suscripción** va a `/vip/cancelar` (o a `NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL` / `VIP_CUSTOMER_PORTAL_URL` si está seteada). `/vip/cancelar` envía el email a `POST /api/vip/portal`, que busca el customer en Stripe test (`customer=cus_…` o email) y crea una Billing Portal Session. `return_url` vuelve al origen PRE (`/`). Si el portal de test no está activado en el Dashboard, la página muestra «Portal no activado aún». Si no hay customer, «necesitas una suscripción activa». No se inventan customers ni URLs de portal.
+
+En Vercel PRE hay que setear `STRIPE_SECRET_KEY` = secret **test** (`sk_test_…`). Nunca live.
 
 La URL se lee de `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` o `VIP_CHECKOUT_URL`. Si faltan, se usa el Payment Link de test **solo** cuando `NODE_ENV` es `development`/`test`, `VERCEL_ENV=preview`, la rama es `pre`, o `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED=true`. En producción (`main`) el botón permanece en **Próximamente** salvo que se configure una URL.
 
