@@ -1,4 +1,4 @@
-export const LEGAL_DRAFT_NOTE = "Borrador";
+export const LEGAL_DRAFT_NOTE = "Borrador · datos pendientes";
 
 export const LEGAL_PLACEHOLDERS = {
   titular: "[NOMBRE/RAZÓN SOCIAL]",
@@ -39,7 +39,7 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-const { titular, nif, domicilio, email } = LEGAL_PLACEHOLDERS;
+const { nif, domicilio, email } = LEGAL_PLACEHOLDERS;
 
 export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
   privacidad: {
@@ -52,8 +52,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "1. Responsable del tratamiento",
         paragraphs: [
-          `El responsable del tratamiento es ${titular}, NIF ${nif}, con domicilio en ${domicilio} y correo de contacto ${email}.`,
-          "Datos identificativos completos pendientes (razón social, NIF y domicilio por completar).",
+          `Contacto del responsable del tratamiento: ${email}. NIF ${nif}, domicilio ${domicilio}.`,
+          "Datos identificativos pendientes hasta completar los datos identificativos del titular.",
         ],
       },
       {
@@ -154,7 +154,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "1. Titular del portal",
         paragraphs: [
-          `Titular del portal: contacto ${email}. Datos identificativos completos pendientes (NIF ${nif}, domicilio ${domicilio}).`,
+          `Titular del portal: contacto ${email}. NIF ${nif}, domicilio ${domicilio}, pendientes hasta completar los datos identificativos del titular.`,
         ],
       },
       {
