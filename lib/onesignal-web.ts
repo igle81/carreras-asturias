@@ -102,6 +102,7 @@ export async function initOneSignal(): Promise<OneSignalWebSDK> {
   initPromise = withOneSignal(async (onesignal) => {
     await onesignal.init({
       appId: ONESIGNAL_APP_ID,
+      serviceWorkerPath: "OneSignalSDKWorker.js",
       allowLocalhostAsSecureOrigin: true,
       welcomeNotification: { disable: true },
       notifyButton: { enable: false },

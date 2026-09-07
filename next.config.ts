@@ -1,7 +1,28 @@
 import type { NextConfig } from "next";
 
+const onesignalWorkerHeaders = [
+  { key: "Service-Worker-Allowed", value: "/" },
+  { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+];
+
 const nextConfig: NextConfig = {
   transpilePackages: ["leaflet", "react-leaflet"],
+  async headers() {
+    return [
+      {
+        source: "/OneSignalSDKWorker.js",
+        headers: onesignalWorkerHeaders,
+      },
+      {
+        source: "/OneSignalSDK.sw.js",
+        headers: onesignalWorkerHeaders,
+      },
+      {
+        source: "/OneSignalSDKUpdaterWorker.js",
+        headers: onesignalWorkerHeaders,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
