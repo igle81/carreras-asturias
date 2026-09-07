@@ -11,6 +11,7 @@ import { filterByModalidad } from "@/lib/modalidad";
 import type { Section } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
 import type { Evento } from "@/lib/types";
+import { getVipCheckoutUrl } from "@/lib/vip-checkout";
 
 export function HomeView({ events, section }: { events: Evento[]; section: Section }) {
   const scoped = filterByModalidad(events, section.id);
@@ -45,7 +46,7 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
         <RecienAbiertasStrip events={recien} calendarHref={`${section.calendar}?recien=1`} />
         <EstaQuincena events={quincena} />
         <NearbySection events={upcomingEvents(scoped)} title={section.mapTitle} />
-        <VipPromo />
+        <VipPromo checkoutUrl={getVipCheckoutUrl()} />
       </div>
     </>
   );

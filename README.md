@@ -29,6 +29,9 @@ npm start
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anon pública (RLS: solo lectura) |
+| `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` | URL de checkout VIP (preferida). En PRE: Payment Link de test de Stripe |
+| `VIP_CHECKOUT_URL` | Alternativa server-only a la URL de checkout |
+| `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED` | `true` fuerza el Payment Link de test si no hay URL configurada |
 
 Valores del proyecto vivo:
 
@@ -60,13 +63,15 @@ Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero
 
 Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
 
-## Canal VIP — clics de interés
+## Canal VIP — checkout PRE y clics
 
-El control de `#vip` en `/correr` y `/ciclismo` es **solo medición**: un `<button>` sin `href`, con chip **Próximamente**. No hay enlace `t.me` ni al canal privado. No activar el join público hasta OK explícito de Javier.
+En **PRE / preview / local** el CTA `#vip` de `/correr` y `/ciclismo` es un enlace activo («Quiero el Canal VIP») que abre el Stripe **test** Payment Link en una pestaña nueva. Success/cancel se configuran en Stripe; la web no monta checkout embebido. El precio público sigue oculto. **No hay enlace `t.me` ni invite permanente de Telegram.**
 
-Cada clic:
+La URL se lee de `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` o `VIP_CHECKOUT_URL`. Si faltan, se usa el Payment Link de test **solo** cuando `NODE_ENV` es `development`/`test`, `VERCEL_ENV=preview`, la rama es `pre`, o `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED=true`. En producción (`main`) el botón permanece en **Próximamente** salvo que se configure una URL.
 
-1. Se queda en la página y muestra «Te avisaremos — canal en breve».
+Cada clic (activo o «Próximamente»):
+
+1. En modo interés (sin checkout): se queda en la página y muestra «Te avisaremos — llega en breve».
 2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
 
 `POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.
