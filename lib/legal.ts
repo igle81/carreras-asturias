@@ -1,4 +1,4 @@
-export const LEGAL_DRAFT_NOTE = "Borrador revisable por Javier";
+export const LEGAL_DRAFT_NOTE = "Borrador";
 
 export const LEGAL_PLACEHOLDERS = {
   titular: "[NOMBRE/RAZÓN SOCIAL]",
@@ -53,7 +53,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "1. Responsable del tratamiento",
         paragraphs: [
           `El responsable del tratamiento es ${titular}, NIF ${nif}, con domicilio en ${domicilio} y correo de contacto ${email}.`,
-          "Estos datos identificativos están marcados como placeholders hasta que Javier complete razón social, NIF, domicilio y email.",
+          "Datos identificativos completos pendientes (razón social, NIF y domicilio por completar).",
         ],
       },
       {
@@ -154,7 +154,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "1. Titular del portal",
         paragraphs: [
-          `El portal Carreras Asturias es titularidad de ${titular}, NIF ${nif}, domicilio ${domicilio}, email ${email}.`,
+          `Titular del portal: contacto ${email}. Datos identificativos completos pendientes (NIF ${nif}, domicilio ${domicilio}).`,
         ],
       },
       {
