@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ONESIGNAL_SITE_ORIGIN,
   VIP_TEST_EXTERNAL_ID,
+  apexHrefFromLocation,
   initOneSignal,
+  isWwwHostname,
   permissionDeniedMessage,
   pushUnsupportedMessage,
   toErrorMessage,
@@ -28,6 +31,14 @@ async function permissionGranted(
 
 export function VipPushTest() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [wwwApexHref, setWwwApexHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isWwwHostname(window.location.hostname)) return;
+    const apexHref = apexHrefFromLocation(window.location);
+    setWwwApexHref(apexHref);
+    window.location.replace(apexHref);
+  }, []);
 
   async function handleActivate() {
     if (status.kind === "working") return;
@@ -63,11 +74,22 @@ export function VipPushTest() {
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Interno</p>
       <h2 className="mt-2 font-display text-2xl font-black">Push VIP de prueba</h2>
       <p className="mt-3 max-w-xl text-white/75">
-        Activa las notificaciones en este navegador y asócialas al perfil VIP de
-        prueba. No hay enlace público ni canal Telegram. Usa
-        https://carrerasasturias.es (HTTPS, no modo privado): localhost y
-        previews no suelen estar dados de alta en OneSignal.
+        Este botón no es un enlace: activa las notificaciones en este mismo
+        navegador y las asocia al perfil VIP de prueba. OneSignal solo admite el
+        dominio apex en HTTPS ({ONESIGNAL_SITE_ORIGIN}), no www, localhost,
+        previews ni modo privado. No hay enlace público ni canal Telegram.
       </p>
+
+      {wwwApexHref ? (
+        <p className="mt-4 text-sm">
+          <a
+            href={wwwApexHref}
+            className="font-semibold text-gold underline underline-offset-2"
+          >
+            Abrir en dominio correcto
+          </a>
+        </p>
+      ) : null}
 
       <button
         type="button"
