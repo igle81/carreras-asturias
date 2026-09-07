@@ -3,6 +3,23 @@ export const ONESIGNAL_APP_ID = "12796c96-a5cd-4db3-af58-584c429ce188";
 /** vip_subscribers.id for Javier — internal test only. */
 export const VIP_TEST_EXTERNAL_ID = "60040074-3197-4584-855c-82f40ee8770e";
 
+/** Matches OneSignal dashboard Site URL (apex, no www). */
+export const ONESIGNAL_SITE_ORIGIN = "https://carrerasasturias.es";
+export const VIP_PUSH_TEST_PATH = "/interno/vip-push";
+export const VIP_PUSH_TEST_APEX_URL = `${ONESIGNAL_SITE_ORIGIN}${VIP_PUSH_TEST_PATH}`;
+
+export function isWwwHostname(hostname: string): boolean {
+  return hostname.toLowerCase().startsWith("www.");
+}
+
+export function apexHrefFromLocation(location: {
+  pathname: string;
+  search: string;
+  hash: string;
+}): string {
+  return `${ONESIGNAL_SITE_ORIGIN}${location.pathname}${location.search}${location.hash}`;
+}
+
 export const ONESIGNAL_SDK_SRC =
   "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
 
@@ -133,6 +150,9 @@ export function toErrorMessage(error: unknown): string {
         : "";
   const lower = raw.toLowerCase();
 
+  if (lower.includes("can only be used on")) {
+    return `OneSignal solo admite el dominio apex. Abre ${VIP_PUSH_TEST_APEX_URL} (sin www) e inténtalo de nuevo.`;
+  }
   if (lower.includes("not configured for web push")) {
     return "OneSignal no tiene web push para este origen. Haz la prueba en https://carrerasasturias.es (HTTPS, no modo privado).";
   }
