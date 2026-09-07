@@ -31,7 +31,7 @@ export function VipPromo() {
     <section id="vip" className="mx-auto max-w-6xl px-4">
       <div className="overflow-hidden rounded-[2rem] bg-ink px-6 py-8 text-white sm:px-10">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
-          Tranquilidad · cero esfuerzo · 1,99 €/mes
+          Tranquilidad · cero esfuerzo
         </p>
         <h2 className="mt-2 font-display text-3xl font-black">
           Todas las carreras, sin mover un dedo
@@ -42,20 +42,13 @@ export function VipPromo() {
           cualquier inscripción de Trail, Asfalto o BTT. Ahorra tiempo y no
           vuelvas a quedarte fuera.
         </p>
-        <p className="mt-5 font-display text-3xl font-black tracking-tight">
-          1,99 €
-          <span className="ml-1 text-lg font-bold text-white/80">/mes</span>
-        </p>
-        <div className="mt-4 max-w-xl rounded-2xl border-2 border-gold bg-gold/15 px-4 py-3">
+        <div className="mt-5 max-w-xl rounded-2xl border-2 border-gold bg-gold/15 px-4 py-3">
           <p className="text-sm font-bold text-gold">
             Máximo 100 suscriptores VIP activos.
           </p>
-          <p className="mt-1 text-sm font-semibold text-white">
-            Si hay más gente, el precio puede subir.
-          </p>
         </div>
         <p className="mt-3 max-w-xl text-sm text-white/75">
-          Baja en un clic (Stripe Portal / bot Telegram), sin fricción.
+          Baja en un clic, sin fricción.
         </p>
         <button
           type="button"
