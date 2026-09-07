@@ -40,6 +40,8 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
+  // Lista completa de la modalidad. Sin tope de meses/año (Llanera10k 2027 entra).
+  // Solo `ventana=14` acota a 14 días; no hay filtro "este año".
   const filtered = useMemo(() => {
     const rows = scoped.filter((event) => {
       if (recien && !hasAperturaReciente(event)) return false;

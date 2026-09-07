@@ -19,6 +19,7 @@ export function isWithinDays(isoDate: string | null, maxDays: number, from = new
   return delta !== null && delta >= 0 && delta <= maxDays;
 }
 
+/** Fecha de inicio ≥ hoy. Sin tope de meses ni año civil: 2027 cuenta. */
 export function isUpcoming(isoDate: string | null, from = new Date()) {
   const delta = daysUntil(isoDate, from);
   return delta !== null && delta >= 0;
