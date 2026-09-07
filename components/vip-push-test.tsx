@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  ONESIGNAL_SITE_ORIGIN,
   VIP_TEST_EXTERNAL_ID,
-  apexHrefFromLocation,
   initOneSignal,
-  isWwwHostname,
   permissionDeniedMessage,
   pushUnsupportedMessage,
   toErrorMessage,
@@ -31,14 +28,6 @@ async function permissionGranted(
 
 export function VipPushTest() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [wwwApexHref, setWwwApexHref] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isWwwHostname(window.location.hostname)) return;
-    const apexHref = apexHrefFromLocation(window.location);
-    setWwwApexHref(apexHref);
-    window.location.replace(apexHref);
-  }, []);
 
   async function handleActivate() {
     if (status.kind === "working") return;
@@ -75,21 +64,11 @@ export function VipPushTest() {
       <h2 className="mt-2 font-display text-2xl font-black">Push VIP de prueba</h2>
       <p className="mt-3 max-w-xl text-white/75">
         Este botón no es un enlace: activa las notificaciones en este mismo
-        navegador y las asocia al perfil VIP de prueba. OneSignal solo admite el
-        dominio apex en HTTPS ({ONESIGNAL_SITE_ORIGIN}), no www, localhost,
-        previews ni modo privado. No hay enlace público ni canal Telegram.
+        navegador y las asocia al perfil VIP de prueba. Usa HTTPS en el dominio
+        de producción (www.carrerasasturias.es o carrerasasturias.es, según la
+        Site URL de OneSignal), no localhost ni modo privado. No hay enlace
+        público ni canal Telegram.
       </p>
-
-      {wwwApexHref ? (
-        <p className="mt-4 text-sm">
-          <a
-            href={wwwApexHref}
-            className="font-semibold text-gold underline underline-offset-2"
-          >
-            Abrir en dominio correcto
-          </a>
-        </p>
-      ) : null}
 
       <button
         type="button"

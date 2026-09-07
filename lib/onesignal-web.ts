@@ -3,22 +3,10 @@ export const ONESIGNAL_APP_ID = "12796c96-a5cd-4db3-af58-584c429ce188";
 /** vip_subscribers.id for Javier — internal test only. */
 export const VIP_TEST_EXTERNAL_ID = "60040074-3197-4584-855c-82f40ee8770e";
 
-/** Matches OneSignal dashboard Site URL (apex, no www). */
-export const ONESIGNAL_SITE_ORIGIN = "https://carrerasasturias.es";
+/** Preferred Site URL host. Apex also works if OneSignal Site URL matches. */
+export const ONESIGNAL_PREFERRED_ORIGIN = "https://www.carrerasasturias.es";
 export const VIP_PUSH_TEST_PATH = "/interno/vip-push";
-export const VIP_PUSH_TEST_APEX_URL = `${ONESIGNAL_SITE_ORIGIN}${VIP_PUSH_TEST_PATH}`;
-
-export function isWwwHostname(hostname: string): boolean {
-  return hostname.toLowerCase().startsWith("www.");
-}
-
-export function apexHrefFromLocation(location: {
-  pathname: string;
-  search: string;
-  hash: string;
-}): string {
-  return `${ONESIGNAL_SITE_ORIGIN}${location.pathname}${location.search}${location.hash}`;
-}
+export const VIP_PUSH_TEST_PREFERRED_URL = `${ONESIGNAL_PREFERRED_ORIGIN}${VIP_PUSH_TEST_PATH}`;
 
 export const ONESIGNAL_SDK_SRC =
   "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
@@ -151,10 +139,10 @@ export function toErrorMessage(error: unknown): string {
   const lower = raw.toLowerCase();
 
   if (lower.includes("can only be used on")) {
-    return `OneSignal solo admite el dominio apex. Abre ${VIP_PUSH_TEST_APEX_URL} (sin www) e inténtalo de nuevo.`;
+    return `OneSignal no admite este origen. Abre ${VIP_PUSH_TEST_PREFERRED_URL} (HTTPS; www o apex según la Site URL) e inténtalo de nuevo.`;
   }
   if (lower.includes("not configured for web push")) {
-    return "OneSignal no tiene web push para este origen. Haz la prueba en https://carrerasasturias.es (HTTPS, no modo privado).";
+    return `OneSignal no tiene web push para este origen. Haz la prueba en ${VIP_PUSH_TEST_PREFERRED_URL} (HTTPS; www o apex según la Site URL, no modo privado).`;
   }
   if (lower.includes("the app id is not valid") || lower.includes("invalid app id")) {
     return "El App ID de OneSignal no es válido.";
