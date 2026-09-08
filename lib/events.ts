@@ -58,15 +58,15 @@ const EMBLEMATIC_HINTS = [
   "oviedo",
 ];
 
-/** Lote barrido_2026-09-08_0005: ciclismo en ~14d. Corvera primero, luego Avilés. */
 const HERO_PINNED = [
-  "marcha-cicloturista-fiestas-corvera-2026",
-  "fiesta-bicicleta-aviles-2026",
+  "enduro-degollada-open-endurastur-2026",
+  "cicloturista-el-gamoniteiro-2026",
 ];
 
 const QUINCENA_FEATURED = [
-  "marcha-cicloturista-fiestas-corvera-2026",
-  "fiesta-bicicleta-aviles-2026",
+  "marcha-solidaria-monteareo-btt-2026",
+  "quedada-btt-san-martin-de-luina-2026",
+  "marcha-solidaria-rober-contra-el-cancer-2026",
 ];
 
 function asDistancias(value: unknown): Distancia[] | null {
