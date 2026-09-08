@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -52,9 +53,13 @@ export function SiteHeader({
     <header className="sticky top-0 z-40 border-b border-forest/10 bg-fog/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-forest text-sm font-black text-gold">
-            CA
-          </span>
+          <Image
+            src="/logo-carreras-asturias.png"
+            alt="Carreras Asturias"
+            width={40}
+            height={40}
+            className="h-10 w-10"
+          />
           <span className="leading-tight">
             <span className="block font-display text-lg font-bold tracking-tight text-forest">
               Carreras Asturias
