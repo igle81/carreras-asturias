@@ -1,4 +1,6 @@
-export const LEGAL_DRAFT_NOTE = "Borrador · datos pendientes";
+/** Nota suave cuando falta NIF/domicilio. No usar un banner de «Borrador» en privacidad. */
+export const LEGAL_IDENTITY_PENDING_NOTE =
+  "Identidad del titular pendiente (NIF/domicilio)";
 
 export const LEGAL_PLACEHOLDERS = {
   titular: "[NOMBRE/RAZÓN SOCIAL]",
@@ -36,6 +38,8 @@ export type LegalDocument = {
   title: string;
   description: string;
   updatedLabel: string;
+  /** Pill above the title. Null hides the global «Borrador» banner. */
+  badge: string | null;
   sections: LegalSection[];
 };
 
@@ -46,61 +50,105 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     slug: "privacidad",
     title: "Política de privacidad",
     description:
-      "Cómo trata Carreras Asturias los datos personales: responsable, finalidades, encargados y derechos ARCO+.",
-    updatedLabel: "Borrador · pendiente de datos identificativos",
+      "Cómo trata Carreras Asturias los datos personales: responsable, canal VIP, encargados, transferencias, automatización y derechos ARCO+.",
+    updatedLabel: "Actualizado 8 de septiembre de 2026 · NIF y domicilio pendientes",
+    badge: LEGAL_IDENTITY_PENDING_NOTE,
     sections: [
       {
         heading: "1. Responsable del tratamiento",
         paragraphs: [
           `Contacto del responsable del tratamiento: ${email}. NIF ${nif}, domicilio ${domicilio}.`,
-          "Datos identificativos pendientes hasta completar los datos identificativos del titular.",
+          "Los datos identificativos del titular (NIF y domicilio) están pendientes de completar. Hasta entonces, el correo anterior es el canal de contacto del responsable.",
         ],
       },
       {
         heading: "2. Datos que se tratan",
         paragraphs: [
-          "En la versión actual del portal no hay registro de cuenta ni formularios de alta de usuario.",
+          "En la versión pública del portal no hay registro de cuenta ni formularios de alta de usuario. Podemos tratar las categorías siguientes, según cómo uses el sitio y si te suscribes al canal VIP:",
         ],
         bullets: [
-          "Logs técnicos de seguridad y funcionamiento (dirección IP, user-agent, ruta y marca temporal) generados por el hosting.",
-          "Geolocalización del navegador solo si el usuario la activa con el botón de cercanía. Las coordenadas se usan en el dispositivo para calcular distancias y no se envían a un perfil persistente.",
-          "Alertas futuras (push, email u otros canales) solo se activarán con un consentimiento específico, que hoy no se solicita.",
+          "Registros técnicos de seguridad y funcionamiento (dirección IP, user-agent, ruta y marca temporal) generados por el hosting.",
+          "Geolocalización del navegador solo si la activas con el botón de cercanía. Las coordenadas se usan en el dispositivo para calcular distancias y no se guardan como un perfil persistente de ubicación.",
+          "Preferencia de cookies en el navegador (localStorage, clave `ca-cookie-consent`).",
+          "Si pulsas el botón de interés VIP, la ruta de la página y el user-agent para contar clics, sin crear una cuenta.",
+          "Canal VIP (cuando hay suscripción o prueba): correo electrónico, datos de facturación y de cliente en Stripe, identificador de Telegram para el canal VIP privado, y datos de dispositivo/suscripción de notificaciones push en OneSignal.",
         ],
       },
       {
-        heading: "3. Finalidades y bases jurídicas",
+        heading: "3. Canal VIP (correo, pago, Telegram y push)",
+        paragraphs: [
+          "El canal VIP está pensado para avisos de inscripciones (víspera y mismo día) por correo, canal privado de Telegram y notificación push. El botón de alta puede aparecer como «Próximamente» en producción; en preproducción el checkout puede estar activo en modo de prueba. Esta política describe el tratamiento aplicable cuando te suscribes o pruebas esos canales, aunque el alta pública aún no esté abierta.",
+          "Carreras Asturias no almacena el número completo de la tarjeta (PAN) ni el CVV. El pago de la suscripción se procesa en Stripe. No hay un enlace público permanente de Telegram (`t.me`); el acceso al canal VIP privado se gestiona tras la suscripción.",
+        ],
+        bullets: [
+          "Correo electrónico: avisos VIP y comunicaciones relacionadas con la suscripción.",
+          "Stripe: cobro de la cuota, cliente de facturación y, si estás suscrito, baja o gestión a través del Customer Portal de Stripe.",
+          "Telegram: envío de avisos al canal VIP privado.",
+          "OneSignal: notificaciones push en el navegador o dispositivo, solo si das permiso de notificaciones.",
+        ],
+      },
+      {
+        heading: "4. Finalidades y bases jurídicas",
         paragraphs: ["Tratamos datos solo para las finalidades siguientes:"],
         bullets: [
           "Mostrar el calendario de carreras y ciclismo en Asturias (interés legítimo en informar sobre eventos públicos).",
           "Garantizar la seguridad y el correcto funcionamiento del sitio (interés legítimo).",
-          "Calcular carreras cercanas cuando el usuario activa la geolocalización (consentimiento).",
+          "Calcular carreras cercanas cuando activas la geolocalización (consentimiento).",
           "Cookies o almacenamientos no esenciales, solo con consentimiento (ver política de cookies).",
+          "Medir el interés en el canal VIP a partir de clics en el botón (interés legítimo).",
+          "Gestionar la suscripción VIP, el cobro y los avisos contratados (ejecución del contrato cuando te suscribes; consentimiento para el permiso de notificaciones push del navegador).",
+          "Atender consultas y el ejercicio de derechos a través del buzón de contacto (interés legítimo y, cuando aplique, obligación legal).",
+          "Difundir información pública de eventos en X (interés legítimo en comunicar el calendario).",
         ],
       },
       {
-        heading: "4. Destinatarios y encargados",
+        heading: "5. Destinatarios y encargados",
         paragraphs: [
-          "No vendemos datos personales. Los tratamientos técnicos se apoyan en encargados que prestan infraestructura:",
+          "No vendemos datos personales. Los tratamientos se apoyan en proveedores que actúan como encargados o como responsables independientes según el servicio:",
         ],
         bullets: [
-          "Hosting y entrega del sitio: Vercel.",
-          "Base de datos de eventos: Supabase.",
+          "Vercel: alojamiento y entrega del sitio.",
+          "Supabase: base de datos de eventos y registro de clics del CTA VIP.",
+          "Stripe: pagos de la suscripción VIP. No almacenamos el PAN.",
+          "OneSignal: notificaciones push del canal VIP.",
+          "Telegram: canal VIP privado de avisos.",
+          "GitHub: alojamiento del código y de la integración continua. No es una base de datos de usuarios del calendario.",
+          `Gmail (Google): buzón de contacto ${email} para consultas y derechos.`,
+          "X: publicación de contenidos informativos públicos sobre eventos. No se publica el correo de los suscriptores VIP.",
+          "Meta (Facebook e Instagram): actualmente desactivado y no se usa para publicar.",
         ],
       },
       {
-        heading: "5. Conservación",
+        heading: "6. Transferencias internacionales",
         paragraphs: [
-          "Los logs técnicos se conservan el tiempo necesario para seguridad y diagnóstico. La preferencia de cookies se guarda en el navegador (localStorage) hasta que el usuario la borre o la cambie. La geolocalización no se almacena como histórico de posición.",
+          "Algunos de los proveedores anteriores pueden tratar datos desde Estados Unidos u otros países fuera del Espacio Económico Europeo. En esos casos nos apoyamos en las garantías que ofrezca cada proveedor, en particular la certificación en el Marco de Privacidad de Datos UE-EE. UU. (Data Privacy Framework) y/o las cláusulas contractuales tipo de la Comisión Europea, según consten en la documentación de privacidad de cada proveedor.",
         ],
       },
       {
-        heading: "6. Derechos y reclamaciones",
+        heading: "7. Automatización, inteligencia artificial y decisiones",
         paragraphs: [
-          `Puedes ejercer los derechos de acceso, rectificación, cancelación/supresión, oposición, limitación y portabilidad (ARCO+) escribiendo a ${email}. También puedes reclamar ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa.`,
+          "Utilizamos automatización y agentes de inteligencia artificial para descubrir eventos públicos y para redactar o actualizar textos informativos del calendario. Ese uso no equivale a una decisión automatizada con efectos jurídicos o de impacto similar sobre ti.",
+          "No adoptamos decisiones basadas únicamente en un tratamiento automatizado que produzcan efectos jurídicos o te afecten significativamente de forma similar (artículo 22 del RGPD). La autorización de gasto, las mejoras o cambios de plan y el envío masivo de notificaciones push requieren validación humana.",
         ],
       },
       {
-        heading: "7. Menores",
+        heading: "8. Conservación",
+        paragraphs: [
+          "Como política interna, los registros técnicos de hosting se conservan como máximo 90 días, salvo que un incidente de seguridad o una obligación legal exija un plazo distinto.",
+          "Los datos de la suscripción VIP se conservan mientras la suscripción esté activa y, tras la baja, el tiempo alineado con las obligaciones de facturación y con las conservaciones que impongan Stripe o la normativa mercantil y fiscal aplicable.",
+          "La preferencia de cookies se guarda en localStorage del navegador hasta que la borres o la cambies. La geolocalización no se almacena como histórico de posición.",
+        ],
+      },
+      {
+        heading: "9. Derechos y reclamaciones",
+        paragraphs: [
+          `Puedes ejercer los derechos de acceso, rectificación, cancelación/supresión, oposición, limitación y portabilidad (ARCO+) escribiendo a ${email}.`,
+          "Si tienes una suscripción VIP activa, también puedes cancelarla o gestionar el cobro a través del Customer Portal de Stripe, desde el enlace de baja del sitio cuando la suscripción esté activa.",
+          "También puedes reclamar ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa.",
+        ],
+      },
+      {
+        heading: "10. Menores",
         paragraphs: [
           "Este portal no está dirigido a menores de 14 años. Si detectamos datos de un menor por debajo de esa edad, los eliminaremos cuando sea posible identificarlos.",
         ],
@@ -113,6 +161,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     description:
       "Cookies y almacenamientos de Carreras Asturias: técnicas, preferencias y analítica no activa por defecto.",
     updatedLabel: "Borrador · sin analítica activa",
+    badge: null,
     sections: [
       {
         heading: "1. Qué usamos hoy",
@@ -149,7 +198,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Aviso legal",
     description:
       "Titularidad, carácter informativo y limitación de responsabilidad del portal Carreras Asturias.",
-    updatedLabel: "Borrador · titular pendiente",
+    updatedLabel: "Actualizado 8 de septiembre de 2026 · NIF y domicilio pendientes",
+    badge: LEGAL_IDENTITY_PENDING_NOTE,
     sections: [
       {
         heading: "1. Titular del portal",
@@ -189,6 +239,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     description:
       "Condiciones de uso del calendario Carreras Asturias: uso personal, atribución y límites de scraping.",
     updatedLabel: "Borrador · contacto pendiente",
+    badge: null,
     sections: [
       {
         heading: "1. Aceptación",
