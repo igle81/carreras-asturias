@@ -58,16 +58,26 @@ const EMBLEMATIC_HINTS = [
   "oviedo",
 ];
 
-/** Lote barrido_2026-09-08_0005: ciclismo en ~14d. Corvera primero, luego Avilés. */
 const HERO_PINNED = [
+  "enduro-degollada-open-endurastur-2026",
+  "cicloturista-el-gamoniteiro-2026",
+];
+
+const QUINCENA_FEATURED = [
+  "marcha-solidaria-monteareo-btt-2026",
+  "quedada-btt-san-martin-de-luina-2026",
+  "marcha-solidaria-rober-contra-el-cancer-2026",
+];
+
+/** Embargo VIP+24h: fuera de hero/carousel/quincena. Siguen en listado/calendario. */
+const HIGHLIGHT_EMBARGO = [
   "marcha-cicloturista-fiestas-corvera-2026",
   "fiesta-bicicleta-aviles-2026",
 ];
 
-const QUINCENA_FEATURED = [
-  "marcha-cicloturista-fiestas-corvera-2026",
-  "fiesta-bicicleta-aviles-2026",
-];
+function isHighlightEmbargoed(id: string) {
+  return HIGHLIGHT_EMBARGO.includes(id);
+}
 
 function asDistancias(value: unknown): Distancia[] | null {
   if (!Array.isArray(value)) return null;
@@ -175,6 +185,7 @@ export function recienAbiertas(events: Evento[]) {
 
 export function estaQuincena(events: Evento[], from = new Date()) {
   return upcomingEvents(events, from).filter((event) => {
+    if (isHighlightEmbargoed(event.id_canonico)) return false;
     if (isWithinDays(event.fecha_inicio, 14, from)) return true;
     return QUINCENA_FEATURED.includes(event.id_canonico) && isWithinDays(event.fecha_inicio, 16, from);
   });
@@ -225,6 +236,7 @@ function compareHero(a: Evento, b: Evento, from: Date) {
 
 export function pickHeroSlides(events: Evento[], from = new Date(), max = 6): Evento[] {
   return [...upcomingEvents(events, from)]
+    .filter((event) => !isHighlightEmbargoed(event.id_canonico))
     .sort((a, b) => compareHero(a, b, from))
     .slice(0, max);
 }
