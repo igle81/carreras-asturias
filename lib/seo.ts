@@ -129,6 +129,83 @@ export function eventMetadata(event: Evento): Metadata {
 
 type JsonLd = Record<string, unknown>;
 
+const SCHEMA = "https://schema.org";
+
+function trimmed(value: string | null | undefined): string | undefined {
+  const text = value?.trim();
+  return text ? text : undefined;
+}
+
+/** ISO date (YYYY-MM-DD) for all-day events. Do not invent a start hour. */
+export function schemaDay(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const ymd = value.trim().slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? ymd : undefined;
+}
+
+function tagSet(event: Evento): Set<string> {
+  return new Set((event.etiquetas ?? []).map((tag) => tag.toLocaleLowerCase("es")));
+}
+
+/**
+ * Event lifecycle for Google, not inscripción state.
+ * Default EventScheduled; cancelled/postponed only from explicit labels.
+ */
+export function eventStatusJsonLd(event: Evento): string {
+  const haystack = [
+    event.estado_inscripcion,
+    ...(event.etiquetas ?? []),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" ")
+    .toLocaleLowerCase("es");
+
+  if (/\b(cancelad[oa]|anulad[oa])\b/.test(haystack)) {
+    return `${SCHEMA}/EventCancelled`;
+  }
+  if (/\b(aplazad[oa]|pospuest[oa]|postponed)\b/.test(haystack)) {
+    return `${SCHEMA}/EventPostponed`;
+  }
+  return `${SCHEMA}/EventScheduled`;
+}
+
+function organizationJsonLd(name: string, url?: string): JsonLd {
+  const org: JsonLd = { "@type": "Organization", name };
+  if (url) org.url = url;
+  return org;
+}
+
+function offerAvailability(event: Evento): string | undefined {
+  const estado = (event.estado_inscripcion ?? "").toLocaleLowerCase("es");
+  if (estado === "abierta") return `${SCHEMA}/InStock`;
+  if (estado === "cerrada") return `${SCHEMA}/SoldOut`;
+  if (estado === "proximamente") return `${SCHEMA}/PreOrder`;
+
+  const tags = tagSet(event);
+  if (tags.has("inscripcion_abierta")) return `${SCHEMA}/InStock`;
+  if (tags.has("inscripcion_cerrada")) return `${SCHEMA}/SoldOut`;
+  return undefined;
+}
+
+export function eventOffersJsonLd(event: Evento): JsonLd | undefined {
+  const url = trimmed(event.url_oficial);
+  if (!url) return undefined;
+
+  const offer: JsonLd = { "@type": "Offer", url };
+  const availability = offerAvailability(event);
+  if (availability) offer.availability = availability;
+
+  const validFrom = schemaDay(event.fecha_apertura_inscripcion);
+  if (validFrom) offer.validFrom = validFrom;
+
+  if (tagSet(event).has("gratuita")) {
+    offer.price = 0;
+    offer.priceCurrency = "EUR";
+  }
+
+  return offer;
+}
+
 function eventPlace(event: Evento): JsonLd | undefined {
   const name = event.localidad ?? event.municipio ?? event.municipio_meta;
   const locality = event.localidad ?? event.municipio;
@@ -160,27 +237,38 @@ function eventPlace(event: Evento): JsonLd | undefined {
 }
 
 export function sportsEventJsonLd(event: Evento): JsonLd {
+  const officialUrl = trimmed(event.url_oficial);
   const data: JsonLd = {
-    "@context": "https://schema.org",
+    "@context": SCHEMA,
     "@type": "SportsEvent",
     name: event.nombre,
+    description: eventDescription(event),
     url: absoluteUrl(eventPath(event.id_canonico)),
     inLanguage: "es",
+    eventStatus: eventStatusJsonLd(event),
+    eventAttendanceMode: `${SCHEMA}/OfflineEventAttendanceMode`,
   };
 
-  if (event.fecha_inicio) data.startDate = event.fecha_inicio;
-  if (event.fecha_fin && event.fecha_fin !== event.fecha_inicio) {
-    data.endDate = event.fecha_fin;
+  const startDate = schemaDay(event.fecha_inicio) ?? trimmed(event.fecha_inicio);
+  if (startDate) {
+    data.startDate = startDate;
+    data.endDate = schemaDay(event.fecha_fin) ?? trimmed(event.fecha_fin) ?? startDate;
   }
 
   const place = eventPlace(event);
   if (place) data.location = place;
 
-  if (event.organizador) {
-    data.organizer = { "@type": "Organization", name: event.organizador };
+  const organizerName = trimmed(event.organizador);
+  if (organizerName) {
+    data.organizer = organizationJsonLd(organizerName, officialUrl);
+    data.performer = organizationJsonLd(organizerName);
   }
-  if (event.url_oficial) data.sameAs = event.url_oficial;
+
+  if (officialUrl) data.sameAs = officialUrl;
   if (event.imagen_url) data.image = event.imagen_url;
+
+  const offers = eventOffersJsonLd(event);
+  if (offers) data.offers = offers;
 
   const sport = disciplineLabelForEvent(event);
   if (sport && sport !== "Carrera") data.sport = sport;
