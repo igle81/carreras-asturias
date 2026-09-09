@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:event-jsonld": "npx --yes tsx --test lib/sports-event-jsonld.test.ts",
+    "verify:smoke": "node scripts/verify-smoke.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
