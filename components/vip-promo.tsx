@@ -23,10 +23,14 @@ function recordClick() {
 }
 
 /**
- * PRE / preview: price, benefits, Stripe test checkout and cancel path.
- * Production is always interest-only (no payment link), even if checkout env vars are set.
+ * Javier 2026-09-09: hide € and «Cancelar suscripción» on every env (PRO + PRE)
+ * until he says otherwise. Flip to `true` after Javier OK — do not invent a new price.
+ * Checkout URL may still exist on PRE; this flag only controls price/cancel UI.
+ * Production checkout stays hard-guarded in getVipCheckoutUrl() (always null).
  * Never add a t.me / Telegram href.
  */
+const SHOW_VIP_PRICE_AND_CANCEL = false;
+
 export function VipPromo({
   checkoutUrl = null,
   portalLoginUrl = null,
@@ -62,10 +66,12 @@ export function VipPromo({
           cualquier inscripción de Trail, Asfalto o BTT. Ahorra tiempo y no
           vuelvas a quedarte fuera.
         </p>
-        <p className="mt-5 font-display text-3xl font-black tracking-tight">
-          1,99 €
-          <span className="ml-1 text-lg font-bold text-white/80">/mes</span>
-        </p>
+        {SHOW_VIP_PRICE_AND_CANCEL ? (
+          <p className="mt-5 font-display text-3xl font-black tracking-tight">
+            1,99 €
+            <span className="ml-1 text-lg font-bold text-white/80">/mes</span>
+          </p>
+        ) : null}
         <div className="mt-5 max-w-xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">
             Qué incluye
@@ -86,18 +92,20 @@ export function VipPromo({
             Máximo 100 suscriptores VIP activos.
           </p>
         </div>
-        <p className="mt-3 max-w-xl text-sm text-white/75">
-          Baja en un clic, sin fricción.{" "}
-          <a
-            href={cancelHref}
-            {...(cancelExternal
-              ? { target: "_blank", rel: "noopener noreferrer" }
-              : {})}
-            className="font-bold text-gold underline decoration-2 underline-offset-2"
-          >
-            Cancelar suscripción
-          </a>
-        </p>
+        {SHOW_VIP_PRICE_AND_CANCEL ? (
+          <p className="mt-3 max-w-xl text-sm text-white/75">
+            Baja en un clic, sin fricción.{" "}
+            <a
+              href={cancelHref}
+              {...(cancelExternal
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+              className="font-bold text-gold underline decoration-2 underline-offset-2"
+            >
+              Cancelar suscripción
+            </a>
+          </p>
+        ) : null}
         {checkoutEnabled && checkoutUrl ? (
           <a
             href={checkoutUrl}
