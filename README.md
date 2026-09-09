@@ -23,6 +23,18 @@ npm run build
 npm start
 ```
 
+## Cómo verifican los agentes
+
+Mapa de rutas: [`FEATURE_MAP.md`](./FEATURE_MAP.md). Checks:
+
+```bash
+npm run lint
+npm run test:event-jsonld   # si existe lib/sports-event-jsonld.test.ts
+npm run verify:smoke        # PRO público; no usar PRE vercel.app (SSO)
+```
+
+CI: `.github/workflows/ci.yml` (job `ci`). Skill de smoke en PRE: `verify-ca-pre`.
+
 ## Variables de entorno
 
 | Variable | Descripción |
