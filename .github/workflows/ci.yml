@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [pre, main]
+  push:
+    branches: [pre, main]
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - name: Event JSON-LD tests
+        run: |
+          if [ -f lib/sports-event-jsonld.test.ts ]; then
+            npm run test:event-jsonld
+          else
+            echo "Skipping test:event-jsonld — lib/sports-event-jsonld.test.ts is not on this branch yet."
+          fi
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.invalid
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
