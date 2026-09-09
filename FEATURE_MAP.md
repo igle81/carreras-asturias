@@ -19,7 +19,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/cookies` | Política de cookies | Footer **Cookies** |
 | `/aviso-legal` | Aviso legal | Footer **Aviso legal** |
 | `/terminos` | Términos de uso | Footer **Términos** |
-| `/vip/cancelar` | Baja VIP (Stripe test portal, noindex) | Link **Cancelar suscripción** in `#vip` on `/correr` and `/ciclismo` |
+| `/vip/cancelar` | Baja VIP (Stripe test portal, noindex) | Direct URL only while `SHOW_VIP_PRICE_AND_CANCEL` is false (Javier 2026-09-09; no `#vip` cancel CTA) |
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
 
 There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block on `/correr` and `/ciclismo` (`components/vip-promo.tsx`, `id="vip"`).
@@ -37,7 +37,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block o
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
-- VIP (`components/vip-promo.tsx`): **Quiero avisos VIP** (PRO, interés) / **Quiero el Canal VIP** (PRE checkout), **Cancelar suscripción**
+- VIP (`components/vip-promo.tsx`): **Quiero avisos VIP** (PRO, interés) / **Quiero el Canal VIP** (PRE checkout). Price and **Cancelar suscripción** hidden until Javier OK (`SHOW_VIP_PRICE_AND_CANCEL`)
 
 ## Verification
 
