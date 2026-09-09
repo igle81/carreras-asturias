@@ -22,12 +22,18 @@ function asHttpsUrl(value: string): string | null {
   }
 }
 
+/** Vercel Production (main / carrerasasturias.es). Not local `next start`. */
+export function isVercelProduction(env: EnvLike = process.env): boolean {
+  return (env.VERCEL_ENV || env.NEXT_PUBLIC_VERCEL_ENV) === "production";
+}
+
 /**
  * Allow the hardcoded test Payment Link only on non-production surfaces:
- * local/dev, Vercel preview (rama `pre`), or an explicit public flag.
- * Production (main) stays «Próximamente» unless a checkout URL is set.
+ * local/dev, Vercel preview (rama `pre`), or an explicit public flag on PRE.
+ * Production never allows checkout, even if the flag or payment URLs are set.
  */
 export function isVipCheckoutFallbackAllowed(env: EnvLike = process.env): boolean {
+  if (isVercelProduction(env)) return false;
   if (env.NEXT_PUBLIC_VIP_CHECKOUT_ENABLED === "true") return true;
 
   const vercelEnv = env.VERCEL_ENV || env.NEXT_PUBLIC_VERCEL_ENV;
@@ -39,8 +45,10 @@ export function isVipCheckoutFallbackAllowed(env: EnvLike = process.env): boolea
   return env.NODE_ENV === "development" || env.NODE_ENV === "test";
 }
 
-/** Prefer Vercel env; otherwise the test link on PRE/preview/dev only. */
+/** Prefer Vercel env on PRE; Production always returns null (interest-only CTA). */
 export function getVipCheckoutUrl(env: EnvLike = process.env): string | null {
+  if (isVercelProduction(env)) return null;
+
   const configured = firstNonEmpty(
     env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK,
     env.VIP_CHECKOUT_URL,

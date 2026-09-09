@@ -24,7 +24,7 @@ function recordClick() {
 
 /**
  * PRE / preview: price, benefits, Stripe test checkout and cancel path.
- * Production stays interest-only unless a checkout URL is configured.
+ * Production is always interest-only (no payment link), even if checkout env vars are set.
  * Never add a t.me / Telegram href.
  */
 export function VipPromo({
