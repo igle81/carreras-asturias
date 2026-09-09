@@ -4,7 +4,8 @@ import { formatRangoFecha } from "./dates";
 import { modalidadLabel } from "./modalidad";
 import type { Evento } from "./types";
 
-export const SITE_URL = "https://carrerasasturias.es";
+/** Canonical public origin. Vercel 308s apex → www; sitemap/canonicals must not redirect. */
+export const SITE_URL = "https://www.carrerasasturias.es";
 export const SITE_NAME = "Carreras Asturias";
 
 export const DEFAULT_TITLE = "Carreras Asturias · Calendario de trail, running y ciclismo";

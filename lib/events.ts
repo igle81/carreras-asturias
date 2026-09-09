@@ -128,7 +128,7 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
   };
 }
 
-/** Uncached fetch. Use in metadata routes (sitemap) where React `cache()` may not apply. Never throws. */
+/** Uncached fetch. Use in the sitemap route where React `cache()` may not apply. Never throws. */
 export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
