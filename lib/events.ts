@@ -128,47 +128,55 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
   };
 }
 
-export const getEventos = cache(async (): Promise<Evento[]> => {
-  const client = getSupabase();
+/** Uncached fetch. Use in metadata routes (sitemap) where React `cache()` may not apply. Never throws. */
+export async function fetchEventos(): Promise<Evento[]> {
+  try {
+    const client = getSupabase();
 
-  const withImages = await client
-    .from("eventos")
-    .select(EVENT_COLUMNS_FULL)
-    .order("fecha_inicio", { ascending: true });
+    const withImages = await client
+      .from("eventos")
+      .select(EVENT_COLUMNS_FULL)
+      .order("fecha_inicio", { ascending: true });
 
-  const afterImages =
-    withImages.error && isMissingImagenColumn(withImages.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS_WITH_APERTURA)
-          .order("fecha_inicio", { ascending: true })
-      : withImages;
+    const afterImages =
+      withImages.error && isMissingImagenColumn(withImages.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_APERTURA)
+            .order("fecha_inicio", { ascending: true })
+        : withImages;
 
-  const afterApertura =
-    afterImages.error && isMissingAperturaColumn(afterImages.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS_WITH_MODALIDAD)
-          .order("fecha_inicio", { ascending: true })
-      : afterImages;
+    const afterApertura =
+      afterImages.error && isMissingAperturaColumn(afterImages.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_MODALIDAD)
+            .order("fecha_inicio", { ascending: true })
+        : afterImages;
 
-  const result =
-    afterApertura.error && isMissingModalidadColumn(afterApertura.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS)
-          .order("fecha_inicio", { ascending: true })
-      : afterApertura;
+    const result =
+      afterApertura.error && isMissingModalidadColumn(afterApertura.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS)
+            .order("fecha_inicio", { ascending: true })
+        : afterApertura;
 
-  if (result.error) {
-    console.error("No se pudieron cargar los eventos", result.error.message);
+    if (result.error) {
+      console.error("No se pudieron cargar los eventos", result.error.message);
+      return [];
+    }
+
+    return (result.data ?? []).map((row) =>
+      normalizeEvent(row as unknown as Record<string, unknown>),
+    );
+  } catch (error) {
+    console.error("No se pudieron cargar los eventos", error);
     return [];
   }
+}
 
-  return (result.data ?? []).map((row) =>
-    normalizeEvent(row as unknown as Record<string, unknown>),
-  );
-});
+export const getEventos = cache(fetchEventos);
 
 export async function getEvento(id: string): Promise<Evento | null> {
   const events = await getEventos();

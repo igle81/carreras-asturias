@@ -33,7 +33,11 @@ export function absoluteUrl(path = "/"): string {
 
 export function parseEventDate(value: string | null | undefined): Date | undefined {
   if (!value) return undefined;
-  const date = new Date(`${value}T00:00:00Z`);
+  const raw = value.trim();
+  if (!raw) return undefined;
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+    ? new Date(`${raw}T00:00:00Z`)
+    : new Date(raw);
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
