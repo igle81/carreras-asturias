@@ -69,6 +69,16 @@ const QUINCENA_FEATURED = [
   "marcha-solidaria-rober-contra-el-cancer-2026",
 ];
 
+/** Embargo VIP+24h: fuera de hero/carousel/quincena. Siguen en listado/calendario. */
+const HIGHLIGHT_EMBARGO = [
+  "marcha-cicloturista-fiestas-corvera-2026",
+  "fiesta-bicicleta-aviles-2026",
+];
+
+function isHighlightEmbargoed(id: string) {
+  return HIGHLIGHT_EMBARGO.includes(id);
+}
+
 function asDistancias(value: unknown): Distancia[] | null {
   if (!Array.isArray(value)) return null;
   const distances: Distancia[] = [];
@@ -118,47 +128,55 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
   };
 }
 
-export const getEventos = cache(async (): Promise<Evento[]> => {
-  const client = getSupabase();
+/** Uncached fetch. Use in metadata routes (sitemap) where React `cache()` may not apply. Never throws. */
+export async function fetchEventos(): Promise<Evento[]> {
+  try {
+    const client = getSupabase();
 
-  const withImages = await client
-    .from("eventos")
-    .select(EVENT_COLUMNS_FULL)
-    .order("fecha_inicio", { ascending: true });
+    const withImages = await client
+      .from("eventos")
+      .select(EVENT_COLUMNS_FULL)
+      .order("fecha_inicio", { ascending: true });
 
-  const afterImages =
-    withImages.error && isMissingImagenColumn(withImages.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS_WITH_APERTURA)
-          .order("fecha_inicio", { ascending: true })
-      : withImages;
+    const afterImages =
+      withImages.error && isMissingImagenColumn(withImages.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_APERTURA)
+            .order("fecha_inicio", { ascending: true })
+        : withImages;
 
-  const afterApertura =
-    afterImages.error && isMissingAperturaColumn(afterImages.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS_WITH_MODALIDAD)
-          .order("fecha_inicio", { ascending: true })
-      : afterImages;
+    const afterApertura =
+      afterImages.error && isMissingAperturaColumn(afterImages.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_MODALIDAD)
+            .order("fecha_inicio", { ascending: true })
+        : afterImages;
 
-  const result =
-    afterApertura.error && isMissingModalidadColumn(afterApertura.error)
-      ? await client
-          .from("eventos")
-          .select(EVENT_COLUMNS)
-          .order("fecha_inicio", { ascending: true })
-      : afterApertura;
+    const result =
+      afterApertura.error && isMissingModalidadColumn(afterApertura.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS)
+            .order("fecha_inicio", { ascending: true })
+        : afterApertura;
 
-  if (result.error) {
-    console.error("No se pudieron cargar los eventos", result.error.message);
+    if (result.error) {
+      console.error("No se pudieron cargar los eventos", result.error.message);
+      return [];
+    }
+
+    return (result.data ?? []).map((row) =>
+      normalizeEvent(row as unknown as Record<string, unknown>),
+    );
+  } catch (error) {
+    console.error("No se pudieron cargar los eventos", error);
     return [];
   }
+}
 
-  return (result.data ?? []).map((row) =>
-    normalizeEvent(row as unknown as Record<string, unknown>),
-  );
-});
+export const getEventos = cache(fetchEventos);
 
 export async function getEvento(id: string): Promise<Evento | null> {
   const events = await getEventos();
@@ -175,6 +193,7 @@ export function recienAbiertas(events: Evento[]) {
 
 export function estaQuincena(events: Evento[], from = new Date()) {
   return upcomingEvents(events, from).filter((event) => {
+    if (isHighlightEmbargoed(event.id_canonico)) return false;
     if (isWithinDays(event.fecha_inicio, 14, from)) return true;
     return QUINCENA_FEATURED.includes(event.id_canonico) && isWithinDays(event.fecha_inicio, 16, from);
   });
@@ -225,6 +244,7 @@ function compareHero(a: Evento, b: Evento, from: Date) {
 
 export function pickHeroSlides(events: Evento[], from = new Date(), max = 6): Evento[] {
   return [...upcomingEvents(events, from)]
+    .filter((event) => !isHighlightEmbargoed(event.id_canonico))
     .sort((a, b) => compareHero(a, b, from))
     .slice(0, max);
 }
