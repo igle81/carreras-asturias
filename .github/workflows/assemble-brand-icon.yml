@@ -14,40 +14,39 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: cursor/favicon-emblema-0809
-      - name: Assemble exact emblem JSON parts
+      - name: Download exact emblem JSON parts
         run: |
-          python3 <<'PY'
-          import json
+          set -euo pipefail
+          curl -fsSL -A 'curl/8.0' -H 'Accept: application/json' \
+            -o lib/brand-icon-1.json \
+            https://filebin.net/ceef34b7845a1da3/brand-icon-1.json
+          curl -fsSL -A 'curl/8.0' -H 'Accept: application/json' \
+            -o lib/brand-icon-2.json \
+            https://filebin.net/ceef34b7845a1da3/brand-icon-2.json
+          curl -fsSL -A 'curl/8.0' -H 'Accept: application/json' \
+            -o lib/brand-icon-3.json \
+            https://filebin.net/ceef34b7845a1da3/brand-icon-3.json
+          python3 - <<'PY'
+          import hashlib
           from pathlib import Path
-
-          fixes = {
-              Path("lib/brand-icon-1-1.json"): ("PfZLC8sSEhrLj", "PfZLC8SEhrLj"),
-              Path("lib/brand-icon-1-4.json"): ("zQtI/OKCOafPHOOyv2", "zQtO/OKCOafPHOOyv2"),
-              Path("lib/brand-icon-1-5.json"): ("lFqd3pzA08", "lFqd3vzA08"),
+          expected = {
+              "lib/brand-icon-1.json": (33228, "48ac5b2cf6fb1c9970ee3819088032fe06d63412a6800aac9a9c141f7780a102"),
+              "lib/brand-icon-2.json": (33228, "9d95f7ac7d2eb84ece40cabfe44cd6ad0413f34002159cb0a759c34c2b9a0fe3"),
+              "lib/brand-icon-3.json": (33226, "1d616aef7b794dbca70cbcb29f9d545188aae5137f7226ca81355275495f08f7"),
           }
-          for path, (old, new) in fixes.items():
-              text = path.read_text()
-              if old in text:
-                  path.write_text(text.replace(old, new, 1))
-                  print(f"patched {path}")
-              else:
-                  print(f"no patch needed {path}")
-
-          for i in (1, 2, 3):
-              parts = []
-              for j in range(1, 6):
-                  chunk = Path(f"lib/brand-icon-{i}-{j}.json")
-                  if not chunk.exists():
-                      raise SystemExit(f"missing {chunk}")
-                  parts.append(json.loads(chunk.read_text())["p"])
-              Path(f"lib/brand-icon-{i}.json").write_text('{"p": "' + "".join(parts) + '"}\n')
-          print("assembled brand-icon-1/2/3.json")
+          for path, (size, digest) in expected.items():
+              data = Path(path).read_bytes()
+              got = hashlib.sha256(data).hexdigest()
+              print(path, len(data), got)
+              if len(data) != size or got != digest:
+                  raise SystemExit(f"checksum mismatch {path}")
+          print("checksums ok")
           PY
       - name: Commit assembled files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/brand-icon-1.json lib/brand-icon-2.json lib/brand-icon-3.json lib/brand-icon-1-1.json lib/brand-icon-1-4.json lib/brand-icon-1-5.json
+          git add lib/brand-icon-1.json lib/brand-icon-2.json lib/brand-icon-3.json
           if git diff --cached --quiet; then
             echo "No assembled-file changes"
           else
