@@ -25,15 +25,69 @@ export function isUpcoming(isoDate: string | null, from = new Date()) {
   return delta !== null && delta >= 0;
 }
 
-/** Acabó: fecha_fin (o fecha_inicio) ya pasó. */
+/** Día civil y hora en Europe/Madrid (los barridos van en esta zona). */
+export function madridClock(from = new Date()) {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(from).map((part) => [part.type, part.value]));
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour),
+  };
+}
+
+/** Días hasta una fecha ISO (YYYY-MM-DD) usando el calendario de Madrid. */
+export function daysUntilMadrid(isoDate: string | null, from = new Date()): number | null {
+  if (!isoDate) return null;
+  const [year, month, day] = isoDate.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const now = madridClock(from);
+  const start = Date.UTC(now.year, now.month - 1, now.day);
+  const target = Date.UTC(year, month - 1, day);
+  return Math.round((target - start) / 86_400_000);
+}
+
+/** Margen en calendario y mapa: no se quitan al acabar. Persistencia no borra antes. */
+export const POST_RACE_RETENTION_DAYS = 30;
+
+/**
+ * Hora en que el día de carrera pasa a «acabada» (Madrid).
+ * Encaja con el barrido 20:15: a esa hora el CTA ya es Clasificación.
+ */
+export const RACE_END_HOUR_MADRID = 20;
+
+/** Acabó: día de fecha_fin (o inicio) ya pasó en Madrid, o hoy a partir de las 20:00. */
 export function isRaceFinished(
   inicio: string | null,
   fin: string | null,
   from = new Date(),
 ) {
   const end = fin || inicio;
-  const delta = daysUntil(end, from);
-  return delta !== null && delta < 0;
+  const delta = daysUntilMadrid(end, from);
+  if (delta === null) return false;
+  if (delta < 0) return true;
+  if (delta > 0) return false;
+  return madridClock(from).hour >= RACE_END_HOUR_MADRID;
+}
+
+/** Sigue en listado/mapa: no acabó, o acabó hace ≤ 30 días. */
+export function isListedOnPortal(
+  inicio: string | null,
+  fin: string | null,
+  from = new Date(),
+) {
+  if (!isRaceFinished(inicio, fin, from)) return true;
+  const end = fin || inicio;
+  const delta = daysUntilMadrid(end, from);
+  return delta !== null && delta >= -POST_RACE_RETENTION_DAYS;
 }
 
 const WEEKDAYS = [
