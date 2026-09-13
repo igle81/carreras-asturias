@@ -8,8 +8,9 @@ import { EventMap } from "./event-map";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
 import { hasAperturaReciente } from "@/lib/apertura-badge";
-import { daysUntil, isWithinDays } from "@/lib/dates";
+import { isWithinDays } from "@/lib/dates";
 import { disciplineMatches } from "@/lib/disciplines";
+import { compareListedEvents, listedEvents } from "@/lib/events";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
 import { SECTIONS, type Section } from "@/lib/sections";
@@ -40,10 +41,9 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  // Lista completa de la modalidad. Sin tope de meses/año (Llanera10k 2027 entra).
-  // Solo `ventana=14` acota a 14 días; no hay filtro "este año".
+  // Próximas + acabadas ≤ 30 días tras dueAt. Sin tope hacia delante (Llanera10k 2027 entra).
   const filtered = useMemo(() => {
-    const rows = scoped.filter((event) => {
+    const rows = listedEvents(scoped).filter((event) => {
       if (recien && !hasAperturaReciente(event)) return false;
       if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
       if (disciplina && !disciplineMatches(event, disciplina)) return false;
@@ -59,7 +59,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
         if (db == null) return -1;
         return da - db;
       }
-      return (daysUntil(a.fecha_inicio) ?? 9999) - (daysUntil(b.fecha_inicio) ?? 9999);
+      return compareListedEvents(a, b);
     });
   }, [concejo, coords, disciplina, recien, scoped, sort, ventana]);
 
