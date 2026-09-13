@@ -32,6 +32,10 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block o
 | `POST /api/vip-cta` | Inserta un clic (`path`, `user_agent`) |
 | `/api/vip/portal` | PRE: crea Billing Portal Session de Stripe test y redirige. Needs `STRIPE_SECRET_KEY` (test). Do not call in smoke against PRO as a success path. |
 
+## Global chrome
+
+- **Página en pruebas** (`components/pruebas-banner.tsx`): gold bar above the header on every page. Sticky with the header.
+
 ## Nav labels
 
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
@@ -43,5 +47,5 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block o
 
 - `npm run lint`
 - `npm run test:event-jsonld` (runs when `lib/sports-event-jsonld.test.ts` exists)
-- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel HTML is not success
+- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel is not success
 - GitHub Actions: `.github/workflows/ci.yml`, job name **`ci`** (lint + JSON-LD test + build) on pull_request/push to `pre` and `main`
