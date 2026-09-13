@@ -19,6 +19,20 @@ jobs:
           python3 <<'PY'
           import json
           from pathlib import Path
+
+          fixes = {
+              Path("lib/brand-icon-1-1.json"): ("PfZLC8sSEhrLj", "PfZLC8SEhrLj"),
+              Path("lib/brand-icon-1-4.json"): ("zQtI/OKCOafPHOOyv2", "zQtO/OKCOafPHOOyv2"),
+              Path("lib/brand-icon-1-5.json"): ("lFqd3pzA08", "lFqd3vzA08"),
+          }
+          for path, (old, new) in fixes.items():
+              text = path.read_text()
+              if old in text:
+                  path.write_text(text.replace(old, new, 1))
+                  print(f"patched {path}")
+              else:
+                  print(f"no patch needed {path}")
+
           for i in (1, 2, 3):
               parts = []
               for j in range(1, 6):
@@ -33,7 +47,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/brand-icon-1.json lib/brand-icon-2.json lib/brand-icon-3.json
+          git add lib/brand-icon-1.json lib/brand-icon-2.json lib/brand-icon-3.json lib/brand-icon-1-1.json lib/brand-icon-1-4.json lib/brand-icon-1-5.json
           if git diff --cached --quiet; then
             echo "No assembled-file changes"
           else
