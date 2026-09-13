@@ -42,7 +42,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **n
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - VIP: bloque `#vip` oculto. No precio, no CTA, no «Próximamente» en correr/ciclismo.
-- Clasificación (`components/clasificacion-block.tsx`, `#clasificacion` on `/evento/[id]`): **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». Card badge **Clasificación** / **Sin clasificación**. No bot yet.
+- Clasificación (`lib/fin-estimado.ts`): al persistir una prueba con fecha se estima el fin a ritmo lento (a pie cola / bici cola de competición) + 30 min. **Esa hora** crea la rutina de buscar URL. Sigue 30 días en calendario/mapa. CTA **Inscribirme** → **Clasificación** (URL o `#clasificacion`). Ficha `#clasificacion`: **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». Persistencia no borra antes de +30 d. No inventar URLs.
 
 ## Verification
 

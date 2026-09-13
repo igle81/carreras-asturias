@@ -3,8 +3,11 @@ import { hasAperturaReciente } from "./apertura-badge";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
 import { isMissingModalidadColumn, resolveModalidad } from "./modalidad";
+import { postCarreraCta } from "./post-carrera";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
+
+export { compareListedEvents, listedEvents } from "./post-carrera";
 
 const EVENT_COLUMNS =
   "id_canonico,nombre,fecha_inicio,fecha_fin,municipio,municipio_meta,localidad,provincia,disciplina_normalizada,distancias,organizador,url_oficial,estado_inscripcion,lat,lng,etiquetas,recien_abierta,calidad_score";
@@ -294,6 +297,9 @@ export function eventCta(event: Evento): {
   href: string;
   external: boolean;
 } {
+  const afterRace = postCarreraCta(event);
+  if (afterRace) return afterRace;
+
   const ficha = `/evento/${event.id_canonico}`;
   const estado = event.estado_inscripcion ?? "desconocido";
 

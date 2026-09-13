@@ -25,15 +25,36 @@ export function isUpcoming(isoDate: string | null, from = new Date()) {
   return delta !== null && delta >= 0;
 }
 
-/** Acabó: fecha_fin (o fecha_inicio) ya pasó. */
-export function isRaceFinished(
-  inicio: string | null,
-  fin: string | null,
-  from = new Date(),
-) {
-  const end = fin || inicio;
-  const delta = daysUntil(end, from);
-  return delta !== null && delta < 0;
+/** Día civil y hora en Europe/Madrid (los barridos van en esta zona). */
+export function madridClock(from = new Date()) {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(from).map((part) => [part.type, part.value]));
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour),
+    minute: Number(parts.minute),
+  };
+}
+
+/** Días hasta una fecha ISO (YYYY-MM-DD) usando el calendario de Madrid. */
+export function daysUntilMadrid(isoDate: string | null, from = new Date()): number | null {
+  if (!isoDate) return null;
+  const [year, month, day] = isoDate.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const now = madridClock(from);
+  const start = Date.UTC(now.year, now.month - 1, now.day);
+  const target = Date.UTC(year, month - 1, day);
+  return Math.round((target - start) / 86_400_000);
 }
 
 const WEEKDAYS = [
