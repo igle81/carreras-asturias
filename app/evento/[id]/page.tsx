@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AperturaBadge } from "@/components/apertura-badge";
+import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
 import { EventMap } from "@/components/event-map";
 import { JsonLd } from "@/components/json-ld";
@@ -121,6 +122,8 @@ export default async function EventoPage({ params }: EventPageProps) {
           Ver calendario
         </Link>
       </div>
+
+      <ClasificacionBlock event={event} />
 
       <div className="mt-8 h-80">
         <EventMap events={[event]} />

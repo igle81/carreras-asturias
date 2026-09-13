@@ -11,6 +11,7 @@ const EVENT_COLUMNS =
 const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
+const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
@@ -21,6 +22,16 @@ function isMissingImagenColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
   const message = (error.message ?? "").toLowerCase();
   return message.includes("imagen_url") || message.includes("imagen_fuente");
+}
+
+function isMissingClasificacionColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    message.includes("url_clasificacion") ||
+    message.includes("estado_clasificacion") ||
+    message.includes("fuente_clasificacion")
+  );
 }
 
 function asImageUrl(value: unknown): string | null {
@@ -125,6 +136,15 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
       typeof row.imagen_fuente === "string" && row.imagen_fuente.trim()
         ? row.imagen_fuente.trim()
         : null,
+    url_clasificacion: asImageUrl(row.url_clasificacion),
+    estado_clasificacion:
+      typeof row.estado_clasificacion === "string" && row.estado_clasificacion.trim()
+        ? row.estado_clasificacion.trim()
+        : null,
+    fuente_clasificacion:
+      typeof row.fuente_clasificacion === "string" && row.fuente_clasificacion.trim()
+        ? row.fuente_clasificacion.trim()
+        : null,
   };
 }
 
@@ -133,10 +153,18 @@ export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
 
-    const withImages = await client
+    const withClasificacion = await client
       .from("eventos")
-      .select(EVENT_COLUMNS_FULL)
+      .select(EVENT_COLUMNS_WITH_CLASIFICACION)
       .order("fecha_inicio", { ascending: true });
+
+    const withImages =
+      withClasificacion.error && isMissingClasificacionColumn(withClasificacion.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_FULL)
+            .order("fecha_inicio", { ascending: true })
+        : withClasificacion;
 
     const afterImages =
       withImages.error && isMissingImagenColumn(withImages.error)

@@ -25,6 +25,17 @@ export function isUpcoming(isoDate: string | null, from = new Date()) {
   return delta !== null && delta >= 0;
 }
 
+/** Acabó: fecha_fin (o fecha_inicio) ya pasó. */
+export function isRaceFinished(
+  inicio: string | null,
+  fin: string | null,
+  from = new Date(),
+) {
+  const end = fin || inicio;
+  const delta = daysUntil(end, from);
+  return delta !== null && delta < 0;
+}
+
 const WEEKDAYS = [
   "domingo",
   "lunes",
