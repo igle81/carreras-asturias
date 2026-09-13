@@ -14,7 +14,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/correr/calendario` | Calendario solo a pie | Nav **Calendario** (desde correr); footer **Calendario a pie**; banner **Ver recién abiertas** / **Próximos 14 días** |
 | `/ciclismo/calendario` | Calendario solo bici | Nav **Calendario** (desde ciclismo); footer **Calendario bici** |
 | `/calendario` | Redirect helper → `/correr/calendario` (or `/ciclismo/calendario?…` if `?modalidad=ciclismo`) | Direct URL; not a nav item |
-| `/evento/[id]` | Ficha de evento | Cards / hero / mapa on correr, ciclismo, calendarios |
+| `/evento/[id]` | Ficha de evento + bloque `#clasificacion` | Cards / hero / mapa on correr, ciclismo, calendarios |
 | `/privacidad` | Política de privacidad | Footer **Privacidad** |
 | `/cookies` | Política de cookies | Footer **Cookies** |
 | `/aviso-legal` | Aviso legal | Footer **Aviso legal** |
@@ -42,6 +42,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **n
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - VIP: bloque `#vip` oculto. No precio, no CTA, no «Próximamente» en correr/ciclismo.
+- Clasificación (`components/clasificacion-block.tsx`, `#clasificacion` on `/evento/[id]`): **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». Card badge **Clasificación** / **Sin clasificación**. No bot yet.
 
 ## Verification
 
