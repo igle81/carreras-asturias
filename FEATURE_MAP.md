@@ -9,7 +9,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | Route | What it is | How to reach |
 | --- | --- | --- |
 | `/` | Landing: choose a pie vs ciclismo | Header logo; default entry |
-| `/correr` | Portal a pie (hero, tiras, mapa, VIP) | Nav **Correr**; landing **Entrar a correr** |
+| `/correr` | Portal a pie (hero, tiras, mapa) | Nav **Correr**; landing **Entrar a correr** |
 | `/ciclismo` | Portal bici | Nav **Ciclismo**; landing **Entrar a ciclismo** |
 | `/correr/calendario` | Calendario solo a pie | Nav **Calendario** (desde correr); footer **Calendario a pie**; banner **Ver recién abiertas** / **Próximos 14 días** |
 | `/ciclismo/calendario` | Calendario solo bici | Nav **Calendario** (desde ciclismo); footer **Calendario bici** |
@@ -19,10 +19,10 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/cookies` | Política de cookies | Footer **Cookies** |
 | `/aviso-legal` | Aviso legal | Footer **Aviso legal** |
 | `/terminos` | Términos de uso | Footer **Términos** |
-| `/vip/cancelar` | Baja VIP (Stripe test portal, noindex) | Direct URL only while `SHOW_VIP_PRICE_AND_CANCEL` is false (Javier 2026-09-09; no `#vip` cancel CTA) |
+| `/vip/cancelar` | Baja VIP (Stripe test portal, noindex) | Direct URL only. Bloque `#vip` oculto en correr/ciclismo (Javier 2026-09-13) |
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
 
-There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block on `/correr` and `/ciclismo` (`components/vip-promo.tsx`, `id="vip"`).
+There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **not rendered** on `/correr` or `/ciclismo` (Javier 2026-09-13: quitar copy + CTA). `components/vip-promo.tsx` stays in the repo for restore.
 
 ## APIs (`app/api/**/route.ts`)
 
@@ -41,11 +41,11 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. VIP CTA is the `#vip` block o
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
-- VIP (`components/vip-promo.tsx`): **Quiero avisos VIP** (PRO, interés) / **Quiero el Canal VIP** (PRE checkout). Price and **Cancelar suscripción** hidden until Javier OK (`SHOW_VIP_PRICE_AND_CANCEL`)
+- VIP: bloque `#vip` oculto. No precio, no CTA, no «Próximamente» en correr/ciclismo.
 
 ## Verification
 
 - `npm run lint`
 - `npm run test:event-jsonld` (runs when `lib/sports-event-jsonld.test.ts` exists)
-- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel is not success
+- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel HTML is not success
 - GitHub Actions: `.github/workflows/ci.yml`, job name **`ci`** (lint + JSON-LD test + build) on pull_request/push to `pre` and `main`
