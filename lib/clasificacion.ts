@@ -1,4 +1,4 @@
-import { isRaceFinished } from "./dates";
+import { isRaceFinished } from "./fin-estimado";
 import type { Evento } from "./types";
 
 export type ClasificacionVista = "publicada" | "pendiente" | "proxima";
@@ -23,11 +23,20 @@ export function clasificacionUrl(
 }
 
 export function clasificacionVista(
-  event: Pick<Evento, "fecha_inicio" | "fecha_fin" | "url_clasificacion" | "estado_clasificacion">,
+  event: Pick<
+    Evento,
+    | "fecha_inicio"
+    | "fecha_fin"
+    | "distancias"
+    | "modalidad"
+    | "disciplina_normalizada"
+    | "url_clasificacion"
+    | "estado_clasificacion"
+  >,
 ): ClasificacionVista {
   if (clasificacionUrl(event) || event.estado_clasificacion === "publicada") {
     return clasificacionUrl(event) ? "publicada" : "pendiente";
   }
-  if (isRaceFinished(event.fecha_inicio, event.fecha_fin)) return "pendiente";
+  if (isRaceFinished(event)) return "pendiente";
   return "proxima";
 }

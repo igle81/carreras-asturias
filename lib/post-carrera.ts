@@ -1,5 +1,5 @@
 import { clasificacionUrl } from "./clasificacion";
-import { isListedOnPortal, isRaceFinished } from "./dates";
+import { isListedOnPortal, isRaceFinished } from "./fin-estimado";
 import type { Evento } from "./types";
 
 export type EventCta = {
@@ -9,11 +9,11 @@ export type EventCta = {
 };
 
 /**
- * Misma rutina de fin de carrera (barrido 20:15 + loop Investigador):
- * no se borra; CTA Inscribirme → Clasificación (URL persistida o ancla de ficha).
+ * Al persistir una prueba con fecha se estima el fin (ritmo lento + margen).
+ * En ese instante arranca la rutina de clasificación. CTA Inscribirme → Clasificación.
  */
 export function postCarreraCta(event: Evento, from = new Date()): EventCta | null {
-  if (!isRaceFinished(event.fecha_inicio, event.fecha_fin, from)) return null;
+  if (!isRaceFinished(event, from)) return null;
   const url = clasificacionUrl(event);
   if (url) {
     return { label: "Clasificación", href: url, external: true };
@@ -26,12 +26,12 @@ export function postCarreraCta(event: Evento, from = new Date()): EventCta | nul
 }
 
 export function listedEvents(events: Evento[], from = new Date()) {
-  return events.filter((event) => isListedOnPortal(event.fecha_inicio, event.fecha_fin, from));
+  return events.filter((event) => isListedOnPortal(event, from));
 }
 
 export function compareListedEvents(a: Evento, b: Evento, from = new Date()) {
-  const aPast = isRaceFinished(a.fecha_inicio, a.fecha_fin, from);
-  const bPast = isRaceFinished(b.fecha_inicio, b.fecha_fin, from);
+  const aPast = isRaceFinished(a, from);
+  const bPast = isRaceFinished(b, from);
   if (aPast !== bPast) return aPast ? 1 : -1;
 
   const da = a.fecha_inicio ?? "";
