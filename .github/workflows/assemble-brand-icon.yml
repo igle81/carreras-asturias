@@ -1,0 +1,42 @@
+name: Assemble brand icon
+
+on:
+  push:
+    branches: [cursor/favicon-emblema-0809]
+  workflow_dispatch:
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cursor/favicon-emblema-0809
+      - name: Assemble exact emblem JSON parts
+        run: |
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+          for i in (1, 2, 3):
+              parts = []
+              for j in range(1, 6):
+                  chunk = Path(f"lib/brand-icon-{i}-{j}.json")
+                  if not chunk.exists():
+                      raise SystemExit(f"missing {chunk}")
+                  parts.append(json.loads(chunk.read_text())["p"])
+              Path(f"lib/brand-icon-{i}.json").write_text('{"p": "' + "".join(parts) + '"}\n')
+          print("assembled brand-icon-1/2/3.json")
+          PY
+      - name: Commit assembled files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/brand-icon-1.json lib/brand-icon-2.json lib/brand-icon-3.json
+          if git diff --cached --quiet; then
+            echo "No assembled-file changes"
+          else
+            git commit -m "Add Carreras Asturias emblem JSON parts."
+            git push origin cursor/favicon-emblema-0809
+          fi
