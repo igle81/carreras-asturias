@@ -87,10 +87,24 @@ const QUINCENA_FEATURED = [
 const HIGHLIGHT_EMBARGO = [
   "marcha-cicloturista-fiestas-corvera-2026",
   "fiesta-bicicleta-aviles-2026",
+  // Hero uses short slug; ficha/DB also exposes date+disciplina suffix.
+  "desafio-el-acebo-2026",
+  "desafio-el-acebo-2026-2026-09-26-ciclismo",
+  "encuentro-asturcantabro-de-escuelas-2026",
+  "encuentro-asturcantabro-de-escuelas-2026-2026-09-20-ciclismo",
 ];
 
+/** Strip optional `-{YYYY-MM-DD}-{disciplina}` so short and long ids match. */
+const DATE_DISCIPLINE_SUFFIX = /-\d{4}-\d{2}-\d{2}-[a-z0-9]+$/i;
+
+function highlightIdKey(id: string) {
+  return id.replace(DATE_DISCIPLINE_SUFFIX, "");
+}
+
 function isHighlightEmbargoed(id: string) {
-  return HIGHLIGHT_EMBARGO.includes(id);
+  if (HIGHLIGHT_EMBARGO.includes(id)) return true;
+  const key = highlightIdKey(id);
+  return HIGHLIGHT_EMBARGO.some((embargoed) => highlightIdKey(embargoed) === key);
 }
 
 function asDistancias(value: unknown): Distancia[] | null {
