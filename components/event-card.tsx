@@ -3,6 +3,7 @@ import { AperturaBadge } from "./apertura-badge";
 import { EventPoster } from "./event-poster";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
+import { clasificacionVista } from "@/lib/clasificacion";
 import { eventCta, eventPosterUrl, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
 import { modalidadLabel } from "@/lib/modalidad";
@@ -21,6 +22,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const thisWeek = days !== null && days >= 0 && days <= 7;
   const closed = event.estado_inscripcion === "cerrada";
   const poster = eventPosterUrl(event);
+  const clasificacion = clasificacionVista(event);
 
   return (
     <article
@@ -50,6 +52,15 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
           {closed ? (
             <span className="rounded-full bg-ink/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink/70">
               Inscripción cerrada
+            </span>
+          ) : null}
+          {clasificacion === "publicada" ? (
+            <span className="rounded-full bg-gold/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink">
+              Clasificación
+            </span>
+          ) : clasificacion === "pendiente" ? (
+            <span className="rounded-full bg-ink/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">
+              Sin clasificación
             </span>
           ) : null}
           {distanceKm != null ? (
@@ -108,4 +119,3 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
     </article>
   );
 }
-

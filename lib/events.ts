@@ -3,14 +3,18 @@ import { hasAperturaReciente } from "./apertura-badge";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
 import { isMissingModalidadColumn, resolveModalidad } from "./modalidad";
+import { postCarreraCta } from "./post-carrera";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
+
+export { compareListedEvents, listedEvents } from "./post-carrera";
 
 const EVENT_COLUMNS =
   "id_canonico,nombre,fecha_inicio,fecha_fin,municipio,municipio_meta,localidad,provincia,disciplina_normalizada,distancias,organizador,url_oficial,estado_inscripcion,lat,lng,etiquetas,recien_abierta,calidad_score";
 const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
+const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
@@ -21,6 +25,16 @@ function isMissingImagenColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
   const message = (error.message ?? "").toLowerCase();
   return message.includes("imagen_url") || message.includes("imagen_fuente");
+}
+
+function isMissingClasificacionColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    message.includes("url_clasificacion") ||
+    message.includes("estado_clasificacion") ||
+    message.includes("fuente_clasificacion")
+  );
 }
 
 function asImageUrl(value: unknown): string | null {
@@ -73,10 +87,24 @@ const QUINCENA_FEATURED = [
 const HIGHLIGHT_EMBARGO = [
   "marcha-cicloturista-fiestas-corvera-2026",
   "fiesta-bicicleta-aviles-2026",
+  // Hero uses short slug; ficha/DB also exposes date+disciplina suffix.
+  "desafio-el-acebo-2026",
+  "desafio-el-acebo-2026-2026-09-26-ciclismo",
+  "encuentro-asturcantabro-de-escuelas-2026",
+  "encuentro-asturcantabro-de-escuelas-2026-2026-09-20-ciclismo",
 ];
 
+/** Strip optional `-{YYYY-MM-DD}-{disciplina}` so short and long ids match. */
+const DATE_DISCIPLINE_SUFFIX = /-\d{4}-\d{2}-\d{2}-[a-z0-9]+$/i;
+
+function highlightIdKey(id: string) {
+  return id.replace(DATE_DISCIPLINE_SUFFIX, "");
+}
+
 function isHighlightEmbargoed(id: string) {
-  return HIGHLIGHT_EMBARGO.includes(id);
+  if (HIGHLIGHT_EMBARGO.includes(id)) return true;
+  const key = highlightIdKey(id);
+  return HIGHLIGHT_EMBARGO.some((embargoed) => highlightIdKey(embargoed) === key);
 }
 
 function asDistancias(value: unknown): Distancia[] | null {
@@ -125,6 +153,15 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
       typeof row.imagen_fuente === "string" && row.imagen_fuente.trim()
         ? row.imagen_fuente.trim()
         : null,
+    url_clasificacion: asImageUrl(row.url_clasificacion),
+    estado_clasificacion:
+      typeof row.estado_clasificacion === "string" && row.estado_clasificacion.trim()
+        ? row.estado_clasificacion.trim()
+        : null,
+    fuente_clasificacion:
+      typeof row.fuente_clasificacion === "string" && row.fuente_clasificacion.trim()
+        ? row.fuente_clasificacion.trim()
+        : null,
   };
 }
 
@@ -133,10 +170,18 @@ export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
 
-    const withImages = await client
+    const withClasificacion = await client
       .from("eventos")
-      .select(EVENT_COLUMNS_FULL)
+      .select(EVENT_COLUMNS_WITH_CLASIFICACION)
       .order("fecha_inicio", { ascending: true });
+
+    const withImages =
+      withClasificacion.error && isMissingClasificacionColumn(withClasificacion.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_FULL)
+            .order("fecha_inicio", { ascending: true })
+        : withClasificacion;
 
     const afterImages =
       withImages.error && isMissingImagenColumn(withImages.error)
@@ -266,6 +311,9 @@ export function eventCta(event: Evento): {
   href: string;
   external: boolean;
 } {
+  const afterRace = postCarreraCta(event);
+  if (afterRace) return afterRace;
+
   const ficha = `/evento/${event.id_canonico}`;
   const estado = event.estado_inscripcion ?? "desconocido";
 

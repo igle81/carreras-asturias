@@ -33,6 +33,14 @@ jobs:
             echo "Skipping test:event-jsonld — lib/sports-event-jsonld.test.ts is not on this branch yet."
           fi
 
+      - name: Post-carrera tests
+        run: |
+          if [ -f lib/post-carrera.test.ts ]; then
+            npm run test:post-carrera
+          else
+            echo "Skipping test:post-carrera — lib/post-carrera.test.ts is not on this branch yet."
+          fi
+
       - name: Build
         run: npm run build
         env:

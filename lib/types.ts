@@ -28,6 +28,9 @@ export type Evento = {
   calidad_score: number | null;
   imagen_url?: string | null;
   imagen_fuente?: string | null;
+  url_clasificacion?: string | null;
+  estado_clasificacion?: string | null;
+  fuente_clasificacion?: string | null;
 };
 
 export type Coords = {
