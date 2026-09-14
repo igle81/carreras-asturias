@@ -1,3 +1,4 @@
+import { isHighlightEmbargoed } from "@/lib/highlight-embargo";
 import type { Evento } from "@/lib/types";
 
 export type AperturaBadgeKind =
@@ -14,7 +15,7 @@ const ETIQUETAS_APERTURA = [
 
 type EventoApertura = Pick<
   Evento,
-  "etiquetas" | "fecha_apertura_inscripcion"
+  "id_canonico" | "etiquetas" | "fecha_apertura_inscripcion"
 >;
 
 function madridTodayYmd(now = new Date()): string {
@@ -59,6 +60,10 @@ export function resolveAperturaBadge(
   event: EventoApertura,
   now = new Date(),
 ): AperturaBadgeKind {
+  if (event.id_canonico && isHighlightEmbargoed(event.id_canonico, now)) {
+    return null;
+  }
+
   const tags = event.etiquetas ?? [];
   for (const tag of ETIQUETAS_APERTURA) {
     if (tags.includes(tag)) return tag;

@@ -41,6 +41,14 @@ jobs:
             echo "Skipping test:post-carrera — lib/post-carrera.test.ts is not on this branch yet."
           fi
 
+      - name: Highlight embargo and portal dedupe tests
+        run: |
+          if [ -f lib/highlight-embargo.test.ts ]; then
+            npm run test:highlight-embargo
+          else
+            echo "Skipping test:highlight-embargo — lib/highlight-embargo.test.ts is not on this branch yet."
+          fi
+
       - name: Build
         run: npm run build
         env:
