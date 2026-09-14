@@ -26,6 +26,8 @@ export type Evento = {
   etiquetas: string[] | null;
   recien_abierta: boolean | null;
   calidad_score: number | null;
+  /** Si apunta a otro id_canonico, el portal oculta esta fila. */
+  duplicado_de?: string | null;
   imagen_url?: string | null;
   imagen_fuente?: string | null;
   url_clasificacion?: string | null;

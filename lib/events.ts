@@ -2,7 +2,12 @@ import { cache } from "react";
 import { hasAperturaReciente } from "./apertura-badge";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
+import { isHighlightEmbargoed } from "./highlight-embargo";
 import { isMissingModalidadColumn, resolveModalidad } from "./modalidad";
+import {
+  hidePortalDuplicates,
+  resolveCanonicalEventId,
+} from "./portal-dedupe";
 import { postCarreraCta } from "./post-carrera";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
@@ -15,6 +20,7 @@ const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
 const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
+const EVENT_COLUMNS_WITH_DUPLICADO = `${EVENT_COLUMNS_WITH_CLASIFICACION},duplicado_de`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
@@ -35,6 +41,11 @@ function isMissingClasificacionColumn(error: { message?: string } | null): boole
     message.includes("estado_clasificacion") ||
     message.includes("fuente_clasificacion")
   );
+}
+
+function isMissingDuplicadoColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  return (error.message ?? "").toLowerCase().includes("duplicado_de");
 }
 
 function asImageUrl(value: unknown): string | null {
@@ -82,16 +93,6 @@ const QUINCENA_FEATURED = [
   "quedada-btt-san-martin-de-luina-2026",
   "marcha-solidaria-rober-contra-el-cancer-2026",
 ];
-
-/** Embargo VIP+24h: fuera de hero/carousel/quincena. Siguen en listado/calendario. */
-const HIGHLIGHT_EMBARGO = [
-  "marcha-cicloturista-fiestas-corvera-2026",
-  "fiesta-bicicleta-aviles-2026",
-];
-
-function isHighlightEmbargoed(id: string) {
-  return HIGHLIGHT_EMBARGO.includes(id);
-}
 
 function asDistancias(value: unknown): Distancia[] | null {
   if (!Array.isArray(value)) return null;
@@ -148,6 +149,10 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
       typeof row.fuente_clasificacion === "string" && row.fuente_clasificacion.trim()
         ? row.fuente_clasificacion.trim()
         : null,
+    duplicado_de:
+      typeof row.duplicado_de === "string" && row.duplicado_de.trim()
+        ? row.duplicado_de.trim()
+        : null,
   };
 }
 
@@ -156,10 +161,18 @@ export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
 
-    const withClasificacion = await client
+    const withDuplicado = await client
       .from("eventos")
-      .select(EVENT_COLUMNS_WITH_CLASIFICACION)
+      .select(EVENT_COLUMNS_WITH_DUPLICADO)
       .order("fecha_inicio", { ascending: true });
+
+    const withClasificacion =
+      withDuplicado.error && isMissingDuplicadoColumn(withDuplicado.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_CLASIFICACION)
+            .order("fecha_inicio", { ascending: true })
+        : withDuplicado;
 
     const withImages =
       withClasificacion.error && isMissingClasificacionColumn(withClasificacion.error)
@@ -198,8 +211,10 @@ export async function fetchEventos(): Promise<Evento[]> {
       return [];
     }
 
-    return (result.data ?? []).map((row) =>
-      normalizeEvent(row as unknown as Record<string, unknown>),
+    return hidePortalDuplicates(
+      (result.data ?? []).map((row) =>
+        normalizeEvent(row as unknown as Record<string, unknown>),
+      ),
     );
   } catch (error) {
     console.error("No se pudieron cargar los eventos", error);
@@ -211,20 +226,24 @@ export const getEventos = cache(fetchEventos);
 
 export async function getEvento(id: string): Promise<Evento | null> {
   const events = await getEventos();
-  return events.find((event) => event.id_canonico === id) ?? null;
+  const canonical = resolveCanonicalEventId(id, events);
+  return events.find((event) => event.id_canonico === canonical) ?? null;
 }
 
 export function upcomingEvents(events: Evento[], from = new Date()) {
   return events.filter((event) => isUpcoming(event.fecha_inicio, from));
 }
 
-export function recienAbiertas(events: Evento[]) {
-  return events.filter((event) => hasAperturaReciente(event));
+export function recienAbiertas(events: Evento[], from = new Date()) {
+  return events.filter(
+    (event) =>
+      !isHighlightEmbargoed(event.id_canonico, from) && hasAperturaReciente(event, from),
+  );
 }
 
 export function estaQuincena(events: Evento[], from = new Date()) {
   return upcomingEvents(events, from).filter((event) => {
-    if (isHighlightEmbargoed(event.id_canonico)) return false;
+    if (isHighlightEmbargoed(event.id_canonico, from)) return false;
     if (isWithinDays(event.fecha_inicio, 14, from)) return true;
     return QUINCENA_FEATURED.includes(event.id_canonico) && isWithinDays(event.fecha_inicio, 16, from);
   });
@@ -239,7 +258,7 @@ export function isEmblematic(event: Evento) {
 function isCiclismoUrgente(event: Evento, from: Date) {
   if (resolveModalidad(event) !== "ciclismo") return false;
   if (!isWithinDays(event.fecha_inicio, 14, from)) return false;
-  return hasAperturaReciente(event) || event.estado_inscripcion === "abierta";
+  return hasAperturaReciente(event, from) || event.estado_inscripcion === "abierta";
 }
 
 function compareHero(a: Evento, b: Evento, from: Date) {
@@ -263,7 +282,7 @@ function compareHero(a: Evento, b: Evento, from: Date) {
     return pinOrder;
   }
 
-  const recienDiff = Number(hasAperturaReciente(b)) - Number(hasAperturaReciente(a));
+  const recienDiff = Number(hasAperturaReciente(b, from)) - Number(hasAperturaReciente(a, from));
   if (recienDiff !== 0) return recienDiff;
 
   const daysA = daysUntil(a.fecha_inicio, from) ?? 9999;
@@ -275,7 +294,7 @@ function compareHero(a: Evento, b: Evento, from: Date) {
 
 export function pickHeroSlides(events: Evento[], from = new Date(), max = 6): Evento[] {
   return [...upcomingEvents(events, from)]
-    .filter((event) => !isHighlightEmbargoed(event.id_canonico))
+    .filter((event) => !isHighlightEmbargoed(event.id_canonico, from))
     .sort((a, b) => compareHero(a, b, from))
     .slice(0, max);
 }

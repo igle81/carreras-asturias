@@ -1,5 +1,6 @@
 import { clasificacionUrl } from "./clasificacion";
 import { isListedOnPortal, isRaceFinished } from "./fin-estimado";
+import { hidePortalDuplicates } from "./portal-dedupe";
 import type { Evento } from "./types";
 
 export type EventCta = {
@@ -26,7 +27,7 @@ export function postCarreraCta(event: Evento, from = new Date()): EventCta | nul
 }
 
 export function listedEvents(events: Evento[], from = new Date()) {
-  return events.filter((event) => isListedOnPortal(event, from));
+  return hidePortalDuplicates(events).filter((event) => isListedOnPortal(event, from));
 }
 
 export function compareListedEvents(a: Evento, b: Evento, from = new Date()) {
