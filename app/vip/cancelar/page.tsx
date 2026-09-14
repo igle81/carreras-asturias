@@ -112,8 +112,8 @@ export default async function VipCancelarPage({
       ) : null}
 
       <p className="mt-8 text-sm text-ink/55">
-        <Link href="/correr#vip" className="font-semibold text-atlantic hover:underline">
-          Volver al Canal VIP
+        <Link href="/correr" className="font-semibold text-atlantic hover:underline">
+          Volver a correr
         </Link>
       </p>
     </article>

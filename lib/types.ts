@@ -1,4 +1,4 @@
-export type EstadoInscripcion = "abierta" | "cerrada" | "desconocido";
+export type EstadoInscripcion = "abierta" | "cerrada" | "desconocido" | "proximamente";
 
 export type Distancia = {
   km?: number;
