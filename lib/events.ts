@@ -136,7 +136,6 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     lng: row.lng == null ? null : Number(row.lng),
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
     recien_abierta: hasAperturaReciente({
-      id_canonico: idCanonico,
       fecha_apertura_inscripcion: fechaApertura,
     }),
     calidad_score: row.calidad_score == null ? null : Number(row.calidad_score),
