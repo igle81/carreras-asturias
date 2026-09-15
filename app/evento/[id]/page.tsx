@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
@@ -35,6 +35,9 @@ export default async function EventoPage({ params }: EventPageProps) {
   const { id } = await params;
   const event = await getEvento(id);
   if (!event) notFound();
+  if (event.id_canonico !== id) {
+    redirect(`/evento/${event.id_canonico}`);
+  }
 
   const cta = eventCta(event);
   const distances = formatDistancias(event);
