@@ -1,4 +1,9 @@
-export type EstadoInscripcion = "abierta" | "cerrada" | "desconocido" | "proximamente";
+export type EstadoInscripcion =
+  | "abierta"
+  | "cerrada"
+  | "cerrada_pendiente_apertura"
+  | "desconocido"
+  | "proximamente";
 
 export type Distancia = {
   km?: number;
@@ -19,8 +24,14 @@ export type Evento = {
   distancias: Distancia[] | null;
   organizador: string | null;
   url_oficial: string | null;
+  /** Formulario de inscripción si es distinto de `url_oficial`. */
+  url_inscripcion?: string | null;
   estado_inscripcion: EstadoInscripcion | string | null;
   fecha_apertura_inscripcion?: string | null;
+  /** Hora local Europe/Madrid (`time` o `HH:MM[:SS]`). */
+  hora_apertura_inscripcion?: string | null;
+  /** Instante exacto de apertura (timestamptz). */
+  apertura_inscripcion_at?: string | null;
   lat: number | null;
   lng: number | null;
   etiquetas: string[] | null;

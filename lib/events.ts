@@ -21,6 +21,7 @@ const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apert
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
 const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
 const EVENT_COLUMNS_WITH_DUPLICADO = `${EVENT_COLUMNS_WITH_CLASIFICACION},duplicado_de`;
+const EVENT_COLUMNS_PORTAL = `${EVENT_COLUMNS_WITH_DUPLICADO},hora_apertura_inscripcion,apertura_inscripcion_at,url_inscripcion`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
@@ -46,6 +47,16 @@ function isMissingClasificacionColumn(error: { message?: string } | null): boole
 function isMissingDuplicadoColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
   return (error.message ?? "").toLowerCase().includes("duplicado_de");
+}
+
+function isMissingAperturaExtraColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    message.includes("hora_apertura_inscripcion") ||
+    message.includes("apertura_inscripcion_at") ||
+    message.includes("url_inscripcion")
+  );
 }
 
 function asImageUrl(value: unknown): string | null {
@@ -94,28 +105,80 @@ const QUINCENA_FEATURED = [
   "marcha-solidaria-rober-contra-el-cancer-2026",
 ];
 
+function kmFromDistanceLabel(label: string): number | undefined {
+  const km = label.match(/(\d+(?:[.,]\d+)?)\s*(?:km|k)\b/i);
+  if (km) {
+    const parsed = Number(km[1].replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  const coded = label.match(/\bk(\d+(?:[.,]\d+)?)\b/i);
+  if (!coded) return undefined;
+  const parsed = Number(coded[1].replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function asDistanciasFromString(value: string): Distancia[] | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("[")) {
+    try {
+      return asDistancias(JSON.parse(trimmed));
+    } catch {
+      return null;
+    }
+  }
+  const distances: Distancia[] = [];
+  for (const part of trimmed.split(/\s*(?:\/|,|;)\s*/)) {
+    const etiqueta = part.trim();
+    if (!etiqueta) continue;
+    distances.push({ km: kmFromDistanceLabel(etiqueta), etiqueta });
+  }
+  return distances.length ? distances : null;
+}
+
 function asDistancias(value: unknown): Distancia[] | null {
+  if (typeof value === "string") return asDistanciasFromString(value);
   if (!Array.isArray(value)) return null;
   const distances: Distancia[] = [];
   for (const item of value) {
+    if (typeof item === "string") {
+      const parsed = asDistanciasFromString(item);
+      if (parsed) distances.push(...parsed);
+      continue;
+    }
     if (!item || typeof item !== "object") continue;
     const row = item as Record<string, unknown>;
     const parsedKm = typeof row.km === "number" ? row.km : Number(row.km);
+    const etiqueta = typeof row.etiqueta === "string" ? row.etiqueta : undefined;
     const distance: Distancia = {
-      km: Number.isFinite(parsedKm) ? parsedKm : undefined,
-      etiqueta: typeof row.etiqueta === "string" ? row.etiqueta : undefined,
+      km: Number.isFinite(parsedKm) ? parsedKm : kmFromDistanceLabel(etiqueta ?? ""),
+      etiqueta,
     };
     if (distance.km || distance.etiqueta) distances.push(distance);
   }
   return distances.length ? distances : null;
 }
 
+function asOptionalText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
 function normalizeEvent(row: Record<string, unknown>): Evento {
   const idCanonico = String(row.id_canonico);
-  const fechaApertura =
-    typeof row.fecha_apertura_inscripcion === "string" && row.fecha_apertura_inscripcion.trim()
-      ? row.fecha_apertura_inscripcion
-      : null;
+  const fechaApertura = asOptionalText(row.fecha_apertura_inscripcion);
+  const horaApertura = asOptionalText(row.hora_apertura_inscripcion);
+  const aperturaAt = asOptionalText(row.apertura_inscripcion_at);
+  const estado = (row.estado_inscripcion as Evento["estado_inscripcion"]) ?? "desconocido";
+  const dbRecien = row.recien_abierta === true;
+  const apertura = {
+    fecha_apertura_inscripcion: fechaApertura,
+    hora_apertura_inscripcion: horaApertura,
+    apertura_inscripcion_at: aperturaAt,
+    estado_inscripcion: estado,
+    recien_abierta: dbRecien,
+  };
   return {
     id_canonico: idCanonico,
     nombre: String(row.nombre ?? "Carrera"),
@@ -130,14 +193,15 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     distancias: asDistancias(row.distancias),
     organizador: (row.organizador as string | null) ?? null,
     url_oficial: (row.url_oficial as string | null) ?? null,
-    estado_inscripcion: (row.estado_inscripcion as Evento["estado_inscripcion"]) ?? "desconocido",
+    url_inscripcion: asImageUrl(row.url_inscripcion),
+    estado_inscripcion: estado,
     fecha_apertura_inscripcion: fechaApertura,
+    hora_apertura_inscripcion: horaApertura,
+    apertura_inscripcion_at: aperturaAt,
     lat: row.lat == null ? null : Number(row.lat),
     lng: row.lng == null ? null : Number(row.lng),
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
-    recien_abierta: hasAperturaReciente({
-      fecha_apertura_inscripcion: fechaApertura,
-    }),
+    recien_abierta: hasAperturaReciente(apertura),
     calidad_score: row.calidad_score == null ? null : Number(row.calidad_score),
     imagen_url: asImageUrl(row.imagen_url),
     imagen_fuente:
@@ -165,10 +229,18 @@ export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
 
-    const withDuplicado = await client
+    const withPortal = await client
       .from("eventos")
-      .select(EVENT_COLUMNS_WITH_DUPLICADO)
+      .select(EVENT_COLUMNS_PORTAL)
       .order("fecha_inicio", { ascending: true });
+
+    const withDuplicado =
+      withPortal.error && isMissingAperturaExtraColumn(withPortal.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_DUPLICADO)
+            .order("fecha_inicio", { ascending: true })
+        : withPortal;
 
     const withClasificacion =
       withDuplicado.error && isMissingDuplicadoColumn(withDuplicado.error)
@@ -313,6 +385,10 @@ export function formatDistancias(event: Evento): string | null {
     .join(" · ");
 }
 
+export function inscriptionUrl(event: Pick<Evento, "url_inscripcion" | "url_oficial">): string | null {
+  return asImageUrl(event.url_inscripcion) ?? asImageUrl(event.url_oficial);
+}
+
 export function eventCta(event: Evento): {
   label: string;
   href: string;
@@ -323,15 +399,16 @@ export function eventCta(event: Evento): {
 
   const ficha = `/evento/${event.id_canonico}`;
   const estado = event.estado_inscripcion ?? "desconocido";
+  const href = inscriptionUrl(event);
 
-  if (estado === "abierta" && event.url_oficial) {
-    return { label: "Inscribirme", href: event.url_oficial, external: true };
+  if (estado === "abierta" && href) {
+    return { label: "Inscribirme", href, external: true };
   }
   if (estado === "cerrada") {
     return { label: "Ver ficha", href: ficha, external: false };
   }
-  if (event.url_oficial) {
-    return { label: "Consultar inscripción", href: event.url_oficial, external: true };
+  if (href) {
+    return { label: "Consultar inscripción", href, external: true };
   }
   return { label: "Ver ficha", href: ficha, external: false };
 }

@@ -1,6 +1,6 @@
 # Carreras Asturias
 
-Portal público del calendario de carreras a pie y ciclismo en Asturias. Lee en directo la tabla `public.eventos` de Supabase y destaca las inscripciones recién abiertas.
+Portal público del calendario de carreras a pie y ciclismo en Asturias. Lee en directo la vista `public.eventos` (schema real `carreras.eventos`) y destaca las inscripciones recién abiertas.
 
 ## Stack
 
@@ -74,11 +74,11 @@ En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos
 Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero (arrastre, swipe y flechas), tiras y mapa.
 
 - Geolocalización: `📍 Encontrar carreras cerca de mí`.
-- Badge `🔥 ¡RECIÉN ABIERTA!` en ambas modalidades (días 2–3 desde `fecha_apertura_inscripcion`; día 0 **Abierta hoy**, día 1 **Abierta ayer**; ≥4 o sin fecha: sin badge).
+- Badge `🔥 ¡RECIÉN ABIERTA!` en ambas modalidades (días 2–3 desde `fecha_apertura_inscripcion`; día 0 **Abierta hoy**, día 1 **Abierta ayer**; ≥4, sin fecha, hora futura o `cerrada_pendiente_apertura`: sin badge).
 
 ## Datos
 
-Tabla `public.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `estado_inscripcion`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
+Vista `public.eventos` → tabla `carreras.eventos`. Columnas clave: `id_canonico`, `nombre`, `fecha_inicio`, `municipio`, `disciplina_normalizada`, `modalidad` (opcional; la consulta reintenta sin ella si la columna no existe), `distancias`, `url_oficial`, `url_inscripcion`, `estado_inscripcion`, `fecha_apertura_inscripcion`, `hora_apertura_inscripcion`, `apertura_inscripcion_at`, `lat`, `lng`, `etiquetas`, `recien_abierta` (generada), `calidad_score`.
 
 ## Canal VIP — checkout PRE y clics
 

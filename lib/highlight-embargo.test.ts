@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   hasAperturaReciente,
+  inscripcionPendienteLabel,
   isRecienAbiertaFuego,
   resolveAperturaBadge,
 } from "./apertura-badge";
 import {
   estaQuincena,
+  eventCta,
+  formatDistancias,
   pickHeroSlides,
   recienAbiertas,
 } from "./events";
@@ -325,4 +328,104 @@ test("Villacabra day 1 after embargo is Abierta ayer (recién true, not 🔥)", 
     recienAbiertas([villacabra], AFTER).map((event) => event.id_canonico),
     [VILLACABRA],
   );
+});
+
+const KANGAS = "xiii-kangas-mountain-2027-2027-03-06-pie";
+const BEFORE_KANGAS = new Date("2026-09-15T12:00:00+02:00");
+const AFTER_KANGAS = new Date("2026-09-15T20:00:01+02:00");
+
+function kangasEvent(overrides: Partial<Evento> = {}): Evento {
+  return sampleEvent({
+    id_canonico: KANGAS,
+    nombre: "XIII Kangas Mountain 2027",
+    fecha_inicio: "2027-03-06",
+    municipio: "Cangas de Onís",
+    disciplina_normalizada: "trail",
+    modalidad: "pie",
+    distancias: [
+      { km: 13, etiqueta: "13K" },
+      { km: 21, etiqueta: "21K" },
+      { km: 33, etiqueta: "33K" },
+      { km: 60, etiqueta: "60K" },
+    ],
+    url_oficial: "https://www.kangasmountain.es/",
+    url_inscripcion: "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain",
+    estado_inscripcion: "cerrada_pendiente_apertura",
+    fecha_apertura_inscripcion: "2026-09-15",
+    hora_apertura_inscripcion: "20:00:00",
+    apertura_inscripcion_at: "2026-09-15T18:00:00.000Z",
+    recien_abierta: false,
+    ...overrides,
+  });
+}
+
+test("Kangas is listed with usable ficha data and not in Recién abiertas before 20:00", () => {
+  const kangas = kangasEvent();
+  const villacabra = sampleEvent({
+    id_canonico: VILLACABRA,
+    nombre: "XIII Trail Villacabra 2026",
+    fecha_inicio: "2026-12-13",
+    fecha_apertura_inscripcion: "2026-09-14",
+    estado_inscripcion: "abierta",
+    recien_abierta: true,
+  });
+
+  assert.equal(resolveAperturaBadge(kangas, BEFORE_KANGAS), null);
+  assert.equal(hasAperturaReciente(kangas, BEFORE_KANGAS), false);
+  assert.equal(isRecienAbiertaFuego(kangas, BEFORE_KANGAS), false);
+  assert.equal(inscripcionPendienteLabel(kangas, BEFORE_KANGAS), "Abre hoy a las 20:00");
+  assert.equal(formatDistancias(kangas), "13K · 21K · 33K · 60K");
+  assert.equal(
+    eventCta(kangas).href,
+    "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain",
+  );
+  assert.equal(eventCta(kangas).label, "Consultar inscripción");
+  assert.equal(
+    listedEvents([kangas], BEFORE_KANGAS).some((event) => event.id_canonico === KANGAS),
+    true,
+  );
+  assert.deepEqual(
+    recienAbiertas([kangas, villacabra], BEFORE_KANGAS).map((event) => event.id_canonico),
+    [VILLACABRA],
+  );
+});
+
+test("Kangas still has no Abierta hoy after 20:00 while estado is pendiente", () => {
+  const kangas = kangasEvent();
+  const villacabra = sampleEvent({
+    id_canonico: VILLACABRA,
+    nombre: "XIII Trail Villacabra 2026",
+    fecha_inicio: "2026-12-13",
+    fecha_apertura_inscripcion: "2026-09-14",
+    estado_inscripcion: "abierta",
+    recien_abierta: true,
+  });
+
+  assert.equal(resolveAperturaBadge(kangas, AFTER_KANGAS), null);
+  assert.equal(hasAperturaReciente(kangas, AFTER_KANGAS), false);
+  assert.equal(
+    inscripcionPendienteLabel(kangas, AFTER_KANGAS),
+    "Inscripción pendiente de apertura",
+  );
+  assert.deepEqual(
+    recienAbiertas([kangas, villacabra], AFTER_KANGAS).map((event) => event.id_canonico),
+    [VILLACABRA],
+  );
+});
+
+test("Kangas becomes Abierta hoy only after estado abierta (or fila recien_abierta) past 20:00", () => {
+  const opened = kangasEvent({
+    estado_inscripcion: "abierta",
+    recien_abierta: true,
+  });
+  const flagged = kangasEvent({
+    estado_inscripcion: "cerrada_pendiente_apertura",
+    recien_abierta: true,
+  });
+
+  assert.equal(resolveAperturaBadge(opened, BEFORE_KANGAS), null);
+  assert.equal(resolveAperturaBadge(opened, AFTER_KANGAS), "abierta_hoy");
+  assert.equal(resolveAperturaBadge(flagged, AFTER_KANGAS), "abierta_hoy");
+  assert.equal(hasAperturaReciente(opened, AFTER_KANGAS), true);
+  assert.equal(isRecienAbiertaFuego(opened, AFTER_KANGAS), false);
 });
