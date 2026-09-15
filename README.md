@@ -74,7 +74,7 @@ En Vercel, enlaza las mismas variables en el proyecto. La app también usa estos
 Correr y ciclismo **no se mezclan** en la misma vista. Cada portal tiene su hero (arrastre, swipe y flechas), tiras y mapa.
 
 - Geolocalización: `📍 Encontrar carreras cerca de mí`.
-- Badge `🔥 ¡RECIÉN ABIERTA!` en ambas modalidades.
+- Badge `🔥 ¡RECIÉN ABIERTA!` en ambas modalidades (días 2–3 desde `fecha_apertura_inscripcion`; día 0 **Abierta hoy**, día 1 **Abierta ayer**; ≥4 o sin fecha: sin badge).
 
 ## Datos
 

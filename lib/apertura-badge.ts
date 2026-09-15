@@ -7,11 +7,8 @@ export type AperturaBadgeKind =
   | "recien_abierta"
   | null;
 
-const ETIQUETAS_APERTURA = [
-  "abierta_hoy",
-  "abierta_ayer",
-  "recien_abierta",
-] as const;
+/** Javier 2026-09-15: máx 3 días civiles desde `fecha_apertura_inscripcion` (Europe/Madrid). */
+export const RECIEN_ABIERTA_MAX_DAYS = 3;
 
 type EventoApertura = Pick<
   Evento,
@@ -48,13 +45,15 @@ export function daysSinceApertura(
 function badgeFromDays(days: number): AperturaBadgeKind {
   if (days === 0) return "abierta_hoy";
   if (days === 1) return "abierta_ayer";
-  if (days >= 2 && days <= 4) return "recien_abierta";
+  if (days >= 2 && days <= RECIEN_ABIERTA_MAX_DAYS) return "recien_abierta";
   return null;
 }
 
 /**
- * Badge de apertura: etiquetas exclusivas o fecha real.
- * No usa el boolean `recien_abierta` (puede venir de fecha_hallazgo).
+ * Badge de apertura solo con `fecha_apertura_inscripcion` (Europe/Madrid).
+ * Día 0 = Abierta hoy; 1 = Abierta ayer; 2–3 = 🔥; ≥4 o sin fecha = nada.
+ * Ignora etiquetas y el boolean `recien_abierta` (pueden quedar de fecha_hallazgo).
+ * Embargo VIP+24h sigue ganando (hero / strip / 🔥).
  */
 export function resolveAperturaBadge(
   event: EventoApertura,
@@ -64,16 +63,11 @@ export function resolveAperturaBadge(
     return null;
   }
 
-  const tags = event.etiquetas ?? [];
-  for (const tag of ETIQUETAS_APERTURA) {
-    if (tags.includes(tag)) return tag;
-  }
-
   const fecha = event.fecha_apertura_inscripcion;
   if (!fecha) return null;
 
   const days = daysSinceApertura(fecha, now);
-  if (days === null || days < 0) return null;
+  if (days === null || days < 0 || days > RECIEN_ABIERTA_MAX_DAYS) return null;
   return badgeFromDays(days);
 }
 
