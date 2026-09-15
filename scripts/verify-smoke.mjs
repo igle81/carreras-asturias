@@ -13,7 +13,8 @@
  *
  * `/vip` is not a page (no app/vip/page.tsx). The `#vip` promo is hidden
  * (Javier 2026-09-13). `/vip` 404 is OK. `/correr` and `/ciclismo` must
- * not contain the promo copy or id="vip".
+ * not contain the promo copy or id="vip". Public pages must not contain
+ * «Página en pruebas».
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -203,6 +204,31 @@ async function main() {
     }
 
     rows.push({ path, status: fetched.status, note: title, result: "OK" });
+  }
+
+  const PRUEBAS_BANNER_NEEDLE = "Página en pruebas";
+  const PUBLIC_BANNER_PATHS = [
+    "/",
+    "/correr",
+    "/ciclismo",
+    "/correr/calendario",
+    "/ciclismo/calendario",
+    "/privacidad",
+    "/aviso-legal",
+    "/cookies",
+    "/terminos",
+  ];
+  for (const path of PUBLIC_BANNER_PATHS) {
+    const html = bodies.get(path) || "";
+    if (html.includes(PRUEBAS_BANNER_NEEDLE)) {
+      rows.push({
+        path: `${path}#pruebas-banner`,
+        status: 200,
+        note: `banner still visible: ${PRUEBAS_BANNER_NEEDLE}`,
+        result: "FAIL",
+      });
+      failures.push(`${path}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
+    }
   }
 
   const VIP_PROMO_NEEDLES = [
