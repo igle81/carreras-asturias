@@ -231,11 +231,11 @@ export async function getEvento(id: string): Promise<Evento | null> {
 }
 
 export function upcomingEvents(events: Evento[], from = new Date()) {
-  return events.filter((event) => isUpcoming(event.fecha_inicio, from));
+  return hidePortalDuplicates(events).filter((event) => isUpcoming(event.fecha_inicio, from));
 }
 
 export function recienAbiertas(events: Evento[], from = new Date()) {
-  return events.filter(
+  return hidePortalDuplicates(events).filter(
     (event) =>
       !isHighlightEmbargoed(event.id_canonico, from) && hasAperturaReciente(event, from),
   );

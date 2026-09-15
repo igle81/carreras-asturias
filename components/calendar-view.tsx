@@ -153,7 +153,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       {!filtered.length ? (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
           {recien
-            ? "No hay aperturas en los últimos 4 días."
+            ? "No hay aperturas en los últimos 3 días."
             : "Ninguna prueba encaja con esos filtros. Prueba a soltar alguno."}
         </p>
       ) : null}

@@ -43,6 +43,8 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **n
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - VIP: bloque `#vip` oculto. No precio, no CTA, no «Próximamente» en correr/ciclismo.
 - Clasificación (`lib/fin-estimado.ts`): al persistir una prueba con fecha se estima el fin a ritmo lento (a pie cola / bici cola de competición) + 30 min. **Esa hora** crea la rutina de buscar URL. Sigue 30 días en calendario/mapa. CTA **Inscribirme** → **Clasificación** (URL o `#clasificacion`). Ficha `#clasificacion`: **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». Persistencia no borra antes de +30 d. No inventar URLs.
+- Recién abierta (`lib/apertura-badge.ts`, Javier 2026-09-15): **máx 3 días** desde `fecha_apertura_inscripcion` (Europe/Madrid). Día 0 **Abierta hoy**; 1 **Abierta ayer**; 2–3 **🔥 ¡RECIÉN ABIERTA!**; ≥4 o sin fecha → sin badge / fuera del strip. No usar etiquetas ni el boolean `recien_abierta` si contradicen la fecha. Embargo VIP+24h (`lib/highlight-embargo.ts`) sigue ocultando hero/carrusel/🔥.
+- Duplicados (`lib/portal-dedupe.ts`): hero, tiras y calendarios ocultan `duplicado_de`, alias de `PORTAL_DUPLICATE_OF` y probes `probe-ca-2026-09-14*`. La ficha alias redirige a la canónica.
 
 ## Verification
 
