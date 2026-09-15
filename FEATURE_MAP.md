@@ -34,7 +34,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **n
 
 ## Global chrome
 
-- **Página en pruebas** (`components/pruebas-banner.tsx`): gold bar above the header on every page. Sticky with the header.
+- Header (`components/site-header.tsx`) is sticky at the top of every public page. There is no «Página en pruebas» banner.
 
 ## Nav labels
 
