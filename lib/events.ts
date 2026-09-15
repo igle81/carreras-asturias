@@ -19,9 +19,9 @@ const EVENT_COLUMNS =
 const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
-const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
+const EVENT_COLUMNS_FULL_EXTRAS = `${EVENT_COLUMNS_FULL},hora_apertura_inscripcion,apertura_inscripcion_at,url_inscripcion`;
+const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL_EXTRAS},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
 const EVENT_COLUMNS_WITH_DUPLICADO = `${EVENT_COLUMNS_WITH_CLASIFICACION},duplicado_de`;
-const EVENT_COLUMNS_PORTAL = `${EVENT_COLUMNS_WITH_DUPLICADO},hora_apertura_inscripcion,apertura_inscripcion_at,url_inscripcion`;
 
 function isMissingAperturaColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
@@ -229,24 +229,22 @@ export async function fetchEventos(): Promise<Evento[]> {
   try {
     const client = getSupabase();
 
-    const withPortal = await client
+    const withDuplicado = await client
       .from("eventos")
-      .select(EVENT_COLUMNS_PORTAL)
+      .select(EVENT_COLUMNS_WITH_DUPLICADO)
       .order("fecha_inicio", { ascending: true });
 
-    const withDuplicado =
-      withPortal.error && isMissingAperturaExtraColumn(withPortal.error)
-        ? await client
-            .from("eventos")
-            .select(EVENT_COLUMNS_WITH_DUPLICADO)
-            .order("fecha_inicio", { ascending: true })
-        : withPortal;
-
     const withClasificacion =
-      withDuplicado.error && isMissingDuplicadoColumn(withDuplicado.error)
+      withDuplicado.error &&
+      (isMissingDuplicadoColumn(withDuplicado.error) ||
+        isMissingAperturaExtraColumn(withDuplicado.error))
         ? await client
             .from("eventos")
-            .select(EVENT_COLUMNS_WITH_CLASIFICACION)
+            .select(
+              isMissingAperturaExtraColumn(withDuplicado.error)
+                ? `${EVENT_COLUMNS_FULL},url_clasificacion,estado_clasificacion,fuente_clasificacion,duplicado_de`
+                : EVENT_COLUMNS_WITH_CLASIFICACION,
+            )
             .order("fecha_inicio", { ascending: true })
         : withDuplicado;
 
@@ -254,12 +252,22 @@ export async function fetchEventos(): Promise<Evento[]> {
       withClasificacion.error && isMissingClasificacionColumn(withClasificacion.error)
         ? await client
             .from("eventos")
-            .select(EVENT_COLUMNS_FULL)
+            .select(EVENT_COLUMNS_FULL_EXTRAS)
+            .order("fecha_inicio", { ascending: true })
+        : withClasificacion.error && isMissingDuplicadoColumn(withClasificacion.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_WITH_CLASIFICACION)
             .order("fecha_inicio", { ascending: true })
         : withClasificacion;
 
     const afterImages =
-      withImages.error && isMissingImagenColumn(withImages.error)
+      withImages.error && isMissingAperturaExtraColumn(withImages.error)
+        ? await client
+            .from("eventos")
+            .select(EVENT_COLUMNS_FULL)
+            .order("fecha_inicio", { ascending: true })
+        : withImages.error && isMissingImagenColumn(withImages.error)
         ? await client
             .from("eventos")
             .select(EVENT_COLUMNS_WITH_APERTURA)
