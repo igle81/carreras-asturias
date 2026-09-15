@@ -111,8 +111,13 @@ function asDistancias(value: unknown): Distancia[] | null {
 }
 
 function normalizeEvent(row: Record<string, unknown>): Evento {
+  const idCanonico = String(row.id_canonico);
+  const fechaApertura =
+    typeof row.fecha_apertura_inscripcion === "string" && row.fecha_apertura_inscripcion.trim()
+      ? row.fecha_apertura_inscripcion
+      : null;
   return {
-    id_canonico: String(row.id_canonico),
+    id_canonico: idCanonico,
     nombre: String(row.nombre ?? "Carrera"),
     fecha_inicio: (row.fecha_inicio as string | null) ?? null,
     fecha_fin: (row.fecha_fin as string | null) ?? null,
@@ -126,14 +131,13 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     organizador: (row.organizador as string | null) ?? null,
     url_oficial: (row.url_oficial as string | null) ?? null,
     estado_inscripcion: (row.estado_inscripcion as Evento["estado_inscripcion"]) ?? "desconocido",
-    fecha_apertura_inscripcion:
-      typeof row.fecha_apertura_inscripcion === "string" && row.fecha_apertura_inscripcion.trim()
-        ? row.fecha_apertura_inscripcion
-        : null,
+    fecha_apertura_inscripcion: fechaApertura,
     lat: row.lat == null ? null : Number(row.lat),
     lng: row.lng == null ? null : Number(row.lng),
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
-    recien_abierta: Boolean(row.recien_abierta),
+    recien_abierta: hasAperturaReciente({
+      fecha_apertura_inscripcion: fechaApertura,
+    }),
     calidad_score: row.calidad_score == null ? null : Number(row.calidad_score),
     imagen_url: asImageUrl(row.imagen_url),
     imagen_fuente:
@@ -234,11 +238,9 @@ export function upcomingEvents(events: Evento[], from = new Date()) {
   return hidePortalDuplicates(events).filter((event) => isUpcoming(event.fecha_inicio, from));
 }
 
+/** Strip Recién abiertas: solo ventana 3d por fecha. No espera Multicanal VIP+24h. */
 export function recienAbiertas(events: Evento[], from = new Date()) {
-  return hidePortalDuplicates(events).filter(
-    (event) =>
-      !isHighlightEmbargoed(event.id_canonico, from) && hasAperturaReciente(event, from),
-  );
+  return hidePortalDuplicates(events).filter((event) => hasAperturaReciente(event, from));
 }
 
 export function estaQuincena(events: Evento[], from = new Date()) {

@@ -1,4 +1,3 @@
-import { isHighlightEmbargoed } from "@/lib/highlight-embargo";
 import type { Evento } from "@/lib/types";
 
 export type AperturaBadgeKind =
@@ -10,10 +9,7 @@ export type AperturaBadgeKind =
 /** Javier 2026-09-15: máx 3 días civiles desde `fecha_apertura_inscripcion` (Europe/Madrid). */
 export const RECIEN_ABIERTA_MAX_DAYS = 3;
 
-type EventoApertura = Pick<
-  Evento,
-  "id_canonico" | "etiquetas" | "fecha_apertura_inscripcion"
->;
+type EventoApertura = Pick<Evento, "fecha_apertura_inscripcion">;
 
 function madridTodayYmd(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -53,16 +49,12 @@ function badgeFromDays(days: number): AperturaBadgeKind {
  * Badge de apertura solo con `fecha_apertura_inscripcion` (Europe/Madrid).
  * Día 0 = Abierta hoy; 1 = Abierta ayer; 2–3 = 🔥; ≥4 o sin fecha = nada.
  * Ignora etiquetas y el boolean `recien_abierta` (pueden quedar de fecha_hallazgo).
- * Embargo VIP+24h sigue ganando (hero / strip / 🔥).
+ * El strip Recién abiertas NO espera embargo VIP+24h; solo esta ventana de 3 días.
  */
 export function resolveAperturaBadge(
   event: EventoApertura,
   now = new Date(),
 ): AperturaBadgeKind {
-  if (event.id_canonico && isHighlightEmbargoed(event.id_canonico, now)) {
-    return null;
-  }
-
   const fecha = event.fecha_apertura_inscripcion;
   if (!fecha) return null;
 
