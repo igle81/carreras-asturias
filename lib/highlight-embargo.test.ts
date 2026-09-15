@@ -80,24 +80,28 @@ test("Villacabra is embargoed until 15/09 21:00 Europe/Madrid", () => {
   assert.equal(isHighlightEmbargoed(VILLACABRA_SHORT, AFTER), false);
 });
 
-test("embargo hides Villacabra from recién abiertas and 🔥 badges, not listado", () => {
+test("strip Recién abiertas ignores VIP+24h; Villacabra day 1 is Abierta ayer", () => {
   const villacabra = sampleEvent({
     id_canonico: VILLACABRA,
     nombre: "XIII Trail Villacabra 2026",
     fecha_inicio: "2026-12-13",
     fecha_apertura_inscripcion: "2026-09-14",
     estado_inscripcion: "abierta",
+    recien_abierta: true,
   });
   const other = sampleEvent({
     id_canonico: "otra-trail-2026",
     fecha_inicio: "2026-09-20",
+    fecha_apertura_inscripcion: "2026-08-01",
   });
 
-  assert.equal(resolveAperturaBadge(villacabra, DURING), null);
-  assert.equal(hasAperturaReciente(villacabra, DURING), false);
+  assert.equal(isHighlightEmbargoed(VILLACABRA, DURING), true);
+  assert.equal(resolveAperturaBadge(villacabra, DURING), "abierta_ayer");
+  assert.equal(hasAperturaReciente(villacabra, DURING), true);
+  assert.equal(isRecienAbiertaFuego(villacabra, DURING), false);
   assert.deepEqual(
     recienAbiertas([villacabra, other], DURING).map((event) => event.id_canonico),
-    ["otra-trail-2026"],
+    [VILLACABRA],
   );
   assert.equal(
     pickHeroSlides([villacabra], DURING).some((event) => event.id_canonico === VILLACABRA),
@@ -311,9 +315,14 @@ test("Villacabra day 1 after embargo is Abierta ayer (recién true, not 🔥)", 
     fecha_inicio: "2026-12-13",
     fecha_apertura_inscripcion: "2026-09-14",
     estado_inscripcion: "abierta",
+    recien_abierta: true,
   });
 
   assert.equal(resolveAperturaBadge(villacabra, AFTER), "abierta_ayer");
   assert.equal(hasAperturaReciente(villacabra, AFTER), true);
   assert.equal(isRecienAbiertaFuego(villacabra, AFTER), false);
+  assert.deepEqual(
+    recienAbiertas([villacabra], AFTER).map((event) => event.id_canonico),
+    [VILLACABRA],
+  );
 });
