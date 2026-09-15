@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AperturaBadge } from "./apertura-badge";
 import { EventPoster } from "./event-poster";
+import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { clasificacionVista } from "@/lib/clasificacion";
@@ -21,6 +22,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
   const closed = event.estado_inscripcion === "cerrada";
+  const pending = inscripcionPendienteLabel(event);
   const poster = eventPosterUrl(event);
   const clasificacion = clasificacionVista(event);
 
@@ -44,6 +46,11 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex flex-wrap gap-1.5">
           <AperturaBadge event={event} />
+          {pending ? (
+            <span className="rounded-full bg-atlantic/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-atlantic">
+              {pending}
+            </span>
+          ) : null}
           {thisWeek ? (
             <span className="rounded-full bg-gold/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-forest">
               Esta semana

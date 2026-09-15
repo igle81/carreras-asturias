@@ -105,6 +105,16 @@ test("offers uses official URL and inscription availability, never a made-up pri
   const unknown = eventOffersJsonLd(sampleEvent({ estado_inscripcion: "desconocido" }))!;
   assert.equal("availability" in unknown, false);
 
+  const pending = eventOffersJsonLd(
+    sampleEvent({
+      estado_inscripcion: "cerrada_pendiente_apertura",
+      url_oficial: "https://www.kangasmountain.es/",
+      url_inscripcion: "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain",
+    }),
+  )!;
+  assert.equal(pending.url, "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain");
+  assert.equal(pending.availability, "https://schema.org/PreOrder");
+
   assert.equal(eventOffersJsonLd(sampleEvent({ url_oficial: null })), undefined);
 });
 

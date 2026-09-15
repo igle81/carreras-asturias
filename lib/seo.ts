@@ -179,7 +179,9 @@ function offerAvailability(event: Evento): string | undefined {
   const estado = (event.estado_inscripcion ?? "").toLocaleLowerCase("es");
   if (estado === "abierta") return `${SCHEMA}/InStock`;
   if (estado === "cerrada") return `${SCHEMA}/SoldOut`;
-  if (estado === "proximamente") return `${SCHEMA}/PreOrder`;
+  if (estado === "proximamente" || estado === "cerrada_pendiente_apertura") {
+    return `${SCHEMA}/PreOrder`;
+  }
 
   const tags = tagSet(event);
   if (tags.has("inscripcion_abierta")) return `${SCHEMA}/InStock`;
@@ -188,7 +190,7 @@ function offerAvailability(event: Evento): string | undefined {
 }
 
 export function eventOffersJsonLd(event: Evento): JsonLd | undefined {
-  const url = trimmed(event.url_oficial);
+  const url = trimmed(event.url_inscripcion) ?? trimmed(event.url_oficial);
   if (!url) return undefined;
 
   const offer: JsonLd = { "@type": "Offer", url };

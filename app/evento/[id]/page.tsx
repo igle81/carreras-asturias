@@ -6,6 +6,7 @@ import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
 import { EventMap } from "@/components/event-map";
 import { JsonLd } from "@/components/json-ld";
+import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, eventPosterCredit, eventPosterUrl, formatDistancias, getEvento, getEventos } from "@/lib/events";
@@ -45,6 +46,9 @@ export default async function EventoPage({ params }: EventPageProps) {
   const thisWeek = days !== null && days >= 0 && days <= 7;
   const poster = eventPosterUrl(event);
   const credit = eventPosterCredit(event);
+  const pending = inscripcionPendienteLabel(event);
+  const officialSite =
+    event.url_oficial && event.url_oficial !== cta.href ? event.url_oficial : null;
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-8">
@@ -66,6 +70,11 @@ export default async function EventoPage({ params }: EventPageProps) {
         <div>
           <div className="flex flex-wrap gap-2">
             <AperturaBadge event={event} size="hero" />
+            {pending ? (
+              <span className="rounded-full bg-atlantic/10 px-3 py-1 text-xs font-bold uppercase text-atlantic">
+                {pending}
+              </span>
+            ) : null}
             {thisWeek ? (
               <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-bold uppercase text-forest">
                 Esta semana
@@ -108,7 +117,17 @@ export default async function EventoPage({ params }: EventPageProps) {
           >
             {cta.label}
           </a>
-        ) : event.url_oficial ? (
+        ) : null}
+        {officialSite ? (
+          <a
+            href={officialSite}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-forest/20 px-5 py-3 text-sm font-semibold text-forest hover:bg-moss/40"
+          >
+            Web oficial
+          </a>
+        ) : !cta.external && event.url_oficial ? (
           <a
             href={event.url_oficial}
             target="_blank"

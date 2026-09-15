@@ -1,3 +1,4 @@
+import { madridWallToUtc } from "@/lib/fin-estimado";
 import type { Evento } from "@/lib/types";
 
 export type AperturaBadgeKind =
@@ -9,7 +10,16 @@ export type AperturaBadgeKind =
 /** Javier 2026-09-15: máx 3 días civiles desde `fecha_apertura_inscripcion` (Europe/Madrid). */
 export const RECIEN_ABIERTA_MAX_DAYS = 3;
 
-type EventoApertura = Pick<Evento, "fecha_apertura_inscripcion">;
+const PENDING_ESTADOS = new Set(["cerrada_pendiente_apertura", "proximamente"]);
+
+export type EventoApertura = Pick<
+  Evento,
+  | "fecha_apertura_inscripcion"
+  | "hora_apertura_inscripcion"
+  | "apertura_inscripcion_at"
+  | "estado_inscripcion"
+  | "recien_abierta"
+>;
 
 function madridTodayYmd(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -24,6 +34,80 @@ function ymdToUtcMs(ymd: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
   const [year, month, day] = ymd.split("-").map(Number);
   return Date.UTC(year, month - 1, day);
+}
+
+function parseHoraParts(value: string | null | undefined): { hour: number; minute: number } | null {
+  if (!value) return null;
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
+  if (!Number.isInteger(minute) || minute < 0 || minute > 59) return null;
+  return { hour, minute };
+}
+
+/** Instante de apertura: `apertura_inscripcion_at`, o fecha + hora Europe/Madrid. */
+export function resolveAperturaInstant(event: EventoApertura): Date | null {
+  const at = event.apertura_inscripcion_at?.trim();
+  if (at) {
+    const parsed = new Date(at);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  const fecha = event.fecha_apertura_inscripcion?.slice(0, 10);
+  const hora = parseHoraParts(event.hora_apertura_inscripcion);
+  if (!fecha || !hora) return null;
+  return madridWallToUtc(fecha, hora.hour, hora.minute);
+}
+
+function estadoKey(event: EventoApertura): string {
+  return (event.estado_inscripcion ?? "").trim().toLocaleLowerCase("es");
+}
+
+/**
+ * Kangas 2026-09-15: no hay badge «Abierta hoy|ayer|recién» mientras la
+ * inscripción no haya abierto de verdad (hora / estado / flag de fila).
+ */
+export function inscriptionOpenForHighlight(event: EventoApertura, now = new Date()): boolean {
+  const instant = resolveAperturaInstant(event);
+  if (instant && now.getTime() < instant.getTime()) return false;
+
+  const estado = estadoKey(event);
+  if (estado === "abierta") return true;
+  if (event.recien_abierta === true) return true;
+  if (PENDING_ESTADOS.has(estado)) return false;
+  return true;
+}
+
+export function isInscripcionPendienteApertura(event: EventoApertura, now = new Date()): boolean {
+  if (estadoKey(event) !== "cerrada_pendiente_apertura") return false;
+  const instant = resolveAperturaInstant(event);
+  if (instant && now.getTime() >= instant.getTime() && event.recien_abierta === true) {
+    return false;
+  }
+  return true;
+}
+
+export function formatHoraApertura(value: string | null | undefined): string | null {
+  const parts = parseHoraParts(value);
+  if (!parts) return null;
+  return `${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`;
+}
+
+export function inscripcionPendienteLabel(event: EventoApertura, now = new Date()): string | null {
+  if (!isInscripcionPendienteApertura(event, now)) return null;
+  const hora = formatHoraApertura(event.hora_apertura_inscripcion);
+  const fecha = event.fecha_apertura_inscripcion?.slice(0, 10);
+  const instant = resolveAperturaInstant(event);
+  if (instant && now.getTime() >= instant.getTime()) {
+    return "Inscripción pendiente de apertura";
+  }
+  if (hora && fecha && daysSinceApertura(fecha, now) === 0) {
+    return `Abre hoy a las ${hora}`;
+  }
+  if (hora) return `Abre a las ${hora}`;
+  return "Inscripción pendiente de apertura";
 }
 
 /** Días civiles entre la fecha de apertura y hoy en Europe/Madrid. */
@@ -46,10 +130,12 @@ function badgeFromDays(days: number): AperturaBadgeKind {
 }
 
 /**
- * Badge de apertura solo con `fecha_apertura_inscripcion` (Europe/Madrid).
+ * Badge de apertura: ventana ≤3 días desde `fecha_apertura_inscripcion` (Europe/Madrid).
  * Día 0 = Abierta hoy; 1 = Abierta ayer; 2–3 = 🔥; ≥4 o sin fecha = nada.
- * Ignora etiquetas y el boolean `recien_abierta` (pueden quedar de fecha_hallazgo).
- * El strip Recién abiertas NO espera embargo VIP+24h; solo esta ventana de 3 días.
+ * No pinta si la hora/instante de apertura es futuro, ni si el estado sigue
+ * `cerrada_pendiente_apertura` / `proximamente` (salvo `recien_abierta` de fila).
+ * El boolean `recien_abierta` no alarga la ventana de 3 días.
+ * El strip Recién abiertas NO espera embargo VIP+24h.
  */
 export function resolveAperturaBadge(
   event: EventoApertura,
@@ -57,6 +143,7 @@ export function resolveAperturaBadge(
 ): AperturaBadgeKind {
   const fecha = event.fecha_apertura_inscripcion;
   if (!fecha) return null;
+  if (!inscriptionOpenForHighlight(event, now)) return null;
 
   const days = daysSinceApertura(fecha, now);
   if (days === null || days < 0 || days > RECIEN_ABIERTA_MAX_DAYS) return null;
