@@ -54,6 +54,25 @@ function sampleEvent(overrides: Partial<Evento> = {}): Evento {
   };
 }
 
+test("Acebo and Asturcantabro stay embargoed (PRO 14/09 VIP+24h)", () => {
+  assert.equal(isHighlightEmbargoed("desafio-el-acebo-2026", DURING), true);
+  assert.equal(
+    isHighlightEmbargoed("desafio-el-acebo-2026-2026-09-26-ciclismo", DURING),
+    true,
+  );
+  assert.equal(
+    isHighlightEmbargoed("encuentro-asturcantabro-de-escuelas-2026", DURING),
+    true,
+  );
+  assert.equal(
+    isHighlightEmbargoed(
+      "encuentro-asturcantabro-de-escuelas-2026-2026-09-20-ciclismo",
+      DURING,
+    ),
+    true,
+  );
+});
+
 test("Villacabra is embargoed until 15/09 21:00 Europe/Madrid", () => {
   assert.equal(isHighlightEmbargoed(VILLACABRA, DURING), true);
   assert.equal(isHighlightEmbargoed(VILLACABRA_SHORT, DURING), true);
