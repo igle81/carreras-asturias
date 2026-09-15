@@ -16,6 +16,9 @@ export type HighlightEmbargo = {
 export const HIGHLIGHT_EMBARGO: HighlightEmbargo[] = [
   { id: "marcha-cicloturista-fiestas-corvera-2026" },
   { id: "fiesta-bicicleta-aviles-2026" },
+  // Hero uses short slug; ficha/DB also exposes date+disciplina suffix.
+  { id: "desafio-el-acebo-2026" },
+  { id: "encuentro-asturcantabro-de-escuelas-2026" },
   {
     id: "xiii-trail-villacabra-2026-2026-12-13-pie",
     until: "2026-09-15T21:00:00+02:00",
