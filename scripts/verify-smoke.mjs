@@ -11,9 +11,9 @@
  * leaves the site origin is a failure — never treat that HTML as a healthy
  * 200. Run this script against PRO, or a locally served `next start`.
  *
- * `/vip` is not a page (no app/vip/page.tsx). The VIP CTA is `#vip` on
- * `/correr` and `/ciclismo`. This script still requests `/vip` and records
- * the status; a 404 is accepted only when `/correr` contains id="vip".
+ * `/vip` is not a page (no app/vip/page.tsx). The `#vip` promo is hidden
+ * (Javier 2026-09-13). `/vip` 404 is OK. `/correr` and `/ciclismo` must
+ * not contain the promo copy or id="vip".
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -187,8 +187,8 @@ async function main() {
       rows.push({
         path,
         status: fetched.status,
-        note: title || "no app/vip/page.tsx (VIP is /correr#vip)",
-        result: "CHECK",
+        note: title || "no app/vip/page.tsx (promo #vip hidden)",
+        result: "OK",
       });
       continue;
     }
@@ -205,15 +205,19 @@ async function main() {
     rows.push({ path, status: fetched.status, note: title, result: "OK" });
   }
 
-  const vipRow = rows.find((row) => row.path === "/vip");
-  if (vipRow?.result === "CHECK") {
-    const correr = bodies.get("/correr") || "";
-    if (correr.includes('id="vip"')) {
-      vipRow.note = '404 (no /vip page); /correr has id="vip"';
-      vipRow.result = "OK";
-    } else {
-      vipRow.result = "FAIL";
-      failures.push('/vip: 404 and /correr is missing id="vip"');
+  const VIP_PROMO_NEEDLES = [
+    'id="vip"',
+    "Quiero avisos VIP",
+    "Quiero el Canal VIP",
+    "Tranquilidad · cero esfuerzo",
+    "Todas las carreras, sin mover un dedo",
+  ];
+  for (const path of ["/correr", "/ciclismo"]) {
+    const html = bodies.get(path) || "";
+    const hit = VIP_PROMO_NEEDLES.find((needle) => html.includes(needle));
+    if (hit) {
+      rows.push({ path: `${path}#vip`, status: 200, note: `promo still visible: ${hit}`, result: "FAIL" });
+      failures.push(`${path}: VIP promo still rendered (${hit})`);
     }
   }
 

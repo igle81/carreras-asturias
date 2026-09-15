@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "lib/sports-event-jsonld.test.ts",
     ],
   },
 ];
