@@ -4,7 +4,7 @@ import { getVipCustomerPortalLoginUrl, VIP_PORTAL_API_PATH } from "@/lib/vip-pat
 
 export const metadata: Metadata = {
   title: { absolute: "Cancelar suscripción VIP" },
-  description: "Baja de la suscripción VIP a través del portal de Stripe (test / PRE).",
+  description: "Cancela el aviso VIP con el email con el que pagaste.",
   robots: {
     index: false,
     follow: false,
@@ -19,28 +19,28 @@ export const metadata: Metadata = {
 
 const ERROR_COPY: Record<string, { title: string; body: string }> = {
   missing_secret: {
-    title: "Falta la clave de Stripe en PRE",
-    body: "En Vercel PRE hay que setear STRIPE_SECRET_KEY con el secret de test (sk_test_…), nunca sk_live_.",
+    title: "Ahora mismo no se puede abrir la baja",
+    body: "Inténtalo más tarde.",
   },
   live_secret_blocked: {
-    title: "Clave live bloqueada",
-    body: "Este flujo solo admite STRIPE_SECRET_KEY de test (sk_test_…). No uses una clave live.",
+    title: "Ahora mismo no se puede abrir la baja",
+    body: "Inténtalo más tarde.",
   },
   portal_not_enabled: {
-    title: "Portal no activado aún",
-    body: "Activa el Customer Portal en el Dashboard de Stripe (modo test): Settings → Billing → Customer portal, con cancelación encendida. Luego reintenta.",
+    title: "Ahora mismo no se puede abrir la baja",
+    body: "Inténtalo más tarde.",
   },
   no_subscription: {
-    title: "Necesitas una suscripción activa",
-    body: "No encontramos un cliente de Stripe con ese email. Usa el email del pago de test o suscríbete primero.",
+    title: "No encontramos ese email",
+    body: "Revisa que sea el email con el que pagaste.",
   },
   invalid: {
-    title: "Email no válido",
-    body: "Introduce el email con el que pagaste en Stripe (test).",
+    title: "Ese email no parece válido",
+    body: "Escribe el email con el que pagaste.",
   },
   stripe_error: {
-    title: "No se pudo abrir el portal",
-    body: "Stripe no creó la sesión. Revisa el Customer Portal en modo test e inténtalo de nuevo.",
+    title: "Ahora mismo no se puede abrir la baja",
+    body: "Inténtalo más tarde.",
   },
 };
 
@@ -57,12 +57,11 @@ export default async function VipCancelarPage({
   return (
     <article className="mx-auto max-w-xl px-4 py-12">
       <p className="inline-flex rounded-full bg-gold/20 px-3 py-1 text-xs font-bold uppercase tracking-wide text-forest">
-        Canal VIP · PRE
+        Aviso VIP
       </p>
       <h1 className="mt-4 font-display text-4xl font-black text-ink">Cancelar suscripción</h1>
       <p className="mt-4 text-lg text-ink/70">
-        Introduce el email del pago para abrir el Customer Portal de Stripe (test) y
-        darte de baja en un clic.
+        Escribe el email con el que pagaste y cancela en un clic.
       </p>
 
       {error ? (
@@ -77,14 +76,14 @@ export default async function VipCancelarPage({
 
       <form action={VIP_PORTAL_API_PATH} method="post" className="mt-8 space-y-4">
         <label className="block">
-          <span className="text-sm font-bold text-ink">Email del pago</span>
+          <span className="text-sm font-bold text-ink">Email con el que pagaste</span>
           <input
             type="email"
             name="email"
             required
             defaultValue={email}
             autoComplete="email"
-            placeholder="Introduce el email del pago"
+            placeholder="El email con el que pagaste"
             className="mt-2 w-full rounded-2xl border border-forest/15 bg-white px-4 py-3 text-ink outline-none ring-gold focus:ring-2"
           />
         </label>
@@ -92,20 +91,20 @@ export default async function VipCancelarPage({
           type="submit"
           className="inline-flex rounded-full bg-forest px-5 py-3 text-sm font-bold text-white"
         >
-          Abrir portal y cancelar
+          Cancelar en un clic
         </button>
       </form>
 
       {loginUrl ? (
         <p className="mt-6 text-sm text-ink/70">
-          O entra directo al{" "}
+          O abre la{" "}
           <a
             href={loginUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold text-atlantic underline"
           >
-            portal de Stripe
+            página de baja
           </a>
           .
         </p>

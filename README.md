@@ -82,21 +82,21 @@ Vista `public.eventos` → tabla `carreras.eventos`. Columnas clave: `id_canonic
 
 ## Canal VIP — checkout PRE y clics
 
-**Javier 2026-09-13:** el bloque `#vip` (copy «Tranquilidad · cero esfuerzo», beneficios, cupo 100 y CTA «Quiero avisos VIP · Próximamente») **no se renderiza** en `/correr` ni `/ciclismo`. `components/vip-promo.tsx` se queda en el repo por si hay que restaurarlo. No hay precio ni checkout en la web.
+**Javier 2026-09-17:** el bloque `#vip` vuelve a `/correr` y `/ciclismo` con copy humano vendible (lead «Tranquilidad · cero esfuerzo», cupo «Solo 100 plazas…», CTA sin checkout «Avísame al abrir» + badge **Pronto**). Precio y «Cancelar suscripción» siguen ocultos. En producción el checkout sigue off.
 
-**Javier 2026-09-09:** si se vuelve a mostrar el bloque, no enseñar precio (`1,99 €/mes`) ni «Cancelar suscripción» hasta OK. Re-activar UI comercial: `SHOW_VIP_PRICE_AND_CANCEL = true` en `components/vip-promo.tsx`. No inventar un precio nuevo.
+**Javier 2026-09-09:** no enseñar precio (`1,99 €/mes`) ni «Cancelar suscripción» hasta OK. Re-activar UI comercial: `SHOW_VIP_PRICE_AND_CANCEL = true` en `components/vip-promo.tsx`. No inventar un precio nuevo.
 
-Si el bloque vuelve a montarse: en **PRE / preview / local** el CTA puede ser un enlace activo («Quiero el Canal VIP») al Stripe **test** Payment Link. **No hay enlace `t.me` ni invite permanente de Telegram.** En **producción (`VERCEL_ENV=production`)** `getVipCheckoutUrl()` devuelve `null` aunque existan Payment Link, `VIP_CHECKOUT_URL` o `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED`. No setear esas variables en el entorno Production de Vercel.
+En **PRE / preview / local** el CTA puede ser un enlace activo («Quiero el aviso VIP») al Stripe **test** Payment Link. **No hay enlace `t.me` ni invite permanente de Telegram.** En **producción (`VERCEL_ENV=production`)** `getVipCheckoutUrl()` devuelve `null` aunque existan Payment Link, `VIP_CHECKOUT_URL` o `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED`. No setear esas variables en el entorno Production de Vercel.
 
-La ruta `/vip/cancelar` sigue existiendo (PRE / test; no indexar) pero **no se enlaza** desde la home. Cuando se reactive el bloque, «Cancelar suscripción» irá a `/vip/cancelar` (o a `NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL` / `VIP_CUSTOMER_PORTAL_URL` si está seteada). `/vip/cancelar` envía el email a `POST /api/vip/portal`, que busca el customer en Stripe test (`customer=cus_…` o email) y crea una Billing Portal Session. `return_url` vuelve al origen PRE (`/`). Si el portal de test no está activado en el Dashboard, la página muestra «Portal no activado aún». Si no hay customer, «necesitas una suscripción activa». No se inventan customers ni URLs de portal.
+La ruta `/vip/cancelar` sigue existiendo (PRE / test; no indexar) pero **no se enlaza** desde el bloque mientras el precio/cancelar estén ocultos. Si se reactiva «Cancelar suscripción», irá a `/vip/cancelar` (o a `NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL` / `VIP_CUSTOMER_PORTAL_URL` si está seteada). `/vip/cancelar` envía el email a `POST /api/vip/portal`. Copy de usuario: «No encontramos ese email» / «Ahora mismo no se puede abrir la baja; inténtalo más tarde». No se inventan customers ni URLs de portal.
 
 En Vercel PRE hay que setear `STRIPE_SECRET_KEY` = secret **test** (`sk_test_…`). Nunca live.
 
 La URL se lee de `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` o `VIP_CHECKOUT_URL`. Si faltan, se usa el Payment Link de test **solo** cuando `NODE_ENV` es `development`/`test`, `VERCEL_ENV=preview`, la rama es `pre`, o `NEXT_PUBLIC_VIP_CHECKOUT_ENABLED=true` **fuera de Production**. Si `VERCEL_ENV` (o `NEXT_PUBLIC_VERCEL_ENV`) es `production`, el checkout queda forzado a `null`.
 
-Cada clic (activo o «Próximamente»):
+Cada clic (activo o «Pronto»):
 
-1. En modo interés (sin checkout): se queda en la página y muestra «Te avisaremos — llega en breve».
+1. En modo interés (sin checkout): se queda en la página y muestra «Apuntado. Te avisamos cuando esté listo.»
 2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
 
 `POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.
