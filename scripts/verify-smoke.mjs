@@ -11,10 +11,10 @@
  * leaves the site origin is a failure — never treat that HTML as a healthy
  * 200. Run this script against PRO, or a locally served `next start`.
  *
- * `/vip` is not a page (no app/vip/page.tsx). The `#vip` promo is hidden
- * (Javier 2026-09-13). `/vip` 404 is OK. `/correr` and `/ciclismo` must
- * not contain the promo copy or id="vip". Public pages must not contain
- * «Página en pruebas».
+ * `/vip` is not a page (no app/vip/page.tsx). `/vip` 404 is OK.
+ * Public `/correr` and `/ciclismo` must render `#vip` with the human
+ * copy (Tranquilidad, Avísame al abrir) and must not show price,
+ * «Cancelar suscripción», checkout CTA, or «Página en pruebas».
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -188,7 +188,7 @@ async function main() {
       rows.push({
         path,
         status: fetched.status,
-        note: title || "no app/vip/page.tsx (promo #vip hidden)",
+        note: title || "no app/vip/page.tsx (promo lives at #vip)",
         result: "OK",
       });
       continue;
@@ -231,20 +231,47 @@ async function main() {
     }
   }
 
-  const VIP_PROMO_NEEDLES = [
+  const homeHtml = bodies.get("/") || "";
+  const HOME_H1_NEEDLE = "Elige tu terreno. Correr o bici, cada uno a lo suyo.";
+  if (homeHtml && !homeHtml.includes(HOME_H1_NEEDLE)) {
+    rows.push({
+      path: "/#hero",
+      status: 200,
+      note: "missing human landing H1",
+      result: "FAIL",
+    });
+    failures.push(`/: missing «${HOME_H1_NEEDLE}»`);
+  }
+
+  const VIP_PROMO_REQUIRED = [
     'id="vip"',
-    "Quiero avisos VIP",
-    "Quiero el Canal VIP",
     "Tranquilidad · cero esfuerzo",
-    "Todas las carreras, sin mover un dedo",
+    "Avísame al abrir",
+    "Solo 100 plazas. Cuando se llenen, se cierra.",
+  ];
+  const VIP_PROMO_FORBIDDEN = [
+    "1,99",
+    "Cancelar suscripción",
+    "Quiero el Canal VIP",
+    "Quiero avisos VIP",
+    "Máximo 100 suscriptores VIP activos",
+    "t.me/",
   ];
   for (const path of ["/correr", "/ciclismo"]) {
     const html = bodies.get(path) || "";
-    const hit = VIP_PROMO_NEEDLES.find((needle) => html.includes(needle));
-    if (hit) {
-      rows.push({ path: `${path}#vip`, status: 200, note: `promo still visible: ${hit}`, result: "FAIL" });
-      failures.push(`${path}: VIP promo still rendered (${hit})`);
+    const missing = VIP_PROMO_REQUIRED.find((needle) => !html.includes(needle));
+    if (missing) {
+      rows.push({ path: `${path}#vip`, status: 200, note: `missing promo copy: ${missing}`, result: "FAIL" });
+      failures.push(`${path}: VIP promo missing «${missing}»`);
+      continue;
     }
+    const forbidden = VIP_PROMO_FORBIDDEN.find((needle) => html.includes(needle));
+    if (forbidden) {
+      rows.push({ path: `${path}#vip`, status: 200, note: `forbidden copy: ${forbidden}`, result: "FAIL" });
+      failures.push(`${path}: VIP promo still has «${forbidden}»`);
+      continue;
+    }
+    rows.push({ path: `${path}#vip`, status: 200, note: "human VIP copy, no price", result: "OK" });
   }
 
   let apiFetched;
