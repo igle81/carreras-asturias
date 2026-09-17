@@ -19,10 +19,10 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/cookies` | Política de cookies | Footer **Cookies** |
 | `/aviso-legal` | Aviso legal | Footer **Aviso legal** |
 | `/terminos` | Términos de uso | Footer **Términos** |
-| `/vip/cancelar` | Baja VIP (Stripe test portal, noindex) | Direct URL only. Bloque `#vip` oculto en correr/ciclismo (Javier 2026-09-13) |
+| `/vip/cancelar` | Baja VIP (email → página de baja; noindex) | Direct URL only. Bloque `#vip` visible en correr/ciclismo; precio y cancelar siguen ocultos |
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
 
-There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **not rendered** on `/correr` or `/ciclismo` (Javier 2026-09-13: quitar copy + CTA). `components/vip-promo.tsx` stays in the repo for restore.
+There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is rendered on `/correr` and `/ciclismo` (copy humano vendible). Price and «Cancelar suscripción» stay hidden (`SHOW_VIP_PRICE_AND_CANCEL = false`). Production checkout stays off (`getVipCheckoutUrl()` is null).
 
 ## APIs (`app/api/**/route.ts`)
 
@@ -41,7 +41,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is **n
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
-- VIP: bloque `#vip` oculto. No precio, no CTA, no «Próximamente» en correr/ciclismo.
+- VIP: bloque `#vip` visible. CTA «Avísame al abrir» + badge **Pronto**. No precio, no cancelar, no `t.me`.
 - Clasificación (`lib/fin-estimado.ts`): al persistir una prueba con fecha se estima el fin a ritmo lento (a pie cola / bici cola de competición) + 30 min. **Esa hora** crea la rutina de buscar URL. Sigue 30 días en calendario/mapa. CTA **Inscribirme** → **Clasificación** (URL o `#clasificacion`). Ficha `#clasificacion`: **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». Persistencia no borra antes de +30 d. No inventar URLs.
 - Recién abierta (`lib/apertura-badge.ts`, Javier 2026-09-15): **máx 3 días** desde `fecha_apertura_inscripcion` (Europe/Madrid). Día 0 **Abierta hoy**; 1 **Abierta ayer**; 2–3 **🔥 ¡RECIÉN ABIERTA!**; ≥4 o sin fecha → sin badge / fuera del strip. No pintar badge si la hora/`apertura_inscripcion_at` es futura, ni si `estado_inscripcion` es `cerrada_pendiente_apertura` / `proximamente` (hasta que pase a `abierta` o `recien_abierta=true` en fila). El boolean `recien_abierta` no alarga la ventana de 3 días. El strip Recién abiertas **no espera** embargo VIP+24h. Embargo VIP+24h (`lib/highlight-embargo.ts`) sigue ocultando hero/carrusel/quincena.
 - Duplicados (`lib/portal-dedupe.ts`): hero, tiras y calendarios ocultan `duplicado_de`, alias de `PORTAL_DUPLICATE_OF` y probes `probe-ca-2026-09-14*`. La ficha alias redirige a la canónica.

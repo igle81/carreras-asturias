@@ -10,11 +10,11 @@ export function Landing({ pieCount, biciCount }: { pieCount: number; biciCount: 
           A pie y ciclismo en Asturias
         </p>
         <h1 className="mt-3 max-w-3xl font-display text-4xl font-black leading-tight sm:text-6xl">
-          Elige tu terreno. Dos calendarios, cero mezclas.
+          Elige tu terreno. Correr o bici, cada uno a lo suyo.
         </h1>
         <p className="mt-4 max-w-xl text-lg text-white/75">
-          Carreras a pie por un lado. Ciclismo por el otro. Cada uno con su
-          hero, su mapa y sus dorsales recién abiertos.
+          Carreras a pie por un lado. Ciclismo por el otro. Con su mapa y las
+          inscripciones que acaban de abrir.
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
