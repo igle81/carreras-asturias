@@ -14,7 +14,8 @@
  * `/vip` is not a page (no app/vip/page.tsx). `/vip` 404 is OK.
  * Public `/correr` and `/ciclismo` must render `#vip` with the human
  * copy (Tranquilidad, Avísame al abrir) and must not show price,
- * «Cancelar suscripción», checkout CTA, or «Página en pruebas».
+ * «Cancelar suscripción», checkout CTA, «Página en pruebas», or
+ * «En construcción» (esa franja solo existe en un build PRE).
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -206,7 +207,7 @@ async function main() {
     rows.push({ path, status: fetched.status, note: title, result: "OK" });
   }
 
-  const PRUEBAS_BANNER_NEEDLE = "Página en pruebas";
+  const PRUEBAS_BANNER_NEEDLES = ["Página en pruebas", "En construcción"];
   const PUBLIC_BANNER_PATHS = [
     "/",
     "/correr",
@@ -220,14 +221,15 @@ async function main() {
   ];
   for (const path of PUBLIC_BANNER_PATHS) {
     const html = bodies.get(path) || "";
-    if (html.includes(PRUEBAS_BANNER_NEEDLE)) {
+    for (const needle of PRUEBAS_BANNER_NEEDLES) {
+      if (!html.includes(needle)) continue;
       rows.push({
         path: `${path}#pruebas-banner`,
         status: 200,
-        note: `banner still visible: ${PRUEBAS_BANNER_NEEDLE}`,
+        note: `banner still visible: ${needle}`,
         result: "FAIL",
       });
-      failures.push(`${path}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
+      failures.push(`${path}: «${needle}» still rendered`);
     }
   }
 
