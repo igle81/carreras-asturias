@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { CookieBanner } from "@/components/cookie-banner";
+import { FranjaEnConstruccion } from "@/components/franja-en-construccion";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -73,6 +74,7 @@ export default async function RootLayout({
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
           <div className="sticky top-0 z-40">
+            <FranjaEnConstruccion />
             <SiteHeader concejosPie={concejosPie} concejosBici={concejosBici} />
           </div>
           <main>{children}</main>
