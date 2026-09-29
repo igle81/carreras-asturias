@@ -49,14 +49,6 @@ jobs:
             echo "Skipping test:highlight-embargo — lib/highlight-embargo.test.ts is not on this branch yet."
           fi
 
-      - name: Entorno PRE tests
-        run: |
-          if [ -f lib/entorno-pre.test.ts ]; then
-            npm run test:entorno-pre
-          else
-            echo "Skipping test:entorno-pre — lib/entorno-pre.test.ts is not on this branch yet."
-          fi
-
       - name: Build
         run: npm run build
         env:

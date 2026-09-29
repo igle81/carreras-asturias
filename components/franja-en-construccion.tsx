@@ -1,9 +1,5 @@
-import { esEntornoPre } from "@/lib/entorno-pre";
-
-/** Aviso de preproducción. En producción o sin señal de PRE no pinta nada. */
+/** Aviso en todas las páginas, también en producción, hasta el visto bueno. */
 export function FranjaEnConstruccion() {
-  if (!esEntornoPre()) return null;
-
   return (
     <div
       role="status"

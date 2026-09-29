@@ -14,8 +14,9 @@
  * `/vip` is not a page (no app/vip/page.tsx). `/vip` 404 is OK.
  * Public `/correr` and `/ciclismo` must render `#vip` with the human
  * copy (Tranquilidad, Avísame al abrir) and must not show price,
- * «Cancelar suscripción», checkout CTA, «Página en pruebas», or
- * «En construcción» (esa franja solo existe en un build PRE).
+ * «Cancelar suscripción», checkout CTA, or «Página en pruebas».
+ * «En construcción» must sit above the header on `/`, `/correr`,
+ * `/ciclismo`, and one `/evento/<id>` linked from those pages.
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -207,7 +208,8 @@ async function main() {
     rows.push({ path, status: fetched.status, note: title, result: "OK" });
   }
 
-  const PRUEBAS_BANNER_NEEDLES = ["Página en pruebas", "En construcción"];
+  const PRUEBAS_BANNER_NEEDLE = "Página en pruebas";
+  const CONSTRUCCION_NEEDLE = "En construcción";
   const PUBLIC_BANNER_PATHS = [
     "/",
     "/correr",
@@ -221,15 +223,96 @@ async function main() {
   ];
   for (const path of PUBLIC_BANNER_PATHS) {
     const html = bodies.get(path) || "";
-    for (const needle of PRUEBAS_BANNER_NEEDLES) {
-      if (!html.includes(needle)) continue;
-      rows.push({
-        path: `${path}#pruebas-banner`,
-        status: 200,
-        note: `banner still visible: ${needle}`,
-        result: "FAIL",
-      });
-      failures.push(`${path}: «${needle}» still rendered`);
+    if (!html.includes(PRUEBAS_BANNER_NEEDLE)) continue;
+    rows.push({
+      path: `${path}#pruebas-banner`,
+      status: 200,
+      note: `banner still visible: ${PRUEBAS_BANNER_NEEDLE}`,
+      result: "FAIL",
+    });
+    failures.push(`${path}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
+  }
+
+  function construccionArriba(html) {
+    const bannerAt = html.indexOf(CONSTRUCCION_NEEDLE);
+    const headerAt = html.indexOf("<header");
+    if (bannerAt < 0) return `falta «${CONSTRUCCION_NEEDLE}»`;
+    if (headerAt < 0) return "falta la cabecera";
+    if (bannerAt > headerAt) return `«${CONSTRUCCION_NEEDLE}» no está arriba de la cabecera`;
+    return null;
+  }
+
+  for (const path of ["/", "/correr", "/ciclismo"]) {
+    const problem = construccionArriba(bodies.get(path) || "");
+    if (problem) {
+      rows.push({ path: `${path}#en-construccion`, status: 200, note: problem, result: "FAIL" });
+      failures.push(`${path}: ${problem}`);
+      continue;
+    }
+    rows.push({
+      path: `${path}#en-construccion`,
+      status: 200,
+      note: "«En construcción» arriba de la cabecera",
+      result: "OK",
+    });
+  }
+
+  const eventSource = ["/correr", "/ciclismo", "/", "/correr/calendario", "/ciclismo/calendario"]
+    .map((path) => bodies.get(path) || "")
+    .join("\n");
+  const eventMatch = eventSource.match(/\/evento\/[a-z0-9]+(?:-[a-z0-9]+)*/i);
+  const eventPath = eventMatch ? eventMatch[0] : null;
+  if (!eventPath) {
+    rows.push({
+      path: "/evento/<id>#en-construccion",
+      status: "ERR",
+      note: "no /evento/<id> link on /, /correr or /ciclismo",
+      result: "FAIL",
+    });
+    failures.push("no /evento/<id> link to check «En construcción»");
+  } else {
+    let eventFetched;
+    try {
+      eventFetched = await fetchOnce(`${base}${eventPath}`);
+    } catch (error) {
+      rows.push({ path: eventPath, status: "ERR", note: error.message, result: "FAIL" });
+      failures.push(`${eventPath}: ${error.message}`);
+      eventFetched = null;
+    }
+    if (eventFetched) {
+      const eventTitle = extractTitle(eventFetched.body);
+      const eventSso = looksLikeVercelSso({ ...eventFetched, title: eventTitle });
+      const eventOnSite = isSiteHost(eventFetched.finalUrl, base);
+      if (eventSso || !eventOnSite) {
+        const reason = eventSso
+          ? "Vercel Deployment Protection / Login–Vercel HTML (not a page success)"
+          : `left site origin → ${eventFetched.finalUrl}`;
+        rows.push({ path: eventPath, status: eventFetched.status, note: reason, result: "FAIL" });
+        failures.push(`${eventPath}: ${reason}`);
+      } else if (eventFetched.status !== 200 || !eventTitle.includes(TITLE_NEEDLE)) {
+        const reason = eventFetched.status !== 200
+          ? `expected 200, got ${eventFetched.status}`
+          : `title missing "${TITLE_NEEDLE}"`;
+        rows.push({ path: eventPath, status: eventFetched.status, note: reason, result: "FAIL" });
+        failures.push(`${eventPath}: ${reason}`);
+      } else if (eventFetched.body.includes(PRUEBAS_BANNER_NEEDLE)) {
+        rows.push({
+          path: `${eventPath}#pruebas-banner`,
+          status: 200,
+          note: `banner still visible: ${PRUEBAS_BANNER_NEEDLE}`,
+          result: "FAIL",
+        });
+        failures.push(`${eventPath}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
+      } else {
+        const problem = construccionArriba(eventFetched.body);
+        rows.push({
+          path: `${eventPath}#en-construccion`,
+          status: 200,
+          note: problem || "«En construcción» arriba de la cabecera",
+          result: problem ? "FAIL" : "OK",
+        });
+        if (problem) failures.push(`${eventPath}: ${problem}`);
+      }
     }
   }
 
