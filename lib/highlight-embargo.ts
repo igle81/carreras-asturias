@@ -1,7 +1,8 @@
 /**
  * Embargo VIP+24h: fuera de hero / carousel / quincena.
- * El strip Recién abiertas y los badges 🔥 / Abierta hoy|ayer usan solo la
- * ventana de 3 días (`lib/apertura-badge.ts`), sin esperar este embargo.
+ * El strip Recién abiertas (`entraEnStripRecienAbiertas`) y los badges
+ * 🔥 / Abierta hoy|ayer no esperan este embargo. El strip además exige
+ * inscripción abierta y `recien_abierta` de fila, dentro de la ventana de 3 días.
  * Siguen en listado y calendario. No hay columna `embargo_until` en Supabase;
  * el until va hardcodeado aquí.
  */

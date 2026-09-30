@@ -127,6 +127,7 @@ test("after embargo, Villacabra can show apertura reciente from fecha", () => {
     fecha_inicio: "2026-12-13",
     fecha_apertura_inscripcion: "2026-09-14",
     estado_inscripcion: "abierta",
+    recien_abierta: true,
   });
 
   assert.equal(resolveAperturaBadge(villacabra, AFTER), "abierta_ayer");
@@ -291,10 +292,12 @@ test("recién abierta is max 3 days from fecha; stale tags do not count", () => 
   const day3 = sampleEvent({
     id_canonico: "abierta-hace-tres-2026",
     fecha_apertura_inscripcion: "2026-09-12",
+    recien_abierta: true,
   });
   const day0 = sampleEvent({
     id_canonico: "abierta-hoy-2026",
     fecha_apertura_inscripcion: "2026-09-15",
+    recien_abierta: true,
   });
 
   assert.equal(resolveAperturaBadge(sanCosme, ON_15), null);

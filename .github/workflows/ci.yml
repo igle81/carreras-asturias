@@ -49,6 +49,14 @@ jobs:
             echo "Skipping test:highlight-embargo — lib/highlight-embargo.test.ts is not on this branch yet."
           fi
 
+      - name: Recién abiertas strip tests
+        run: |
+          if [ -f lib/recien-abiertas.test.ts ]; then
+            npm run test:recien-abiertas
+          else
+            echo "Skipping test:recien-abiertas — lib/recien-abiertas.test.ts is not on this branch yet."
+          fi
+
       - name: Build
         run: npm run build
         env:

@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { hasAperturaReciente } from "./apertura-badge";
+import { entraEnStripRecienAbiertas, hasAperturaReciente } from "./apertura-badge";
 import { daysUntil, isUpcoming, isWithinDays } from "./dates";
 import { disciplineLabel } from "./disciplines";
 import { isHighlightEmbargoed } from "./highlight-embargo";
@@ -171,14 +171,6 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
   const horaApertura = asOptionalText(row.hora_apertura_inscripcion);
   const aperturaAt = asOptionalText(row.apertura_inscripcion_at);
   const estado = (row.estado_inscripcion as Evento["estado_inscripcion"]) ?? "desconocido";
-  const dbRecien = row.recien_abierta === true;
-  const apertura = {
-    fecha_apertura_inscripcion: fechaApertura,
-    hora_apertura_inscripcion: horaApertura,
-    apertura_inscripcion_at: aperturaAt,
-    estado_inscripcion: estado,
-    recien_abierta: dbRecien,
-  };
   return {
     id_canonico: idCanonico,
     nombre: String(row.nombre ?? "Carrera"),
@@ -201,7 +193,8 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
     lat: row.lat == null ? null : Number(row.lat),
     lng: row.lng == null ? null : Number(row.lng),
     etiquetas: Array.isArray(row.etiquetas) ? (row.etiquetas as string[]) : null,
-    recien_abierta: hasAperturaReciente(apertura),
+    recien_abierta:
+      row.recien_abierta === true ? true : row.recien_abierta === false ? false : null,
     calidad_score: row.calidad_score == null ? null : Number(row.calidad_score),
     imagen_url: asImageUrl(row.imagen_url),
     imagen_fuente:
@@ -318,9 +311,9 @@ export function upcomingEvents(events: Evento[], from = new Date()) {
   return hidePortalDuplicates(events).filter((event) => isUpcoming(event.fecha_inicio, from));
 }
 
-/** Strip Recién abiertas: solo ventana 3d por fecha. No espera Multicanal VIP+24h. */
+/** Strip Recién abiertas: abierta + flag de fila + ≤3 días. No espera VIP+24h. */
 export function recienAbiertas(events: Evento[], from = new Date()) {
-  return hidePortalDuplicates(events).filter((event) => hasAperturaReciente(event, from));
+  return hidePortalDuplicates(events).filter((event) => entraEnStripRecienAbiertas(event, from));
 }
 
 export function estaQuincena(events: Evento[], from = new Date()) {

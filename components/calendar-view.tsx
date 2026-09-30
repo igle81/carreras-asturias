@@ -7,7 +7,7 @@ import { EventCard } from "./event-card";
 import { EventMap } from "./event-map";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
-import { hasAperturaReciente } from "@/lib/apertura-badge";
+import { entraEnStripRecienAbiertas } from "@/lib/apertura-badge";
 import { isWithinDays } from "@/lib/dates";
 import { disciplineMatches } from "@/lib/disciplines";
 import { compareListedEvents, listedEvents } from "@/lib/events";
@@ -44,7 +44,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
   // Próximas + acabadas ≤ 30 días tras dueAt. Sin tope hacia delante (Llanera10k 2027 entra).
   const filtered = useMemo(() => {
     const rows = listedEvents(scoped).filter((event) => {
-      if (recien && !hasAperturaReciente(event)) return false;
+      if (recien && !entraEnStripRecienAbiertas(event)) return false;
       if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
       if (disciplina && !disciplineMatches(event, disciplina)) return false;
       if (concejo && !matchesConcejo(event, concejo)) return false;
