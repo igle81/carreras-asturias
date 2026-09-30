@@ -135,7 +135,7 @@ function badgeFromDays(days: number): AperturaBadgeKind {
  * No pinta si la hora/instante de apertura es futuro, ni si el estado sigue
  * `cerrada_pendiente_apertura` / `proximamente` (salvo `recien_abierta` de fila).
  * El boolean `recien_abierta` no alarga la ventana de 3 días.
- * El strip Recién abiertas NO espera embargo VIP+24h.
+ * El strip no usa este badge: ver `entraEnStripRecienAbiertas`.
  */
 export function resolveAperturaBadge(
   event: EventoApertura,
@@ -168,6 +168,25 @@ export function hasAperturaReciente(
   now = new Date(),
 ): boolean {
   return resolveAperturaBadge(event, now) !== null;
+}
+
+/**
+ * Strip «Recién abiertas» (/correr, /ciclismo y calendario `?recien=1`).
+ * Entra solo con inscripción abierta, flag de fila y 0–3 días civiles desde
+ * `fecha_apertura_inscripcion` (Europe/Madrid). Fechas futuras quedan fuera.
+ * No espera el embargo VIP+24h.
+ */
+export function entraEnStripRecienAbiertas(
+  event: EventoApertura,
+  now = new Date(),
+): boolean {
+  if (estadoKey(event) !== "abierta") return false;
+  if (event.recien_abierta !== true) return false;
+  const fecha = event.fecha_apertura_inscripcion;
+  if (!fecha) return false;
+  const days = daysSinceApertura(fecha, now);
+  if (days === null || days < 0 || days > RECIEN_ABIERTA_MAX_DAYS) return false;
+  return true;
 }
 
 export function isRecienAbiertaFuego(
