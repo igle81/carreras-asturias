@@ -57,6 +57,14 @@ jobs:
             echo "Skipping test:recien-abiertas — lib/recien-abiertas.test.ts is not on this branch yet."
           fi
 
+      - name: Mapa de banderillas tests
+        run: |
+          if [ -f lib/mapa-carreras.test.ts ]; then
+            npm run test:mapa
+          else
+            echo "Skipping test:mapa — lib/mapa-carreras.test.ts is not on this branch yet."
+          fi
+
       - name: Build
         run: npm run build
         env:

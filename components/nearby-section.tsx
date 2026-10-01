@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { EventCard } from "./event-card";
 import { EventMap } from "./event-map";
@@ -45,6 +46,12 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
               : showConcejoFallback
                 ? "Sin ubicación. Filtra por concejo y sigue buscando dorsal."
                 : "Activa la ubicación o elige concejo si prefieres no compartirla."}
+          </p>
+          <p className="mt-2 text-sm text-ink/60">
+            <Link href="/mapa" className="font-semibold text-atlantic hover:text-forest">
+              Mapa de banderillas
+            </Link>
+            <span> con las pruebas que tienen fecha y sitio.</span>
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:items-end">

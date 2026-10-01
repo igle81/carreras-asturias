@@ -19,6 +19,7 @@ const STATIC_ROUTES: Omit<SitemapRow, "lastmod">[] = [
   { path: "/ciclismo", changeFrequency: "daily", priority: "0.9" },
   { path: "/correr/calendario", changeFrequency: "daily", priority: "0.8" },
   { path: "/ciclismo/calendario", changeFrequency: "daily", priority: "0.8" },
+  { path: "/mapa", changeFrequency: "daily", priority: "0.7" },
 ];
 
 function escapeXml(value: string): string {

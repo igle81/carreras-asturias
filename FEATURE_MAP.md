@@ -14,6 +14,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/correr/calendario` | Calendario solo a pie | Nav **Calendario** (desde correr); footer **Calendario a pie**; banner **Ver recién abiertas** / **Próximos 14 días** |
 | `/ciclismo/calendario` | Calendario solo bici | Nav **Calendario** (desde ciclismo); footer **Calendario bici** |
 | `/calendario` | Redirect helper → `/correr/calendario` (or `/ciclismo/calendario?…` if `?modalidad=ciclismo`) | Direct URL; not a nav item |
+| `/mapa` | Mapa de banderillas (una por prueba, ficha y cómo llegar). No sustituye el mapa de círculos de `/correr` y `/ciclismo` | Enlace **Mapa de banderillas** en la sección `#mapa` de correr y ciclismo |
 | `/evento/[id]` | Ficha de evento + bloque `#clasificacion` | Cards / hero / mapa on correr, ciclismo, calendarios |
 | `/privacidad` | Política de privacidad | Footer **Privacidad** |
 | `/cookies` | Política de cookies | Footer **Cookies** |
@@ -39,6 +40,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 ## Nav labels
 
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
+- `/mapa`: enlace discreto **Mapa de banderillas** dentro de la sección `#mapa` (`components/nearby-section.tsx`). El mapa de círculos de esa sección se mantiene.
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - VIP: bloque `#vip` visible. CTA «Avísame al abrir» + badge **Pronto**. No precio, no cancelar, no `t.me`.
