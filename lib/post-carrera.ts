@@ -17,7 +17,7 @@ export function postCarreraCta(event: Evento, from = new Date()): EventCta | nul
   if (!isRaceFinished(event, from)) return null;
   const url = clasificacionUrl(event);
   if (url) {
-    return { label: "Clasificación", href: url, external: true };
+    return { label: "Ver clasificación", href: url, external: true };
   }
   return {
     label: "Clasificación",

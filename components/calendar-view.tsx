@@ -10,7 +10,8 @@ import { useGeo } from "./geo-provider";
 import { entraEnStripRecienAbiertas } from "@/lib/apertura-badge";
 import { isWithinDays } from "@/lib/dates";
 import { disciplineMatches } from "@/lib/disciplines";
-import { compareListedEvents, listedEvents } from "@/lib/events";
+import { eventosVisiblesEnCalendario, textoRecuentoCalendario } from "@/lib/calendario-estado";
+import { compareListedEvents } from "@/lib/events";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
 import { SECTIONS, type Section } from "@/lib/sections";
@@ -27,6 +28,8 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
 
   const recien = searchParams.get("recien") === "1";
   const ventana = searchParams.get("ventana") === "14";
+  const conClasificacion = searchParams.get("clasificacion") === "1";
+  const celebradas = searchParams.get("celebradas") === "1" || conClasificacion;
   const disciplina = searchParams.get("disciplina") ?? "";
   const concejo = searchParams.get("concejo") ?? "";
   const sort = searchParams.get("sort") === "distancia" ? "distancia" : "fecha";
@@ -41,15 +44,18 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  // Próximas + acabadas ≤ 30 días tras dueAt. Sin tope hacia delante (Llanera10k 2027 entra).
+  // Por defecto: próximas + acabadas ≤ 30 días tras dueAt. Sin tope hacia delante.
+  // «Ya celebradas» abre todas las disputadas, también las anteriores a esos 30 días.
   const filtered = useMemo(() => {
-    const rows = listedEvents(scoped).filter((event) => {
-      if (recien && !entraEnStripRecienAbiertas(event)) return false;
-      if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
-      if (disciplina && !disciplineMatches(event, disciplina)) return false;
-      if (concejo && !matchesConcejo(event, concejo)) return false;
-      return true;
-    });
+    const rows = eventosVisiblesEnCalendario(scoped, { celebradas, conClasificacion }).filter(
+      (event) => {
+        if (recien && !entraEnStripRecienAbiertas(event)) return false;
+        if (ventana && !isWithinDays(event.fecha_inicio, 14)) return false;
+        if (disciplina && !disciplineMatches(event, disciplina)) return false;
+        if (concejo && !matchesConcejo(event, concejo)) return false;
+        return true;
+      },
+    );
 
     return [...rows].sort((a, b) => {
       if (sort === "distancia" && coords) {
@@ -61,7 +67,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       }
       return compareListedEvents(a, b);
     });
-  }, [concejo, coords, disciplina, recien, scoped, sort, ventana]);
+  }, [celebradas, concejo, conClasificacion, coords, disciplina, recien, scoped, sort, ventana]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -78,9 +84,10 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
 
       <div className="mb-6 space-y-4 rounded-3xl border border-forest/10 bg-white p-4">
         <DisciplineChips events={scoped} modalidad={section.id} />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
+            aria-pressed={recien}
             onClick={() => update({ recien: recien ? null : "1" })}
             className={`rounded-full px-3.5 py-2 text-sm font-semibold ${
               recien ? "bg-fire text-white" : "border border-forest/15 text-forest"
@@ -90,6 +97,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
           </button>
           <button
             type="button"
+            aria-pressed={ventana}
             onClick={() => update({ ventana: ventana ? null : "14" })}
             className={`rounded-full px-3.5 py-2 text-sm font-semibold ${
               ventana ? "bg-forest text-white" : "border border-forest/15 text-forest"
@@ -97,6 +105,46 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
           >
             Ventana 14 días
           </button>
+          <div
+            role="group"
+            aria-label="Estado de la prueba"
+            className="flex max-w-full flex-wrap items-center gap-1 rounded-2xl border border-forest/10 bg-fog p-1"
+          >
+            <button
+              type="button"
+              aria-pressed={celebradas}
+              onClick={() =>
+                update(
+                  celebradas
+                    ? { celebradas: null, clasificacion: null }
+                    : { celebradas: "1" },
+                )
+              }
+              className={`rounded-full px-3.5 py-2 text-sm font-semibold ${
+                celebradas ? "bg-ink text-white" : "border border-forest/15 bg-white text-forest"
+              }`}
+            >
+              Ya celebradas
+            </button>
+            <button
+              type="button"
+              aria-pressed={conClasificacion}
+              onClick={() =>
+                update(
+                  conClasificacion
+                    ? { clasificacion: null, celebradas: celebradas ? "1" : null }
+                    : { celebradas: "1", clasificacion: "1" },
+                )
+              }
+              className={`rounded-full px-3.5 py-2 text-sm font-semibold ${
+                conClasificacion
+                  ? "bg-gold text-ink"
+                  : "border border-forest/15 bg-white text-forest"
+              }`}
+            >
+              Con clasificación
+            </button>
+          </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="text-sm text-ink/70">
@@ -134,7 +182,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       </div>
 
       <p className="mb-4 text-sm text-ink/55">
-        {filtered.length} {filtered.length === 1 ? "prueba" : "pruebas"}
+        {textoRecuentoCalendario(filtered.length, { celebradas, conClasificacion })}
       </p>
 
       <div className="mb-8 hidden lg:block">
@@ -152,9 +200,13 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       </div>
       {!filtered.length ? (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
-          {recien
-            ? "No hay aperturas en los últimos 3 días."
-            : "Ninguna prueba encaja con esos filtros. Prueba a soltar alguno."}
+          {conClasificacion
+            ? "Ninguna prueba ya celebrada tiene la clasificación enlazada con estos filtros."
+            : celebradas
+              ? "No hay pruebas ya celebradas con estos filtros."
+              : recien
+                ? "No hay aperturas en los últimos 3 días."
+                : "Ninguna prueba encaja con esos filtros. Prueba a soltar alguno."}
         </p>
       ) : null}
     </div>

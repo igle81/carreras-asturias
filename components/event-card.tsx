@@ -4,7 +4,7 @@ import { EventPoster } from "./event-poster";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
-import { clasificacionVista } from "@/lib/clasificacion";
+import { clasificacionUrl, clasificacionVista } from "@/lib/clasificacion";
 import { eventCta, eventPosterUrl, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
 import { modalidadLabel } from "@/lib/modalidad";
@@ -25,6 +25,8 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const pending = inscripcionPendienteLabel(event);
   const poster = eventPosterUrl(event);
   const clasificacion = clasificacionVista(event);
+  const clasifUrl = clasificacionUrl(event);
+  const ctaEsClasificacion = Boolean(clasifUrl && cta.href === clasifUrl);
 
   return (
     <article
@@ -61,10 +63,15 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
               Inscripción cerrada
             </span>
           ) : null}
-          {clasificacion === "publicada" ? (
-            <span className="rounded-full bg-gold/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink">
+          {clasifUrl ? (
+            <a
+              href={clasifUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink hover:brightness-95"
+            >
               Clasificación
-            </span>
+            </a>
           ) : clasificacion === "pendiente" ? (
             <span className="rounded-full bg-ink/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">
               Sin clasificación
@@ -98,8 +105,18 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
         {distances ? <p className="text-sm font-medium text-forest">{distances}</p> : null}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-forest/8 px-4 py-3">
-        {cta.external ? (
+      <div className="flex flex-wrap items-center gap-2 border-t border-forest/8 px-4 py-3">
+        {clasifUrl ? (
+          <a
+            href={clasifUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex flex-1 items-center justify-center rounded-full bg-gold px-3 py-2 text-sm font-bold text-ink hover:brightness-95"
+          >
+            Ver clasificación
+          </a>
+        ) : null}
+        {ctaEsClasificacion ? null : cta.external ? (
           <a
             href={cta.href}
             target="_blank"

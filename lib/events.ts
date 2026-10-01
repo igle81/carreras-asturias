@@ -434,12 +434,12 @@ export function inscriptionUrl(event: Pick<Evento, "url_inscripcion" | "url_ofic
   return asImageUrl(event.url_inscripcion) ?? asImageUrl(event.url_oficial);
 }
 
-export function eventCta(event: Evento): {
+export function eventCta(event: Evento, from = new Date()): {
   label: string;
   href: string;
   external: boolean;
 } {
-  const afterRace = postCarreraCta(event);
+  const afterRace = postCarreraCta(event, from);
   if (afterRace) return afterRace;
 
   const ficha = `/evento/${event.id_canonico}`;
