@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ActivarAvisos } from "./activar-avisos";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
@@ -85,6 +86,12 @@ export function SiteHeader({
         >
           Menú
         </button>
+      </div>
+
+      <div className="border-t border-forest/10 px-4 py-2">
+        <div className="mx-auto max-w-6xl">
+          <ActivarAvisos />
+        </div>
       </div>
 
       {open ? (

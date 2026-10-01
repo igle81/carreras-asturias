@@ -84,7 +84,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Correo electrónico: avisos VIP y comunicaciones relacionadas con la suscripción.",
           "Stripe: cobro de la cuota, cliente de facturación y, si estás suscrito, baja o gestión a través del Customer Portal de Stripe.",
           "Telegram: envío de avisos al canal VIP privado.",
-          "OneSignal: notificaciones push en el navegador o dispositivo, solo si das permiso de notificaciones.",
+          "OneSignal: avisos en el navegador o dispositivo, solo si pulsas «Activar avisos» y aceptas el permiso. El código no se carga antes. Son avisos de aperturas y clasificaciones, y se pueden desactivar en el navegador.",
         ],
       },
       {
@@ -167,6 +167,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "1. Qué usamos hoy",
         paragraphs: [
           "Carreras Asturias usa almacenamientos del navegador de forma mínima. No hay cookies de analítica ni de marketing activas por defecto. El banner de consentimiento deja el hueco para activarlas en el futuro, sin cargar scripts de terceros mientras no exista un consentimiento afirmativo.",
+          "Los avisos de aperturas y clasificaciones son aparte: el código de OneSignal solo se descarga si pulsas «Activar avisos». Puedes desactivarlos después en la configuración del navegador.",
         ],
       },
       {
