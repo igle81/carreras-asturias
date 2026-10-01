@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ActivarAvisos } from "@/components/activar-avisos";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
@@ -144,6 +145,8 @@ export default async function EventoPage({ params }: EventPageProps) {
           Ver calendario
         </Link>
       </div>
+
+      <ActivarAvisos apariencia="ficha" />
 
       <ClasificacionBlock event={event} />
 
