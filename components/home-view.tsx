@@ -42,6 +42,23 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
         <Suspense fallback={null}>
           <DisciplineLinkChips events={scoped} calendarPath={section.calendar} modalidad={section.id} />
         </Suspense>
+        <p className="mb-3 mt-5 text-xs font-bold uppercase tracking-[0.18em] text-ink/45">
+          Filtros rápidos
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`${section.calendar}?cerradas=1`}
+            className="rounded-full border border-forest/15 bg-white px-3.5 py-2 text-sm font-semibold text-forest hover:border-atlantic/40"
+          >
+            Cerradas
+          </a>
+          <a
+            href={`${section.calendar}?clasificacion=1`}
+            className="rounded-full border border-forest/15 bg-white px-3.5 py-2 text-sm font-semibold text-forest hover:border-atlantic/40"
+          >
+            Con clasificación
+          </a>
+        </div>
       </div>
       <div className="space-y-14 pb-8">
         <RecienAbiertasStrip events={recien} calendarHref={`${section.calendar}?recien=1`} />
