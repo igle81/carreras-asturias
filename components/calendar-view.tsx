@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DisciplineChips } from "./discipline-chips";
 import { EventCard } from "./event-card";
-import { EventMap } from "./event-map";
+import { MapaCarreras } from "./mapa-carreras";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
 import { entraEnStripRecienAbiertas } from "@/lib/apertura-badge";
@@ -137,8 +137,8 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
         {filtered.length} {filtered.length === 1 ? "prueba" : "pruebas"}
       </p>
 
-      <div className="mb-8 hidden h-80 lg:block">
-        <EventMap events={filtered} userCoords={coords} />
+      <div className="mb-8 hidden lg:block">
+        <MapaCarreras events={filtered} alto="20rem" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { EventCard } from "./event-card";
-import { EventMap } from "./event-map";
+import { MapaCarreras } from "./mapa-carreras";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
@@ -54,7 +54,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <EventMap events={listed} userCoords={coords} selectedId={selectedId} />
+        <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" />
         <div className="grid max-h-[32rem] gap-3 overflow-y-auto pr-1">
           {listed.map((event) => (
             <div
