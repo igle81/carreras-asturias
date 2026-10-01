@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/json-ld";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
+import { clasificacionUrl } from "@/lib/clasificacion";
 import { eventCta, eventPosterCredit, eventPosterUrl, formatDistancias, getEvento, getEventos } from "@/lib/events";
 import { modalidadLabel, resolveModalidad } from "@/lib/modalidad";
 import { calendarPath } from "@/lib/sections";
@@ -41,6 +42,8 @@ export default async function EventoPage({ params }: EventPageProps) {
   }
 
   const cta = eventCta(event);
+  const clasifUrl = clasificacionUrl(event);
+  const ctaEsClasificacion = Boolean(clasifUrl && cta.href === clasifUrl);
   const distances = formatDistancias(event);
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
@@ -108,7 +111,16 @@ export default async function EventoPage({ params }: EventPageProps) {
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        {cta.external ? (
+        {ctaEsClasificacion && clasifUrl ? (
+          <a
+            href={clasifUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink hover:brightness-95"
+          >
+            Ver clasificación
+          </a>
+        ) : cta.external ? (
           <a
             href={cta.href}
             target="_blank"
@@ -116,6 +128,15 @@ export default async function EventoPage({ params }: EventPageProps) {
             className="rounded-full bg-forest px-5 py-3 text-sm font-bold text-white hover:bg-pine"
           >
             {cta.label}
+          </a>
+        ) : clasifUrl ? (
+          <a
+            href={clasifUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-gold px-5 py-3 text-sm font-bold text-ink hover:brightness-95"
+          >
+            Ver clasificación
           </a>
         ) : null}
         {officialSite ? (
