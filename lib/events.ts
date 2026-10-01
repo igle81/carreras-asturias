@@ -49,6 +49,11 @@ function isMissingDuplicadoColumn(error: { message?: string } | null): boolean {
   return (error.message ?? "").toLowerCase().includes("duplicado_de");
 }
 
+function isMissingPrecisionColumn(error: { message?: string } | null): boolean {
+  if (!error) return false;
+  return (error.message ?? "").toLowerCase().includes("coords_precision");
+}
+
 function isMissingAperturaExtraColumn(error: { message?: string } | null): boolean {
   if (!error) return false;
   const message = (error.message ?? "").toLowerCase();
@@ -214,6 +219,7 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
       typeof row.duplicado_de === "string" && row.duplicado_de.trim()
         ? row.duplicado_de.trim()
         : null,
+    coords_precision: asOptionalText(row.coords_precision),
   };
 }
 
@@ -288,11 +294,12 @@ export async function fetchEventos(): Promise<Evento[]> {
       return [];
     }
 
-    return hidePortalDuplicates(
+    const events = hidePortalDuplicates(
       (result.data ?? []).map((row) =>
         normalizeEvent(row as unknown as Record<string, unknown>),
       ),
     );
+    return aplicarPrecision(events, await fetchCoordsPrecision());
   } catch (error) {
     console.error("No se pudieron cargar los eventos", error);
     return [];
@@ -300,6 +307,43 @@ export async function fetchEventos(): Promise<Evento[]> {
 }
 
 export const getEventos = cache(fetchEventos);
+
+/**
+ * Precisión de lat/lng, en una consulta aparte.
+ * El listado principal recorta columnas si faltan en la vista; esta no debe tumbarlo.
+ */
+export async function fetchCoordsPrecision(): Promise<Record<string, string | null>> {
+  try {
+    const result = await getSupabase().from("eventos").select("id_canonico,coords_precision");
+    if (result.error) {
+      if (!isMissingPrecisionColumn(result.error)) {
+        console.error("No se pudo leer la precisión de las coordenadas", result.error.message);
+      }
+      return {};
+    }
+    const precision: Record<string, string | null> = {};
+    for (const row of result.data ?? []) {
+      const id = String((row as { id_canonico?: unknown }).id_canonico ?? "").trim();
+      if (!id) continue;
+      precision[id] = asOptionalText((row as { coords_precision?: unknown }).coords_precision);
+    }
+    return precision;
+  } catch (error) {
+    console.error("No se pudo leer la precisión de las coordenadas", error);
+    return {};
+  }
+}
+
+export function aplicarPrecision(
+  events: Evento[],
+  precision: Record<string, string | null>,
+): Evento[] {
+  if (!Object.keys(precision).length) return events;
+  return events.map((event) => ({
+    ...event,
+    coords_precision: precision[event.id_canonico] ?? event.coords_precision ?? null,
+  }));
+}
 
 export async function getEvento(id: string): Promise<Evento | null> {
   const events = await getEventos();

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
-import { EventMap } from "@/components/event-map";
+import { MapaCarreras } from "@/components/mapa-carreras";
 import { JsonLd } from "@/components/json-ld";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
@@ -147,8 +147,8 @@ export default async function EventoPage({ params }: EventPageProps) {
 
       <ClasificacionBlock event={event} />
 
-      <div className="mt-8 h-80">
-        <EventMap events={[event]} />
+      <div className="mt-8">
+        <MapaCarreras events={[event]} alto="20rem" />
       </div>
     </article>
   );

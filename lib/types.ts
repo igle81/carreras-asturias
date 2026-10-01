@@ -34,6 +34,11 @@ export type Evento = {
   apertura_inscripcion_at?: string | null;
   lat: number | null;
   lng: number | null;
+  /**
+   * Precisión de las coordenadas. `aprox_municipio` es el centro del concejo,
+   * no la salida de la prueba.
+   */
+  coords_precision?: string | null;
   etiquetas: string[] | null;
   recien_abierta: boolean | null;
   calidad_score: number | null;

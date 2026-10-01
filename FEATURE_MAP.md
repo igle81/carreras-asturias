@@ -39,6 +39,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 ## Nav labels
 
 - Header (`components/site-header.tsx`): **Correr**, **Ciclismo**, **Calendario**, **Mapa** (`/correr#mapa` or `/ciclismo#mapa`), **Menú** (mobile)
+- Mapa de banderillas (`components/mapa-carreras.tsx`): sustituye al mapa de círculos en `#mapa` (correr y ciclismo), en los calendarios y en la ficha. Ventana con nombre, tipo, fecha, ficha y cómo llegar. Atribución de OpenStreetMap en el mapa.
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - VIP: bloque `#vip` visible. CTA «Avísame al abrir» + badge **Pronto**. No precio, no cancelar, no `t.me`.
