@@ -294,11 +294,12 @@ export async function fetchEventos(): Promise<Evento[]> {
       return [];
     }
 
-    return hidePortalDuplicates(
+    const events = hidePortalDuplicates(
       (result.data ?? []).map((row) =>
         normalizeEvent(row as unknown as Record<string, unknown>),
       ),
     );
+    return aplicarPrecision(events, await fetchCoordsPrecision());
   } catch (error) {
     console.error("No se pudieron cargar los eventos", error);
     return [];

@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { EventCard } from "./event-card";
-import { EventMap } from "./event-map";
+import { MapaCarreras } from "./mapa-carreras";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
@@ -47,12 +46,6 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
                 ? "Sin ubicación. Filtra por concejo y sigue buscando dorsal."
                 : "Activa la ubicación o elige concejo si prefieres no compartirla."}
           </p>
-          <p className="mt-2 text-sm text-ink/60">
-            <Link href="/mapa" className="font-semibold text-atlantic hover:text-forest">
-              Mapa de banderillas
-            </Link>
-            <span> con las pruebas que tienen fecha y sitio.</span>
-          </p>
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <GeoButton />
@@ -61,7 +54,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <EventMap events={listed} userCoords={coords} selectedId={selectedId} />
+        <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" />
         <div className="grid max-h-[32rem] gap-3 overflow-y-auto pr-1">
           {listed.map((event) => (
             <div

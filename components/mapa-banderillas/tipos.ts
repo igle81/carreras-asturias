@@ -71,6 +71,8 @@ export type OpcionesMapa = {
   teselas?: { url: string; atribucion: string; zoomMaximo?: number };
   /** Se llama al abrir una banderilla, con los puntos que agrupa. */
   alAbrirBanderilla?: (puntos: Punto[]) => void;
+  /** Si viene, el mapa se acerca a este punto (por ejemplo, al pulsar «Ver en el mapa»). */
+  foco?: { lat: number; lon: number } | null;
 };
 
 export type Grupo = { clave: string; lat: number; lon: number; puntos: Punto[]; categoria: string };

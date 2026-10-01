@@ -1,12 +1,8 @@
 import type { EstiloCategoria } from "@/components/mapa-banderillas/tipos";
-import { daysUntilMadrid } from "./dates";
 import { disciplineLabel, disciplineMarkerColor } from "./disciplines";
 import { isPortalExcluded } from "./portal-dedupe";
 import { eventPath } from "./seo";
 import type { Evento } from "./types";
-
-/** Carreras de los últimos días siguen en el mapa; lo más antiguo, no. */
-export const DIAS_RECIENTES_MAPA = 7;
 
 const ICONOS: Record<string, string> = {
   asfalto: "🏃",
@@ -35,7 +31,7 @@ export type PuntoCarrera = {
   lat: number;
   lon: number;
   categoria: string;
-  fecha: string;
+  fecha?: string;
   enlace: string;
   lugar?: string;
 };
@@ -72,13 +68,11 @@ function diaDe(event: Evento): string | null {
   return raw.slice(0, 10);
 }
 
-/** Pruebas que pueden pintarse: sin duplicar, con sitio y con fecha reciente o futura. */
-export function eventosParaMapa(events: Evento[], from = new Date()): Evento[] {
+/** Las mismas que pintaba el mapa de círculos: con coordenadas válidas y sin duplicar. */
+export function eventosParaMapa(events: Evento[]): Evento[] {
   return events.filter((event) => {
     if (isPortalExcluded(event)) return false;
-    if (!coordenadasUtiles(event.lat, event.lng)) return false;
-    const delta = daysUntilMadrid(diaDe(event), from);
-    return delta !== null && delta >= -DIAS_RECIENTES_MAPA;
+    return coordenadasUtiles(event.lat, event.lng);
   });
 }
 
@@ -90,32 +84,24 @@ export function lugarDelEvento(event: Evento): string | undefined {
   return sitio || undefined;
 }
 
-export function puntosDesdeEventos(events: Evento[], from = new Date()): PuntoCarrera[] {
-  return eventosParaMapa(events, from).map((event) => ({
-    nombre: event.nombre,
-    lat: event.lat as number,
-    lon: event.lng as number,
-    categoria: event.disciplina_normalizada?.trim() || "sin-categoria",
-    fecha: diaDe(event) as string,
-    enlace: eventPath(event.id_canonico),
-    lugar: lugarDelEvento(event),
-  }));
-}
-
-export function hayUbicacionDeMunicipio(events: Evento[], from = new Date()): boolean {
-  return eventosParaMapa(events, from).some((event) => esPrecisionMunicipio(event.coords_precision));
-}
-
-export function leyendaDe(puntos: PuntoCarrera[]): Array<Required<EstiloCategoria> & { clave: string }> {
-  const categorias = categoriasBanderillas();
-  const claves = [...new Set(puntos.map((punto) => punto.categoria))];
-  return claves.map((clave) => {
-    const estilo = categorias[clave];
+export function puntosDesdeEventos(events: Evento[]): PuntoCarrera[] {
+  return eventosParaMapa(events).map((event) => {
+    const fecha = diaDe(event);
     return {
-      clave,
-      nombre: estilo?.nombre || disciplineLabel(clave),
-      color: estilo?.color || disciplineMarkerColor(clave),
-      icono: estilo?.icono || "📍",
+      nombre: event.nombre,
+      lat: event.lat as number,
+      lon: event.lng as number,
+      categoria: event.disciplina_normalizada?.trim() || "sin-categoria",
+      ...(fecha ? { fecha } : {}),
+      enlace: eventPath(event.id_canonico),
+      lugar: lugarDelEvento(event),
     };
   });
 }
+
+export function hayUbicacionDeMunicipio(events: Evento[]): boolean {
+  return eventosParaMapa(events).some((event) => esPrecisionMunicipio(event.coords_precision));
+}
+
+export const TEXTO_UBICACION_APROXIMADA =
+  "La ubicación es aproximada cuando solo consta el municipio: la banderilla marca el centro del concejo, no la línea de salida.";

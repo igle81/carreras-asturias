@@ -84,7 +84,7 @@ export async function crearMapa(contenedor: HTMLElement, puntosEntrada: unknown,
   L.tileLayer(tes.url, { maxZoom: ("zoomMaximo" in tes && tes.zoomMaximo) || 18, attribution: tes.atribucion }).addTo(mapa);
   setTimeout(() => mapa.invalidateSize(), 50);
 
-  const marcadores: Marker[] = [];
+  const marcadores: { mk: Marker; lat: number; lon: number }[] = [];
   let todos: Punto[] = [];
 
   const estilo = (clave: string): Required<EstiloCategoria> => {
@@ -158,8 +158,20 @@ export async function crearMapa(contenedor: HTMLElement, puntosEntrada: unknown,
     });
   };
 
+  const encuadrar = () => {
+    const foco = op.foco;
+    if (foco && Number.isFinite(foco.lat) && Number.isFinite(foco.lon)) {
+      mapa.flyTo([foco.lat, foco.lon], op.zoomMaximoAjuste ?? 11, { duration: 0.45 });
+      marcadores
+        .find((marca) => Math.abs(marca.lat - foco.lat) < 0.0002 && Math.abs(marca.lon - foco.lon) < 0.0002)
+        ?.mk.openPopup();
+      return;
+    }
+    if (op.ajusteAutomatico ?? true) ajustar();
+  };
+
   const pintar = (entrada: unknown): number => {
-    for (const mk of marcadores) mk.remove();
+    for (const marca of marcadores) marca.mk.remove();
     marcadores.length = 0;
     const { validos } = validarPuntos(entrada, textos.sinNombre, textos.sinCategoria);
     todos = validos;
@@ -176,9 +188,9 @@ export async function crearMapa(contenedor: HTMLElement, puntosEntrada: unknown,
         op.alAbrirBanderilla?.(g.puntos);
       });
       mk.on("popupclose", () => mk.setIcon(iconoDe(L, e.color, e.icono, g.puntos.length, false)));
-      marcadores.push(mk);
+      marcadores.push({ mk, lat: g.lat, lon: g.lon });
     }
-    if (op.ajusteAutomatico ?? true) ajustar();
+    encuadrar();
     return validos.length;
   };
 
