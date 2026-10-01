@@ -11,6 +11,7 @@
     "test:post-carrera": "npx --yes tsx --test lib/post-carrera.test.ts",
     "test:highlight-embargo": "npx --yes tsx --test lib/highlight-embargo.test.ts",
     "test:recien-abiertas": "npx --yes tsx --test lib/recien-abiertas.test.ts",
+    "test:filtros": "npx --yes tsx --test lib/filtros-calendario.test.ts",
     "test:mapa": "npx --yes tsx --test lib/mapa-carreras.test.ts components/mapa-banderillas/datos.test.ts",
     "verify:smoke": "node scripts/verify-smoke.mjs"
   },

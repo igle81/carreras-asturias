@@ -20,6 +20,10 @@ const EVENT_COLUMNS_WITH_MODALIDAD = `${EVENT_COLUMNS},modalidad`;
 const EVENT_COLUMNS_WITH_APERTURA = `${EVENT_COLUMNS_WITH_MODALIDAD},fecha_apertura_inscripcion`;
 const EVENT_COLUMNS_FULL = `${EVENT_COLUMNS_WITH_APERTURA},imagen_url,imagen_fuente`;
 const EVENT_COLUMNS_FULL_EXTRAS = `${EVENT_COLUMNS_FULL},hora_apertura_inscripcion,apertura_inscripcion_at,url_inscripcion`;
+/**
+ * Si la vista aún no expone estas columnas, la consulta reintenta sin ellas
+ * y la ficha sigue cargando. Cuando existen, se leen aquí.
+ */
 const EVENT_COLUMNS_WITH_CLASIFICACION = `${EVENT_COLUMNS_FULL_EXTRAS},url_clasificacion,estado_clasificacion,fuente_clasificacion`;
 const EVENT_COLUMNS_WITH_DUPLICADO = `${EVENT_COLUMNS_WITH_CLASIFICACION},duplicado_de`;
 

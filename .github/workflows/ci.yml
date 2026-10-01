@@ -57,6 +57,14 @@ jobs:
             echo "Skipping test:recien-abiertas — lib/recien-abiertas.test.ts is not on this branch yet."
           fi
 
+      - name: Filtros de calendario tests
+        run: |
+          if [ -f lib/filtros-calendario.test.ts ]; then
+            npm run test:filtros
+          else
+            echo "Skipping test:filtros — lib/filtros-calendario.test.ts is not on this branch yet."
+          fi
+
       - name: Mapa de banderillas tests
         run: |
           if [ -f lib/mapa-carreras.test.ts ]; then
