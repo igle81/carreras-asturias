@@ -22,6 +22,15 @@ export function clasificacionUrl(
   return asHttpsUrl(event.url_clasificacion);
 }
 
+/** Enlace visible en la tarjeta del listado. Null si no hay URL utilizable. */
+export function enlaceClasificacionTarjeta(
+  event: Pick<Evento, "url_clasificacion">,
+): { href: string; label: "Ver clasificación" } | null {
+  const href = clasificacionUrl(event);
+  if (!href) return null;
+  return { href, label: "Ver clasificación" };
+}
+
 export function clasificacionVista(
   event: Pick<
     Evento,

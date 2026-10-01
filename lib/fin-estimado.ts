@@ -9,7 +9,8 @@ export const NOCTURNA_START_HOUR_MADRID = 21;
 /** Minutos extra después del último (ritmo lento) antes de buscar clasificación. */
 export const CLASIFICACION_MARGIN_MIN = 30;
 
-export const POST_RACE_RETENTION_DAYS = 30;
+/** Días que una carrera ya celebrada sigue en calendario y mapa. */
+export const POST_RACE_RETENTION_DAYS = 60;
 
 /** km/h lentos: a pie ritmo de cola; bici cola de competición/cicloturista. */
 const KMH_PIE: Record<string, number> = {

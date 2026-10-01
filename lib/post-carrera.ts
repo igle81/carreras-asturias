@@ -12,6 +12,8 @@ export type EventCta = {
 /**
  * Al persistir una prueba con fecha se estima el fin (ritmo lento + margen).
  * En ese instante arranca la rutina de clasificación. CTA Inscribirme → Clasificación.
+ * En calendario y mapa el botón sigue visible mientras la prueba está listada
+ * (POST_RACE_RETENTION_DAYS tras el fin estimado).
  */
 export function postCarreraCta(event: Evento, from = new Date()): EventCta | null {
   if (!isRaceFinished(event, from)) return null;

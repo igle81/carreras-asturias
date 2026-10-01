@@ -4,7 +4,7 @@ import { EventPoster } from "./event-poster";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
-import { clasificacionVista } from "@/lib/clasificacion";
+import { clasificacionVista, enlaceClasificacionTarjeta } from "@/lib/clasificacion";
 import { eventCta, eventPosterUrl, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
 import { modalidadLabel } from "@/lib/modalidad";
@@ -25,6 +25,12 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const pending = inscripcionPendienteLabel(event);
   const poster = eventPosterUrl(event);
   const clasificacion = clasificacionVista(event);
+  const enlaceClasificacion = enlaceClasificacionTarjeta(event);
+  const ctaEsClasificacion = Boolean(
+    enlaceClasificacion && cta.external && cta.href === enlaceClasificacion.href,
+  );
+  const ctaLabel =
+    ctaEsClasificacion && enlaceClasificacion ? enlaceClasificacion.label : cta.label;
 
   return (
     <article
@@ -98,27 +104,43 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
         {distances ? <p className="text-sm font-medium text-forest">{distances}</p> : null}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-forest/8 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-forest/8 px-4 py-3">
+        {enlaceClasificacion && !ctaEsClasificacion ? (
+          <a
+            href={enlaceClasificacion.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${enlaceClasificacion.label} de ${event.nombre}`}
+            className="inline-flex flex-1 items-center justify-center rounded-full bg-gold px-3 py-2 text-center text-sm font-semibold text-ink hover:bg-gold/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+          >
+            {enlaceClasificacion.label}
+          </a>
+        ) : null}
         {cta.external ? (
           <a
             href={cta.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex flex-1 items-center justify-center rounded-full bg-forest px-3 py-2 text-sm font-semibold text-white hover:bg-pine"
+            aria-label={ctaEsClasificacion ? `${ctaLabel} de ${event.nombre}` : undefined}
+            className={`inline-flex flex-1 items-center justify-center rounded-full px-3 py-2 text-center text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest ${
+              ctaEsClasificacion
+                ? "bg-gold text-ink hover:bg-gold/80"
+                : "bg-forest text-white hover:bg-pine"
+            }`}
           >
-            {cta.label}
+            {ctaLabel}
           </a>
         ) : (
           <Link
             href={cta.href}
-            className="inline-flex flex-1 items-center justify-center rounded-full border border-forest/20 px-3 py-2 text-sm font-semibold text-forest hover:bg-moss/40"
+            className="inline-flex flex-1 items-center justify-center rounded-full border border-forest/20 px-3 py-2 text-center text-sm font-semibold text-forest hover:bg-moss/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
           >
-            {cta.label}
+            {ctaLabel}
           </Link>
         )}
         <Link
           href={`/evento/${event.id_canonico}`}
-          className="rounded-full px-3 py-2 text-sm text-ink/60 hover:text-forest"
+          className="rounded-full px-3 py-2 text-sm text-ink/60 hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
         >
           Ficha
         </Link>
