@@ -1,7 +1,21 @@
 export const ONESIGNAL_APP_ID = "12796c96-a5cd-4db3-af58-584c429ce188";
 
-/** vip_subscribers.id for Javier — internal test only. */
-export const VIP_TEST_EXTERNAL_ID = "60040074-3197-4584-855c-82f40ee8770e";
+/**
+ * Identificador externo de OneSignal (el external_id que usa n8n).
+ * Hoy el único destinatario es Javier. Cuando haya sesión de usuario VIP,
+ * este es el único punto donde hay que poner su identificador.
+ * Se cambia con NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID; si falta, vale el de Javier.
+ */
+const IDENTIFICADOR_EXTERNO_POR_DEFECTO = "60040074-3197-4584-855c-82f40ee8770e";
+
+export const ONESIGNAL_EXTERNAL_ID =
+  process.env.NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID?.trim() || IDENTIFICADOR_EXTERNO_POR_DEFECTO;
+
+/** Misma persona que el aviso público. La página interna de prueba reutiliza este valor. */
+export const VIP_TEST_EXTERNAL_ID = ONESIGNAL_EXTERNAL_ID;
+
+const AVISOS_CLAVE = "ca-avisos-activados";
+export const AVISOS_EVENTO = "ca-avisos";
 
 /** Preferred Site URL host. Apex also works if OneSignal Site URL matches. */
 export const ONESIGNAL_PREFERRED_ORIGIN = "https://www.carrerasasturias.es";
@@ -21,6 +35,10 @@ export type OneSignalWebSDK = {
   };
   User: {
     addTag: (key: string, value: string) => void | Promise<void>;
+    PushSubscription?: {
+      optedIn?: boolean;
+      optIn?: () => Promise<void>;
+    };
   };
 };
 
@@ -107,7 +125,8 @@ export async function initOneSignal(): Promise<OneSignalWebSDK> {
   initPromise = withOneSignal(async (onesignal) => {
     await onesignal.init({
       appId: ONESIGNAL_APP_ID,
-      serviceWorkerPath: "OneSignalSDKWorker.js",
+      serviceWorkerPath: "/OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/" },
       allowLocalhostAsSecureOrigin: true,
       welcomeNotification: { disable: true },
       notifyButton: { enable: false },
@@ -149,4 +168,85 @@ export function toErrorMessage(error: unknown): string {
   }
 
   return raw || "No se pudo activar el push VIP de prueba.";
+}
+
+export function avisosActivadosLocalmente(): boolean {
+  if (typeof window === "undefined") return false;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+    return false;
+  }
+  try {
+    return window.localStorage.getItem(AVISOS_CLAVE) === ONESIGNAL_EXTERNAL_ID;
+  } catch {
+    return false;
+  }
+}
+
+function marcarAvisosActivados(): void {
+  try {
+    window.localStorage.setItem(AVISOS_CLAVE, ONESIGNAL_EXTERNAL_ID);
+  } catch {
+    // El permiso queda en el navegador aunque no se pueda recordar la preferencia.
+  }
+  window.dispatchEvent(new Event(AVISOS_EVENTO));
+}
+
+async function permisoConcedido(onesignal: OneSignalWebSDK): Promise<boolean> {
+  const requested = await onesignal.Notifications.requestPermission();
+  if (requested === true || onesignal.Notifications.permission) return true;
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+    return true;
+  }
+  return false;
+}
+
+/** Pide el permiso y vincula este navegador al identificador externo. No carga el SDK hasta llamarla. */
+export async function activarAvisos(): Promise<void> {
+  const onesignal = await initOneSignal();
+
+  if (!onesignal.Notifications.isPushSupported()) {
+    throw new Error(
+      "Este navegador no admite avisos. Prueba en Chrome o en el navegador del móvil, fuera del modo privado.",
+    );
+  }
+
+  if (typeof Notification !== "undefined" && Notification.permission === "denied") {
+    throw new Error(permissionDeniedMessage());
+  }
+
+  const concedido = await permisoConcedido(onesignal);
+  if (!concedido) {
+    throw new Error(permissionDeniedMessage());
+  }
+
+  const suscripcion = onesignal.User.PushSubscription;
+  if (suscripcion && suscripcion.optedIn === false && suscripcion.optIn) {
+    await suscripcion.optIn();
+  }
+
+  await onesignal.login(ONESIGNAL_EXTERNAL_ID);
+  marcarAvisosActivados();
+}
+
+export function mensajeErrorAvisos(error: unknown): string {
+  const raw =
+    error instanceof Error
+      ? error.message.trim()
+      : typeof error === "string"
+        ? error.trim()
+        : "";
+
+  if (raw === permissionDeniedMessage() || raw.startsWith("Este navegador no admite avisos")) {
+    return raw;
+  }
+
+  const lower = raw.toLowerCase();
+  if (lower.includes("can only be used on") || lower.includes("not configured for web push")) {
+    return "Este sitio no está autorizado para avisos. En OneSignal, el dominio permitido tiene que ser el de esta web.";
+  }
+  if (lower.includes("the app id is not valid") || lower.includes("invalid app id")) {
+    return "No se han podido activar los avisos: la aplicación no es válida.";
+  }
+
+  return "No se han podido activar los avisos. Inténtalo de nuevo.";
 }
