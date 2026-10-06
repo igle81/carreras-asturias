@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivarAvisos } from "@/components/activar-avisos";
+import { AvilesiaEscapada } from "@/components/avilesia-escapada";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { ClasificacionBlock } from "@/components/clasificacion-block";
 import { EventDetailPoster } from "@/components/event-poster";
 import { MapaCarreras } from "@/components/mapa-carreras";
 import { JsonLd } from "@/components/json-ld";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
+import { esComarcaAviles } from "@/lib/avilesia";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
 import { eventCta, eventPosterCredit, eventPosterUrl, formatDistancias, getEvento, getEventos } from "@/lib/events";
@@ -153,6 +155,12 @@ export default async function EventoPage({ params }: EventPageProps) {
       <div className="mt-8">
         <MapaCarreras events={[event]} alto="20rem" />
       </div>
+
+      <AvilesiaEscapada
+        modalidad={resolveModalidad(event)}
+        comarca={esComarcaAviles(event)}
+        className="mt-8"
+      />
     </article>
   );
 }

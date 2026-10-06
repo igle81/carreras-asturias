@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { AvilesiaApps } from "./avilesia-apps";
+import { AvilesiaEscapada } from "./avilesia-escapada";
 import { DisciplineLinkChips } from "./discipline-chips";
 import { EstaQuincena } from "./esta-quincena";
 import { HeroCarousel } from "./hero-carousel";
@@ -64,6 +65,9 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
       <div className="space-y-14 pb-8">
         <RecienAbiertasStrip events={recien} calendarHref={`${section.calendar}?recien=1`} />
         <AvilesiaApps />
+        <div className="mx-auto max-w-6xl px-4">
+          <AvilesiaEscapada modalidad={section.id} comarca />
+        </div>
         <EstaQuincena events={quincena} />
         <NearbySection events={listedEvents(scoped)} title={section.mapTitle} />
         <VipPromo
