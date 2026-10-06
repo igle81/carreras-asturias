@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { AvilesiaBarra } from "@/components/avilesia-barra";
 import { CookieBanner } from "@/components/cookie-banner";
 import { FranjaEnConstruccion } from "@/components/franja-en-construccion";
 import { GeoProvider } from "@/components/geo-provider";
@@ -79,6 +80,7 @@ export default async function RootLayout({
           </div>
           <main>{children}</main>
           <SiteFooter />
+          <AvilesiaBarra />
           <CookieBanner />
         </GeoProvider>
       </body>
