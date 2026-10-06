@@ -43,3 +43,8 @@ body {
   font-family: inherit;
   background: #e8efe8;
 }
+
+/* Barra flotante de AvilesIA: hueco abajo para no tapar pie, inscripción ni menús. */
+html[data-avilesia-barra="on"] body {
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+}
