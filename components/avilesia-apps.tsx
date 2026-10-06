@@ -27,7 +27,7 @@ const APPS = [
   {
     name: "oposAsturIA",
     what: "Oposiciones",
-    blurb: "Prepara tu oposición",
+    blurb: "Busca tu oposición",
     href: `https://opos.avilesia.es/?${UTM}&utm_campaign=oposasturia`,
   },
 ] as const;
