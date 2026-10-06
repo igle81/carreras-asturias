@@ -1,3 +1,4 @@
+import { AvilesiaApps } from "@/components/avilesia-apps";
 import { JsonLd } from "@/components/json-ld";
 import { Landing } from "@/components/landing";
 import { getEventos } from "@/lib/events";
@@ -28,6 +29,7 @@ export default async function HomePage() {
         pieCount={filterByModalidad(events, "pie").length}
         biciCount={filterByModalidad(events, "ciclismo").length}
       />
+      <AvilesiaApps className="py-10" />
     </>
   );
 }
