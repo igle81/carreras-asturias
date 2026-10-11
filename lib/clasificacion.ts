@@ -31,6 +31,19 @@ export function enlaceClasificacionTarjeta(
   return { href, label: "Ver clasificación" };
 }
 
+/**
+ * El hero no puede fijar «Inscribirme»: si el CTA ya apunta a la clasificación,
+ * el texto visible es el mismo que en la tarjeta.
+ */
+export function etiquetaCta(
+  event: Pick<Evento, "url_clasificacion">,
+  cta: { label: string; href: string; external: boolean },
+): string {
+  const enlace = enlaceClasificacionTarjeta(event);
+  if (enlace && cta.external && cta.href === enlace.href) return enlace.label;
+  return cta.label;
+}
+
 export function clasificacionVista(
   event: Pick<
     Evento,
