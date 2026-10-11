@@ -12,6 +12,7 @@ import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { esComarcaAviles } from "@/lib/avilesia";
 import { daysUntil, formatRangoFecha } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
+import { etiquetaCta } from "@/lib/clasificacion";
 import { eventCta, eventPosterCredit, eventPosterUrl, formatDistancias, getEvento, getEventos } from "@/lib/events";
 import { modalidadLabel, resolveModalidad } from "@/lib/modalidad";
 import { calendarPath } from "@/lib/sections";
@@ -44,6 +45,7 @@ export default async function EventoPage({ params }: EventPageProps) {
   }
 
   const cta = eventCta(event);
+  const ctaLabel = etiquetaCta(event, cta);
   const distances = formatDistancias(event);
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
@@ -118,7 +120,7 @@ export default async function EventoPage({ params }: EventPageProps) {
             rel="noopener noreferrer"
             className="rounded-full bg-forest px-5 py-3 text-sm font-bold text-white hover:bg-pine"
           >
-            {cta.label}
+            {ctaLabel}
           </a>
         ) : null}
         {officialSite ? (
