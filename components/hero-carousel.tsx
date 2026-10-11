@@ -214,7 +214,7 @@ export function HeroCarousel({
             {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
             {event.municipio ? ` · ${event.municipio}` : ""}
           </p>
-          <h1 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xm">
+          <h1 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xl">
             {event.nombre}
           </h1>
           <p className="mt-3 text-base text-white/85 sm:text-lg">
