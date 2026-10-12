@@ -22,6 +22,9 @@ export type ResultadoCanal = {
 export type AvisoRegistro = {
   email: string;
   userId: string;
+  nombre: string;
+  instagram: string | null;
+  pushActivado: boolean;
 };
 
 type EnvLike = Record<string, string | undefined>;
@@ -48,6 +51,9 @@ type CuerpoBase = {
   external_id: string;
   asunto: string;
   mensaje: string;
+  nombre: string;
+  instagram: string | null;
+  push_activado: boolean;
 };
 
 type CuerpoTelegram = CuerpoBase & {
@@ -126,7 +132,15 @@ export function mensajeRegistro(aviso: AvisoRegistro, prueba: boolean): { asunto
       "[PRUEBA] Registro de avisos de Carreras Asturias. No es un alta real. ok_emitir=false.";
     return { asunto: "[PRUEBA] Carreras Asturias · registro de avisos", mensaje };
   }
-  const mensaje = `Nuevo registro de avisos en Carreras Asturias. Correo: ${aviso.email}`;
+  const instagram = aviso.instagram ?? "no indicado";
+  const push = aviso.pushActivado ? "sí" : "no";
+  const mensaje = [
+    "Nuevo registro de avisos en Carreras Asturias.",
+    `Nombre: ${aviso.nombre}.`,
+    `Correo: ${aviso.email}.`,
+    `Instagram: ${instagram}.`,
+    `Push: ${push}.`,
+  ].join(" ");
   return { asunto: "Nuevo registro de avisos · Carreras Asturias", mensaje };
 }
 
@@ -151,6 +165,9 @@ export function cuerpoWebhook(
     external_id: leer(env, "NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID") || ONESIGNAL_EXTERNAL_ID,
     asunto: texto.asunto,
     mensaje: texto.mensaje,
+    nombre: aviso.nombre,
+    instagram: aviso.instagram,
+    push_activado: aviso.pushActivado,
   };
 
   if (canal === "telegram") {

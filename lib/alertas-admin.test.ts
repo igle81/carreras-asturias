@@ -2,12 +2,19 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   cuerpoWebhook,
+  mensajeRegistro,
   notificarAdminRegistro,
   TELEGRAM_CHAT_ID_POR_DEFECTO,
   WEBHOOKS_N8N,
 } from "./alertas-admin";
 
-const AVISO = { email: "corredor@ejemplo.es", userId: "user-1" };
+const AVISO = {
+  email: "corredor@ejemplo.es",
+  userId: "user-1",
+  nombre: "Ana Ruta",
+  instagram: "@ana.ruta" as string | null,
+  pushActivado: true,
+};
 
 test("un alta real pide emitir y el correo lleva el texto en los campos de n8n", () => {
   const cuerpo = cuerpoWebhook("email", AVISO, false, {});
@@ -21,7 +28,13 @@ test("un alta real pide emitir y el correo lleva el texto en los campos de n8n",
   assert.equal(cuerpo.copy, cuerpo.mensaje);
   assert.equal(cuerpo.html, cuerpo.mensaje);
   assert.equal(cuerpo.body, cuerpo.mensaje);
+  assert.equal(cuerpo.nombre, "Ana Ruta");
+  assert.equal(cuerpo.instagram, "@ana.ruta");
+  assert.equal(cuerpo.push_activado, true);
+  assert.match(cuerpo.mensaje, /Nombre: Ana Ruta/);
   assert.match(cuerpo.mensaje, /corredor@ejemplo.es/);
+  assert.match(cuerpo.mensaje, /Instagram: @ana.ruta/);
+  assert.match(cuerpo.mensaje, /Push: sí/);
   assert.equal(cuerpo.chat_id, TELEGRAM_CHAT_ID_POR_DEFECTO);
 });
 
@@ -33,6 +46,15 @@ test("la prueba no emite y el texto va marcado", () => {
   assert.equal(cuerpo.id_dedup, "registro-user-1");
   assert.match(cuerpo.mensaje, /^\[PRUEBA\]/);
   assert.equal(cuerpo.mensaje.includes("corredor@ejemplo.es"), false);
+  assert.equal(cuerpo.mensaje.includes("Ana Ruta"), false);
+  assert.equal(cuerpo.nombre, "Ana Ruta");
+  assert.equal(cuerpo.push_activado, true);
+});
+
+test("sin instagram ni push el aviso lo dice", () => {
+  const texto = mensajeRegistro({ ...AVISO, instagram: null, pushActivado: false }, false);
+  assert.match(texto.mensaje, /Instagram: no indicado/);
+  assert.match(texto.mensaje, /Push: no/);
 });
 
 test("el push repite asunto y mensaje como title y body", () => {

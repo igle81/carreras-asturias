@@ -200,8 +200,7 @@ async function permisoConcedido(onesignal: OneSignalWebSDK): Promise<boolean> {
   return false;
 }
 
-/** Pide el permiso y vincula este navegador al identificador externo. No carga el SDK hasta llamarla. */
-export async function activarAvisos(): Promise<void> {
+async function asegurarPermisoPush(): Promise<OneSignalWebSDK> {
   const onesignal = await initOneSignal();
 
   if (!onesignal.Notifications.isPushSupported()) {
@@ -224,6 +223,25 @@ export async function activarAvisos(): Promise<void> {
     await suscripcion.optIn();
   }
 
+  return onesignal;
+}
+
+/** Pide permiso en el gesto del formulario, sin vincular todavía el external_id. */
+export async function prepararPushRegistro(): Promise<void> {
+  await asegurarPermisoPush();
+}
+
+/** Vincula la suscripción de este navegador al user_id de Supabase Auth. */
+export async function vincularPushAUsuario(userId: string): Promise<void> {
+  const id = userId.trim();
+  if (!id) throw new Error("Falta el usuario para vincular el aviso.");
+  const onesignal = await initOneSignal();
+  await onesignal.login(id);
+}
+
+/** Pide el permiso y vincula este navegador al identificador externo público. No carga el SDK hasta llamarla. */
+export async function activarAvisos(): Promise<void> {
+  const onesignal = await asegurarPermisoPush();
   await onesignal.login(ONESIGNAL_EXTERNAL_ID);
   marcarAvisosActivados();
 }

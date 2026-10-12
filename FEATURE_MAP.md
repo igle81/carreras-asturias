@@ -21,6 +21,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/terminos` | Términos de uso | Footer **Términos** |
 | `/vip/cancelar` | Baja VIP (email → página de baja; noindex) | Direct URL only. Bloque `#vip` visible en correr/ciclismo; precio y cancelar siguen ocultos |
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
+| `/registro` | Alta de avisos por correo (campo de correo solo aquí) | Cabecera: enlace discreto **Avisos por correo** |
 | `/alertas/confirmar` | Vuelta del magic link de avisos por correo (noindex) | Enlace del correo; no está en la navegación |
 
 There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is rendered on `/correr` and `/ciclismo` (copy humano vendible). Price and «Cancelar suscripción» stay hidden (`SHOW_VIP_PRICE_AND_CANCEL = false`). Production checkout stays off (`getVipCheckoutUrl()` is null).
@@ -46,7 +47,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - Avisos (`components/activar-avisos.tsx`): **Activar avisos** en una fila de la cabecera (todas las páginas) y en la ficha (`/evento/[id]`). Con el permiso concedido y recordado en este navegador pasa a **Avisos activados**. El SDK no se carga hasta el clic. El `external_id` sale de `NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID` (si falta, el de Javier). `/interno/vip-push` sigue siendo la prueba interna, sin enlace en la navegación.
-- Avisos por correo (`components/registro-alertas.tsx`): en la misma fila de la cabecera, campo de correo y **Avisos por correo**. Supabase Auth manda un magic link a `/alertas/confirmar`. La fila nueva va a `carreras.suscripciones_alertas` (cada usuario solo la suya). En un alta nueva se avisa al administrador por Telegram, push y correo con los webhooks n8n genéricos (`generico-telegram`, `generico-email`, `generico-web-push`); una URL https por canal los sustituye. No es el canal VIP de pago (`vip_subscribers` no se toca).
+- Avisos por correo (`/registro`, `components/registro-alertas.tsx`): la cabecera solo lleva el enlace **Avisos por correo**, sin campos. En `/registro` se piden nombre, correo (magic link), Instagram opcional (`@usuario`) y una casilla de avisos push. El push es el de **Activar avisos** (OneSignal) y, al confirmar, `external_id` es el `user_id`. La fila nueva va a `carreras.suscripciones_alertas` (nombre, instagram, push_activado; cada usuario solo la suya). El aviso al administrador (Telegram, correo y push) incluye nombre, correo, Instagram y si activó push. No es el canal VIP de pago (`vip_subscribers` no se toca).
 - Publicidad: script de AdSense en el `<head>` (`ca-pub-5660728155340779`) y `public/ads.txt`. El `<ins>` entre tarjetas (quincena y calendarios) solo si `NEXT_PUBLIC_ADSENSE_SLOT` tiene valor.
 - Afiliación: bloque Decathlon running/trail en `/correr`, `/correr/calendario` y fichas a pie. Enlace con `rel="sponsored noopener"`. El clic llama a `POST /api/afiliado/clic`. La marca se escribe «AvilesIA».
 - VIP: bloque `#vip` visible. CTA «Avísame al abrir» + badge **Pronto**. No precio, no cancelar, no `t.me`.

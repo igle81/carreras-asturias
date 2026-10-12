@@ -70,7 +70,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Registros técnicos de seguridad y funcionamiento (dirección IP, user-agent, ruta y marca temporal) generados por el hosting.",
           "Geolocalización del navegador solo si la activas con el botón de cercanía. Las coordenadas se usan en el dispositivo para calcular distancias y no se guardan como un perfil persistente de ubicación.",
           "Preferencia de cookies en el navegador (localStorage, clave `ca-cookie-consent`).",
-          "Si pides avisos por correo: la dirección, el identificador de la cuenta en Supabase Auth y la fecha de alta, en `carreras.suscripciones_alertas`. Cada persona solo puede ver su propia fila.",
+          "Si pides avisos por correo: el nombre, la dirección, un usuario de Instagram si lo indicas, si activaste los avisos push, el identificador de la cuenta en Supabase Auth y la fecha de alta, en `carreras.suscripciones_alertas`. Cada persona solo puede ver su propia fila.",
           "Si pulsas el botón de interés VIP, la ruta de la página y el user-agent para contar clics.",
           "Canal VIP (cuando hay suscripción o prueba): correo electrónico, datos de facturación y de cliente en Stripe, identificador de Telegram para el canal VIP privado, y datos de dispositivo/suscripción de notificaciones push en OneSignal.",
         ],

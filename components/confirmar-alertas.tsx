@@ -1,6 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { vincularPushAUsuario } from "@/lib/onesignal-web";
+import {
+  borrarRegistroPendiente,
+  instagramRegistro,
+  leerRegistroPendiente,
+  nombreRegistroValido,
+  RUTA_REGISTRO,
+} from "@/lib/registro-alertas";
 import { getSupabase } from "@/lib/supabase";
 
 type Estado = "comprobando" | "listo" | "ya" | "error";
@@ -43,14 +52,37 @@ export function ConfirmarAlertas() {
 
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
-      if (!token) {
+      const userId = data.session?.user.id;
+      if (!token || !userId) {
         if (!cancelado) setEstado("error");
         return;
       }
 
+      const pendiente = leerRegistroPendiente();
+      const meta = data.session?.user.user_metadata ?? {};
+      const nombre = pendiente?.nombre ?? nombreRegistroValido(meta.nombre) ?? "";
+      const instagramLeido = instagramRegistro(
+        pendiente ? pendiente.instagram : meta.instagram,
+      );
+      const instagram = instagramLeido.ok ? instagramLeido.instagram : null;
+      const quierePush = pendiente?.push === true || meta.push_activado === true;
+      let push = false;
+      if (quierePush) {
+        try {
+          await vincularPushAUsuario(userId);
+          push = true;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
       const response = await fetch("/api/alertas/suscribir", {
         method: "POST",
-        headers: { authorization: `Bearer ${token}` },
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ nombre, instagram, push }),
       });
       const body = (await response.json().catch(() => ({}))) as Respuesta;
       if (cancelado) return;
@@ -58,6 +90,7 @@ export function ConfirmarAlertas() {
         setEstado("error");
         return;
       }
+      borrarRegistroPendiente();
       setEstado(body.nueva ? "listo" : "ya");
     }
 
@@ -83,11 +116,19 @@ export function ConfirmarAlertas() {
               : "Confirmando el enlace…"}
       </h1>
       <p className="mt-3 text-sm text-ink/70">
-        {estado === "error"
-          ? "Abre el enlace en el mismo navegador donde pediste los avisos, o pide otro desde la cabecera."
-          : estado === "comprobando"
-            ? "Estamos guardando tu correo."
-            : "Te avisaremos a este correo cuando haya una inscripción que encaje."}
+        {estado === "error" ? (
+          <>
+            Abre el enlace en el mismo navegador donde pediste los avisos, o pide otro en{" "}
+            <Link href={RUTA_REGISTRO} className="font-semibold text-forest underline-offset-2 hover:underline">
+              Avisos por correo
+            </Link>
+            .
+          </>
+        ) : estado === "comprobando" ? (
+          "Estamos guardando tu correo."
+        ) : (
+          "Te avisaremos a este correo cuando haya una inscripción que encaje."
+        )}
       </p>
     </section>
   );
