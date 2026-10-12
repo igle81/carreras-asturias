@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
-import Script from "next/script";
 import { AvilesiaBarra } from "@/components/avilesia-barra";
 import { CookieBanner } from "@/components/cookie-banner";
 import { FranjaEnConstruccion } from "@/components/franja-en-construccion";
@@ -75,12 +74,7 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <head>
-        <Script
-          id="adsense-carreras"
-          src={ADSENSE_SCRIPT_SRC}
-          strategy="beforeInteractive"
-          crossOrigin="anonymous"
-        />
+        <script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" />
       </head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
