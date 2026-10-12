@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ActivarAvisos } from "./activar-avisos";
+import { RegistroAlertas } from "./registro-alertas";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
@@ -89,8 +90,9 @@ export function SiteHeader({
       </div>
 
       <div className="border-t border-forest/10 px-4 py-2">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2">
           <ActivarAvisos />
+          <RegistroAlertas />
         </div>
       </div>
 

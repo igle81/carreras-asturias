@@ -64,13 +64,14 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "2. Datos que se tratan",
         paragraphs: [
-          "En la versión pública del portal no hay registro de cuenta ni formularios de alta de usuario. Podemos tratar las categorías siguientes, según cómo uses el sitio y si te suscribes al canal VIP:",
+          "Puedes apuntarte a los avisos por correo con un enlace de un solo uso (magic link). No hay contraseña. Podemos tratar las categorías siguientes, según cómo uses el sitio y si te suscribes a los avisos o al canal VIP:",
         ],
         bullets: [
           "Registros técnicos de seguridad y funcionamiento (dirección IP, user-agent, ruta y marca temporal) generados por el hosting.",
           "Geolocalización del navegador solo si la activas con el botón de cercanía. Las coordenadas se usan en el dispositivo para calcular distancias y no se guardan como un perfil persistente de ubicación.",
           "Preferencia de cookies en el navegador (localStorage, clave `ca-cookie-consent`).",
-          "Si pulsas el botón de interés VIP, la ruta de la página y el user-agent para contar clics, sin crear una cuenta.",
+          "Si pides avisos por correo: la dirección, el identificador de la cuenta en Supabase Auth y la fecha de alta, en `carreras.suscripciones_alertas`. Cada persona solo puede ver su propia fila.",
+          "Si pulsas el botón de interés VIP, la ruta de la página y el user-agent para contar clics.",
           "Canal VIP (cuando hay suscripción o prueba): correo electrónico, datos de facturación y de cliente en Stripe, identificador de Telegram para el canal VIP privado, y datos de dispositivo/suscripción de notificaciones push en OneSignal.",
         ],
       },
@@ -96,6 +97,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Calcular carreras cercanas cuando activas la geolocalización (consentimiento).",
           "Cookies o almacenamientos no esenciales, solo con consentimiento (ver política de cookies).",
           "Medir el interés en el canal VIP a partir de clics en el botón (interés legítimo).",
+          "Enviarte el enlace de alta y guardar tu correo para los avisos de inscripciones (ejecución de la solicitud; el enlace confirma que el correo es tuyo).",
+          "Avisar al administrador de Carreras Asturias cuando hay un alta nueva, por correo, Telegram y notificación push (interés legítimo en operar el servicio).",
           "Gestionar la suscripción VIP, el cobro y los avisos contratados (ejecución del contrato cuando te suscribes; consentimiento para el permiso de notificaciones push del navegador).",
           "Atender consultas y el ejercicio de derechos a través del buzón de contacto (interés legítimo y, cuando aplique, obligación legal).",
           "Difundir información pública de eventos en X (interés legítimo en comunicar el calendario).",
@@ -108,7 +111,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         ],
         bullets: [
           "Vercel: alojamiento y entrega del sitio.",
-          "Supabase: base de datos de eventos y registro de clics del CTA VIP.",
+          "Supabase: base de datos de eventos, altas de avisos por correo y registro de clics del CTA VIP.",
+          "Google AdSense: script de publicidad en la página. El bloque entre tarjetas solo se muestra si hay un espacio publicitario configurado.",
           "Stripe: pagos de la suscripción VIP. No almacenamos el PAN.",
           "OneSignal: notificaciones push del canal VIP.",
           "Telegram: canal VIP privado de avisos.",
@@ -135,6 +139,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "8. Conservación",
         paragraphs: [
           "Como política interna, los registros técnicos de hosting se conservan como máximo 90 días, salvo que un incidente de seguridad o una obligación legal exija un plazo distinto.",
+          "El correo de los avisos se conserva mientras la suscripción siga de alta. Puedes pedir la baja en el mismo buzón de contacto.",
           "Los datos de la suscripción VIP se conservan mientras la suscripción esté activa y, tras la baja, el tiempo alineado con las obligaciones de facturación y con las conservaciones que impongan Stripe o la normativa mercantil y fiscal aplicable.",
           "La preferencia de cookies se guarda en localStorage del navegador hasta que la borres o la cambies. La geolocalización no se almacena como histórico de posición.",
         ],
@@ -159,14 +164,14 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     slug: "cookies",
     title: "Política de cookies",
     description:
-      "Cookies y almacenamientos de Carreras Asturias: técnicas, preferencias y analítica no activa por defecto.",
-    updatedLabel: "Borrador · sin analítica activa",
+      "Cookies y almacenamientos de Carreras Asturias: técnicas, preferencias, Google AdSense y analítica no activa.",
+    updatedLabel: "Actualizado 12 de octubre de 2026",
     badge: null,
     sections: [
       {
         heading: "1. Qué usamos hoy",
         paragraphs: [
-          "Carreras Asturias usa almacenamientos del navegador de forma mínima. No hay cookies de analítica ni de marketing activas por defecto. El banner de consentimiento deja el hueco para activarlas en el futuro, sin cargar scripts de terceros mientras no exista un consentimiento afirmativo.",
+          "Carreras Asturias usa almacenamientos del navegador de forma mínima. No hay analítica activa. El sitio carga en la cabecera el script de Google AdSense (cliente ca-pub-5660728155340779). El anuncio entre tarjetas de carreras solo se pinta si hay un espacio (`data-ad-slot`) configurado; si no lo hay, no se inserta el bloque.",
           "Los avisos de aperturas y clasificaciones son aparte: el código de OneSignal solo se descarga si pulsas «Activar avisos». Puedes desactivarlos después en la configuración del navegador.",
         ],
       },
@@ -176,8 +181,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         bullets: [
           "Necesarias / técnicas: imprescindibles para mostrar el sitio, recordar la decisión del banner (`ca-cookie-consent` en localStorage) y el funcionamiento básico.",
           "Preferencias: concejo o modalidad si se persisten en el navegador para no preguntar en cada visita.",
-          "Analítica: no activas hoy. Si se incorporan, solo se cargarán con consentimiento.",
-          "Marketing: no activas hoy. Si se incorporan, solo se cargarán con consentimiento.",
+          "Analítica: no activa hoy.",
+          "Publicidad: script de Google AdSense en la cabecera. Puede guardar cookies de Google para mostrar y medir anuncios. El hueco entre tarjetas permanece vacío mientras no haya un slot configurado.",
         ],
       },
       {

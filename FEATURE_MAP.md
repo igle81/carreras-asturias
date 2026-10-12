@@ -21,6 +21,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/terminos` | Términos de uso | Footer **Términos** |
 | `/vip/cancelar` | Baja VIP (email → página de baja; noindex) | Direct URL only. Bloque `#vip` visible en correr/ciclismo; precio y cancelar siguen ocultos |
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
+| `/alertas/confirmar` | Vuelta del magic link de avisos por correo (noindex) | Enlace del correo; no está en la navegación |
 
 There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is rendered on `/correr` and `/ciclismo` (copy humano vendible). Price and «Cancelar suscripción» stay hidden (`SHOW_VIP_PRICE_AND_CANCEL = false`). Production checkout stays off (`getVipCheckoutUrl()` is null).
 
@@ -31,6 +32,8 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 | `GET /api/vip-cta` | `{ "count": number \| null }` — recuento de clics VIP |
 | `POST /api/vip-cta` | Inserta un clic (`path`, `user_agent`) |
 | `/api/vip/portal` | PRE: crea Billing Portal Session de Stripe test y redirige. Needs `STRIPE_SECRET_KEY` (test). Do not call in smoke against PRO as a success path. |
+| `POST /api/alertas/suscribir` | Con el access token del magic link, inserta `carreras.suscripciones_alertas` si es un alta nueva y avisa al administrador |
+| `POST /api/afiliado/clic` | Hook de clic Decathlon. Inserta en `control_flota_metricas` solo si esa tabla ya existe |
 
 ## Global chrome
 
@@ -43,6 +46,9 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 - Footer (`components/site-footer.tsx`): **Correr**, **Ciclismo**, **Calendario a pie**, **Calendario bici**, plus legal links
 - Geo (`components/geo-button.tsx`): **📍 Encontrar carreras cerca de mí**
 - Avisos (`components/activar-avisos.tsx`): **Activar avisos** en una fila de la cabecera (todas las páginas) y en la ficha (`/evento/[id]`). Con el permiso concedido y recordado en este navegador pasa a **Avisos activados**. El SDK no se carga hasta el clic. El `external_id` sale de `NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID` (si falta, el de Javier). `/interno/vip-push` sigue siendo la prueba interna, sin enlace en la navegación.
+- Avisos por correo (`components/registro-alertas.tsx`): en la misma fila de la cabecera, campo de correo y **Avisos por correo**. Supabase Auth manda un magic link a `/alertas/confirmar`. La fila nueva va a `carreras.suscripciones_alertas` (cada usuario solo la suya). En un alta nueva se avisa al administrador por Telegram, push y correo si hay webhook n8n o token en el entorno. No es el canal VIP de pago (`vip_subscribers` no se toca).
+- Publicidad: script de AdSense en el `<head>` (`ca-pub-5660728155340779`) y `public/ads.txt`. El `<ins>` entre tarjetas (quincena y calendarios) solo si `NEXT_PUBLIC_ADSENSE_SLOT` tiene valor.
+- Afiliación: bloque Decathlon running/trail en `/correr`, `/correr/calendario` y fichas a pie. Enlace con `rel="sponsored noopener"`. El clic llama a `POST /api/afiliado/clic`. La marca se escribe «AvilesIA».
 - VIP: bloque `#vip` visible. CTA «Avísame al abrir» + badge **Pronto**. No precio, no cancelar, no `t.me`.
 - Clasificación (`lib/fin-estimado.ts`, `lib/clasificacion.ts`): al persistir una prueba con fecha se estima el fin a ritmo lento (a pie cola / bici cola de competición) + 30 min. **Esa hora** crea la rutina de buscar URL. Sigue **60 días** en calendario/mapa (`POST_RACE_RETENTION_DAYS`). CTA **Inscribirme** → **Clasificación** (URL o `#clasificacion`) mientras la prueba sigue listada. Si hay `url_clasificacion`, la tarjeta del listado muestra **Ver clasificación** (enlace externo), también cuando el CTA principal sigue siendo la inscripción. Ficha `#clasificacion`: **Ver clasificación** if URL; else «Se publica al acabar» / «Aún no publicada». En `/correr` y `/ciclismo` hay accesos **Cerradas** y **Con clasificación**. En los calendarios, los chips (`?cerradas=1`, `?clasificacion=1`) filtran dentro de esos 60 días y se combinan con el resto. La vista `public.eventos` puede no traer aún `url_clasificacion`: la carga reintenta sin esa columna. Persistencia no borra antes de +60 d. No inventar URLs.
 - Recién abierta (`lib/apertura-badge.ts`, Javier 2026-09-15): badge **máx 3 días** desde `fecha_apertura_inscripcion` (Europe/Madrid). Día 0 **Abierta hoy**; 1 **Abierta ayer**; 2–3 **🔥 ¡RECIÉN ABIERTA!**; ≥4 o sin fecha → sin badge. No pintar badge si la hora/`apertura_inscripcion_at` es futura, ni si `estado_inscripcion` es `cerrada_pendiente_apertura` / `proximamente` (hasta que pase a `abierta` o `recien_abierta=true` en fila). El boolean `recien_abierta` no alarga la ventana de 3 días. El strip Recién abiertas (`entraEnStripRecienAbiertas`; /correr, /ciclismo y calendario `?recien=1`) entra **solo** si `estado_inscripcion = abierta`, `recien_abierta = true` y han pasado ≤3 días desde `fecha_apertura_inscripcion` (sin fechas futuras). No espera embargo VIP+24h. Embargo VIP+24h (`lib/highlight-embargo.ts`) sigue ocultando hero/carrusel/quincena.

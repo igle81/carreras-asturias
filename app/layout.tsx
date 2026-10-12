@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import Script from "next/script";
 import { AvilesiaBarra } from "@/components/avilesia-barra";
 import { CookieBanner } from "@/components/cookie-banner";
 import { FranjaEnConstruccion } from "@/components/franja-en-construccion";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { ADSENSE_SCRIPT_SRC } from "@/lib/adsense";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
@@ -72,6 +74,14 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
+      <head>
+        <Script
+          id="adsense-carreras"
+          src={ADSENSE_SCRIPT_SRC}
+          strategy="beforeInteractive"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
           <div className="sticky top-0 z-40">
