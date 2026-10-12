@@ -72,6 +72,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
+      <head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5660728155340779" crossOrigin="anonymous"></script></head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
           <div className="sticky top-0 z-40">
