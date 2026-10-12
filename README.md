@@ -47,7 +47,7 @@ CI: `.github/workflows/ci.yml` (job `ci`). Skill de smoke en PRE: `verify-ca-pre
 | `STRIPE_SECRET_KEY` | Secret de **test** (`sk_test_…`) en Vercel PRE. Nunca `sk_live_`. Hace falta para `/api/vip/portal` |
 | `NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL` | Login URL del Customer Portal de test, si Stripe ya la ha generado. No inventar |
 | `VIP_CUSTOMER_PORTAL_URL` | Alternativa server-only a la login URL del portal |
-| `ALERTAS_WEBHOOK_TELEGRAM` / `ALERTAS_WEBHOOK_EMAIL` / `ALERTAS_WEBHOOK_PUSH` | Webhooks n8n del alta de avisos. Si faltan, ese canal no se envía |
+| `ALERTAS_WEBHOOK_TELEGRAM` / `ALERTAS_WEBHOOK_EMAIL` / `ALERTAS_WEBHOOK_PUSH` | Sustituyen los webhooks n8n genéricos (`generico-telegram`, `generico-email`, `generico-web-push`) |
 | `N8N_WEBHOOK_ALERTAS` | Webhook único de respaldo para los tres canales |
 | `ALERTAS_TELEGRAM_CHAT_ID` | Chat admin. Si falta, se usa `-1004437925569` |
 | `ALERTAS_ADMIN_EMAIL` | Correo del administrador. Si falta, `avilesia2026@gmail.com` |

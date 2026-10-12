@@ -4,6 +4,13 @@ export const ADMIN_EMAIL_POR_DEFECTO = "avilesia2026@gmail.com";
 /** Grupo VIP privado ya usado. Se puede sustituir con ALERTAS_TELEGRAM_CHAT_ID. */
 export const TELEGRAM_CHAT_ID_POR_DEFECTO = "-1004437925569";
 
+/** Flujos n8n ya existentes. Una variable de entorno https los sustituye. */
+export const WEBHOOKS_N8N = {
+  telegram: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram",
+  email: "https://vps-faf1945e.vps.ovh.net/webhook/generico-email",
+  push: "https://vps-faf1945e.vps.ovh.net/webhook/generico-web-push",
+} as const;
+
 export type CanalAviso = "telegram" | "push" | "email";
 
 export type ResultadoCanal = {
@@ -27,12 +34,13 @@ export type NotificarOpciones = {
   fetchImpl?: FetchLike;
 };
 
-type CuerpoWebhook = {
+type CuerpoBase = {
   app: "carreras";
   tipo: "registro_alertas";
   canal: CanalAviso;
   prueba: boolean;
   ok_emitir: boolean;
+  confirmar: boolean;
   correo_usuario: string;
   user_id: string;
   correo_destino: string;
@@ -41,6 +49,28 @@ type CuerpoWebhook = {
   asunto: string;
   mensaje: string;
 };
+
+type CuerpoTelegram = CuerpoBase & {
+  canal: "telegram";
+  id_dedup: string;
+};
+
+type CuerpoEmail = CuerpoBase & {
+  canal: "email";
+  id_dedup: string;
+  to: string;
+  copy: string;
+  html: string;
+  body: string;
+};
+
+type CuerpoPush = CuerpoBase & {
+  canal: "push";
+  title: string;
+  body: string;
+};
+
+export type CuerpoWebhook = CuerpoTelegram | CuerpoEmail | CuerpoPush;
 
 const CANALES: CanalAviso[] = ["telegram", "push", "email"];
 
@@ -76,7 +106,8 @@ export function webhookCanal(canal: CanalAviso, env: EnvLike): string | null {
   );
   if (especifico) return urlHttps(especifico);
   const generico = leer(env, "N8N_WEBHOOK_ALERTAS", "N8N_WEBHOOK_URL");
-  return generico ? urlHttps(generico) : null;
+  if (generico) return urlHttps(generico);
+  return WEBHOOKS_N8N[canal];
 }
 
 function urlHttps(valor: string): string | null {
@@ -106,12 +137,13 @@ export function cuerpoWebhook(
   env: EnvLike,
 ): CuerpoWebhook {
   const texto = mensajeRegistro(aviso, prueba);
-  return {
+  const base: CuerpoBase = {
     app: "carreras",
     tipo: "registro_alertas",
     canal,
     prueba,
     ok_emitir: !prueba,
+    confirmar: !prueba,
     correo_usuario: aviso.email,
     user_id: aviso.userId,
     correo_destino: correoAdmin(env),
@@ -120,6 +152,22 @@ export function cuerpoWebhook(
     asunto: texto.asunto,
     mensaje: texto.mensaje,
   };
+
+  if (canal === "telegram") {
+    return { ...base, canal, id_dedup: `registro-${aviso.userId}` };
+  }
+  if (canal === "email") {
+    return {
+      ...base,
+      canal,
+      id_dedup: `registro-${aviso.userId}`,
+      to: base.correo_destino,
+      copy: texto.mensaje,
+      html: texto.mensaje,
+      body: texto.mensaje,
+    };
+  }
+  return { ...base, canal, title: texto.asunto, body: texto.mensaje };
 }
 
 async function postJson(
