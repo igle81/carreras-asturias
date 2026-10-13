@@ -82,7 +82,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">{section.eyebrow}</p>
           <h1 className="font-display text-3xl font-black text-ink">{section.calendarTitle}</h1>
-          <p className="mt-2 text-ink/65">{section.calendarLead}</p>
+          <p className="mt-2 text-muted">{section.calendarLead}</p>
         </div>
         <a href={other.calendar} className="text-sm font-semibold text-atlantic">
           Calendario de {other.nav} →
@@ -191,7 +191,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       </div>
       {section.id === "pie" ? <DecathlonAfiliado className="mt-8" /> : null}
       {!filtered.length ? (
-        <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
+        <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-muted">
           {mensajeCalendarioVacio({ recien, cerradas, conClasificacion })}
         </p>
       ) : null}

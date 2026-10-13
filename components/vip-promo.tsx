@@ -60,7 +60,7 @@ export function VipPromo({
         <h2 className="mt-2 font-display text-3xl font-black">
           Todas las carreras, sin mover un dedo
         </h2>
-        <p className="mt-3 max-w-xl text-white/75">
+        <p className="mt-3 max-w-xl text-white">
           Todas las carreras de Asturias en la palma de tu mano. Recibe un aviso
           en tu móvil en el momento exacto en que se abre cualquier inscripción
           de Trail, Asfalto o BTT. Ahorra tiempo y no vuelvas a quedarte fuera.
@@ -68,7 +68,7 @@ export function VipPromo({
         {SHOW_VIP_PRICE_AND_CANCEL ? (
           <p className="mt-5 font-display text-3xl font-black tracking-tight">
             1,99 €
-            <span className="ml-1 text-lg font-bold text-white/80">/mes</span>
+            <span className="ml-1 text-lg font-bold text-white">/mes</span>
           </p>
         ) : null}
         <div className="mt-5 max-w-xl">
@@ -92,7 +92,7 @@ export function VipPromo({
           </p>
         </div>
         {SHOW_VIP_PRICE_AND_CANCEL ? (
-          <p className="mt-3 max-w-xl text-sm text-white/75">
+          <p className="mt-3 max-w-xl text-sm text-white">
             Baja en un clic, sin fricción.{" "}
             <a
               href={cancelHref}

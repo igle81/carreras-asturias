@@ -25,6 +25,9 @@ export function emailRegistroValido(value: unknown): string | null {
 }
 
 /** Página del alta. En la portada y la cabecera solo hay el botón, sin campos. */
+export const MENSAJE_ALTA_GENERICO =
+  "Si los datos son válidos, revisa el correo para confirmar la cuenta. Si ya la tenías, entra desde el acceso.";
+
 export const RUTA_REGISTRO = "/registro";
 export const RUTA_ACCESO = "/acceso";
 export const RUTA_AVISOS = "/avisos";

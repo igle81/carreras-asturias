@@ -41,7 +41,7 @@ export function ClasificacionBlock({ event }: { event: Evento }) {
           {copy.status}
         </span>
       </div>
-      <p className="mt-2 max-w-xl text-sm text-ink/65">{copy.body}</p>
+      <p className="mt-2 max-w-xl text-sm text-muted">{copy.body}</p>
       {vista === "publicada" && url ? (
         <a
           href={url}

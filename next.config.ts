@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { CABECERAS_SEGURIDAD } from "./lib/cabeceras";
 
 const onesignalWorkerHeaders = [
   { key: "Service-Worker-Allowed", value: "/" },
@@ -12,6 +13,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: CABECERAS_SEGURIDAD,
+      },
       {
         source: "/OneSignalSDKWorker.js",
         headers: onesignalWorkerHeaders,

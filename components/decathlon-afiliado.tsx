@@ -18,9 +18,9 @@ export function DecathlonAfiliado({ className = "" }: { className?: string }) {
       aria-label="Running y trail en Decathlon"
       className={`rounded-3xl border border-forest/10 bg-white px-5 py-4 shadow-[0_10px_30px_-22px_rgba(11,61,46,0.45)] ${className}`}
     >
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Running y trail</p>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Publicidad</p>
       <h2 className="mt-1 font-display text-xl font-bold text-ink">Material para salir a correr</h2>
-      <p className="mt-1 max-w-xl text-sm text-ink/65">
+      <p className="mt-1 max-w-xl text-sm text-muted">
         Zapatillas, mochilas y ropa de trail. Enlace de afiliación de AvilesIA.
       </p>
       <a
