@@ -16,6 +16,8 @@
   --color-muted: #3a4a43;
   --color-fire: #c62828;
   --color-gold: #e0b44a;
+  /* Texto dorado sobre fog/blanco (AA ≥4.5:1). No usar sobre fondos oscuros. */
+  --color-gold-text: #7a5c10;
   --color-moss: #d7e3d4;
   --font-sans: var(--font-outfit);
   --font-display: var(--font-outfit);

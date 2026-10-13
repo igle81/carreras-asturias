@@ -68,14 +68,14 @@ export function AvilesiaBarra() {
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
       <div
-        className="flex items-center gap-1 rounded-full border border-white/15 bg-ink/75 py-1.5 pl-4 pr-1.5 text-white shadow-xl shadow-ink/30 sm:gap-2"
+        className="flex items-center gap-1 rounded-full border border-white/15 bg-ink py-1.5 pl-3 pr-1.5 text-white shadow-xl shadow-ink/30 sm:gap-2"
         style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
       >
         <a
           href={AVILESIA_URL}
           target="_blank"
           rel="noopener"
-          className="mr-1 font-display text-sm font-black tracking-tight text-gold sm:mr-2"
+          className="mr-1 rounded-full bg-fog px-2.5 py-1 font-display text-sm font-black tracking-tight text-gold-text sm:mr-2"
         >
           AvilesIA
         </a>
