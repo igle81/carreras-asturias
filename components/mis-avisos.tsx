@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { mensajeErrorAvisos, prepararPushRegistro, vincularPushAUsuario } from "@/lib/onesignal-web";
 import { RUTA_ACCESO, RUTA_REGISTRO, urlTelegramBot } from "@/lib/registro-alertas";
+import { cerrarSesion } from "@/lib/sesion-cuenta";
 import { getSupabase } from "@/lib/supabase";
 
 type Perfil = {
@@ -173,6 +174,13 @@ export function MisAvisos() {
       ) : null}
       <button type="button" onClick={() => void darseDeBaja()} className="text-sm font-semibold text-forest underline-offset-2 hover:underline">
         Darme de baja de los avisos
+      </button>
+      <button
+        type="button"
+        onClick={() => void cerrarSesion().catch(() => setError("No se ha podido cerrar la sesión."))}
+        className="text-sm font-semibold text-ink underline-offset-2 hover:underline"
+      >
+        Salir
       </button>
       <p className="text-sm text-ink/55">
         ¿Primera vez?{" "}

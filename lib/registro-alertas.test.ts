@@ -12,6 +12,7 @@ import {
   origenConfirmacionPermitido,
   redirectConfirmacionCarreras,
   resolverDatosAlta,
+  accionesCuentaVisible,
   RUTA_ACCESO,
   RUTA_AVISOS,
   RUTA_REGISTRO,
@@ -109,6 +110,11 @@ test("el código de Telegram de Carreras lleva el prefijo ca_ y el de alquileres
   assert.equal(codigoTelegramCarrerasValido(hex), false);
   assert.equal(codigoTelegramCarrerasValido(`ar_${hex}`), false);
   assert.equal(urlTelegramBot(`ca_${hex}`), `https://t.me/AvilesIA_bot?start=ca_${hex}`);
+});
+
+test("con sesión la cabecera muestra Mis avisos y Salir", () => {
+  assert.deepEqual(accionesCuentaVisible(false), ["registro", "avisos"]);
+  assert.deepEqual(accionesCuentaVisible(true), ["avisos", "salir"]);
 });
 
 test("el botón de registro no lleva campos y Telegram abre el bot", () => {
