@@ -69,6 +69,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Si conectas Telegram, el identificador del chat privado con el bot @AvilesIA_bot. El aviso te llega a ese chat, que solo ves tú.",
           "Si activas los avisos en el móvil o el navegador con la sesión iniciada, OneSignal vincula ese dispositivo a tu user_id. Sin sesión no se asocia el navegador a un identificador de otra persona.",
           "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
+          "Si pulsas el aviso VIP, la ruta de la página y la familia del navegador (Chrome, Firefox, Safari u otra). No guardamos el user-agent completo.",
           "Si aceptas las cookies no esenciales, Google AdSense puede guardar identificadores para mostrar y medir anuncios. Hasta que pulsas Aceptar, el script no se descarga.",
         ],
       },
@@ -131,6 +132,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "El identificador de Telegram y la suscripción de OneSignal se borran al desconectar el canal o al darte de baja.",
           "La preferencia de cookies se guarda en localStorage del navegador hasta que la borres o la cambies. La geolocalización no se almacena como histórico de posición.",
           "Los clics de afiliación, si la tabla existe, se conservan como máximo 12 meses.",
+          "Los clics del aviso VIP (ruta y familia del navegador) se conservan como máximo 12 meses. Al registrar un clic nuevo se borran los que ya han cumplido ese plazo.",
         ],
       },
       {
