@@ -29,6 +29,13 @@ export const RUTA_REGISTRO = "/registro";
 export const RUTA_ACCESO = "/acceso";
 export const RUTA_AVISOS = "/avisos";
 export const TELEGRAM_BOT = "AvilesIA_bot";
+/** Prefijo de /start. asturRentIA usa ar_; el webhook padre ignora el resto hasta que lo enrute. */
+export const TELEGRAM_PREFIJO_CARRERAS = "ca_";
+const CODIGO_TELEGRAM_CARRERAS = /^ca_[0-9a-f]{36}$/;
+
+export function codigoTelegramCarrerasValido(codigo: string): boolean {
+  return CODIGO_TELEGRAM_CARRERAS.test(codigo);
+}
 
 export function urlTelegramBot(codigo: string): string {
   return `https://t.me/${TELEGRAM_BOT}?start=${codigo}`;

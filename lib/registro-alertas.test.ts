@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   ALERTAS_CONFIRMAR_PATH,
   cuentaRegistroValida,
+  codigoTelegramCarrerasValido,
   emailRegistroValido,
   instagramRegistro,
   nombreRegistroValido,
@@ -74,12 +75,20 @@ test("la cuenta pide correo, contraseña y consentimiento, y el aviso puede ser 
   assert.equal(otro.ok && otro.cuenta.correoAvisos, "avisos@ejemplo.es");
 });
 
+test("el código de Telegram de Carreras lleva el prefijo ca_ y el de alquileres no vincula", () => {
+  const hex = "a".repeat(36);
+  assert.equal(codigoTelegramCarrerasValido(`ca_${hex}`), true);
+  assert.equal(codigoTelegramCarrerasValido(hex), false);
+  assert.equal(codigoTelegramCarrerasValido(`ar_${hex}`), false);
+  assert.equal(urlTelegramBot(`ca_${hex}`), `https://t.me/AvilesIA_bot?start=ca_${hex}`);
+});
+
 test("el botón de registro no lleva campos y Telegram abre el bot", () => {
   assert.equal(RUTA_REGISTRO, "/registro");
   assert.equal(RUTA_ACCESO, "/acceso");
   assert.equal(RUTA_AVISOS, "/avisos");
   assert.equal(ALERTAS_CONFIRMAR_PATH, "/alertas/confirmar");
-  assert.equal(urlTelegramBot("abc"), "https://t.me/AvilesIA_bot?start=abc");
+  assert.equal(urlTelegramBot("ca_" + "ab".repeat(18)), "https://t.me/AvilesIA_bot?start=ca_" + "ab".repeat(18));
 });
 
 test("la vuelta del magic link apunta a la confirmación", () => {
