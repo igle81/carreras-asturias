@@ -461,3 +461,25 @@ export function eventCta(event: Evento): {
   }
   return { label: "Ver ficha", href: ficha, external: false };
 }
+
+/** Campos que solo usa el servidor (SEO, ficha, deduplicado). No viajan al cliente. */
+const CAMPOS_SOLO_SERVIDOR = ["organizador", "provincia", "imagen_fuente", "fuente_clasificacion", "duplicado_de"] as const;
+
+/**
+ * Versión ligera de un evento para props de componentes cliente:
+ * quita campos solo de servidor y las claves nulas (reduce el HTML serializado).
+ */
+export function aligerarEvento(event: Evento): Evento {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(event)) {
+    if (v === null || v === undefined) continue;
+    if ((CAMPOS_SOLO_SERVIDOR as readonly string[]).includes(k)) continue;
+    if (Array.isArray(v) && v.length === 0) continue;
+    out[k] = v;
+  }
+  return out as Evento;
+}
+
+export function aligerarEventos(events: Evento[]): Evento[] {
+  return events.map(aligerarEvento);
+}

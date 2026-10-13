@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { CalendarView } from "@/components/calendar-view";
-import { getEventos } from "@/lib/events";
+import { aligerarEventos, getEventos } from "@/lib/events";
 import { SECTIONS } from "@/lib/sections";
 import { pageMetadata } from "@/lib/seo";
 
@@ -25,7 +25,7 @@ export default async function CorrerCalendarioPage() {
   const events = await getEventos();
   return (
     <Suspense fallback={<CalendarFallback />}>
-      <CalendarView events={events} section={SECTIONS.pie} />
+      <CalendarView events={aligerarEventos(events)} section={SECTIONS.pie} />
     </Suspense>
   );
 }
