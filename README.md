@@ -103,11 +103,11 @@ La URL se lee de `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` o `VIP_CHECKOUT_URL`. Si falt
 Cada clic (activo o «Pronto»):
 
 1. En modo interés (sin checkout): se queda en la página y muestra «Apuntado. Te avisamos cuando esté listo.»
-2. Inserta en `public.vip_cta_clicks` (`path`, `user_agent`; `clicked_at` lo pone la base) con el cliente Supabase anon ya usado para `eventos`. Es fire-and-forget: si la tabla o el RLS faltan, el botón no se bloquea.
+2. Llama a `POST /api/vip-cta` con la ruta. El servidor aplica un límite por IP y llama a `public.vip_cta_clicks_registrar` (SECURITY DEFINER). La función valida la ruta y guarda solo la familia del navegador en `carreras.vip_cta_clicks`. `anon` no tiene privilegios sobre la tabla. Es fire-and-forget: si el RPC falta, el botón no se bloquea.
 
-`POST /api/vip-cta` hace el mismo insert (útil para pruebas). `GET /api/vip-cta` lee el recuento.
+`GET /api/vip-cta` lee el recuento (solo el número).
 
-No hace falta login. No hay `service_role` en este repo (RLS: `INSERT` público, `SELECT` solo autenticado).
+No hace falta login. No hay `service_role` en Vercel. El contador público sigue siendo `public.vip_cta_clicks_count`.
 
 ### Cómo ve Javier el recuento
 

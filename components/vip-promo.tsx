@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { recordVipCtaClick } from "@/lib/vip-cta";
 import { VIP_CANCEL_PATH } from "@/lib/vip-paths";
 
 const TOAST_MS = 4000;
@@ -16,9 +15,12 @@ const BENEFITS = [
 ] as const;
 
 function recordClick() {
-  void recordVipCtaClick({
-    path: window.location.pathname,
-    userAgent: window.navigator.userAgent,
+  const path = window.location.pathname;
+  void fetch("/api/vip-cta", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ path }),
+    keepalive: true,
   });
 }
 

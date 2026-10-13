@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getVipCtaClickCount, recordVipCtaClick, sanitizeVipCtaPath } from "@/lib/vip-cta";
+import { ipDeLaPeticion, limiteClicVip } from "@/lib/limite-ip";
+import { getVipCtaClickCount, recordVipCtaClick, rutaVipValida } from "@/lib/vip-cta";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,13 @@ type PostBody = {
 };
 
 export async function POST(request: Request) {
+  if (!limiteClicVip.contar(ipDeLaPeticion(request.headers)).permitido) {
+    return NextResponse.json(
+      { ok: false, recorded: false, error: "Demasiados intentos. Espera un poco y vuelve a probar." },
+      { status: 429 },
+    );
+  }
+
   let body: PostBody = {};
   try {
     body = (await request.json()) as PostBody;
@@ -15,8 +23,13 @@ export async function POST(request: Request) {
     body = {};
   }
 
+  const path = rutaVipValida(body.path);
+  if (!path) {
+    return NextResponse.json({ ok: false, recorded: false }, { status: 400 });
+  }
+
   const { recorded } = await recordVipCtaClick({
-    path: sanitizeVipCtaPath(body.path),
+    path,
     userAgent: request.headers.get("user-agent"),
   });
 
