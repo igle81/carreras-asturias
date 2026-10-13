@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  debeMostrarBannerPropio,
+  EVENTO_CONFIGURAR_COOKIES,
+  fundingChoices,
+} from "@/lib/consentimiento-cookies";
 import {
   COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_KEY,
@@ -12,18 +17,58 @@ import {
 /** Banner fijo: no empuja el contenido (evita un salto de layout). */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const reabierto = useRef(false);
+  const cerrado = useRef(false);
 
   useEffect(() => {
-    const existing = parseCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY));
-    if (!existing) setVisible(true);
+    function sync() {
+      const googleFc = Boolean(fundingChoices());
+      if (googleFc) {
+        reabierto.current = false;
+        cerrado.current = true;
+        setVisible(false);
+        return;
+      }
+      if (cerrado.current && !reabierto.current) {
+        setVisible(false);
+        return;
+      }
+      const tieneDecision = Boolean(parseCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY)));
+      setVisible(
+        debeMostrarBannerPropio({ googleFc, tieneDecision, reabierto: reabierto.current }),
+      );
+    }
+
+    function reabrir() {
+      cerrado.current = false;
+      reabierto.current = true;
+      sync();
+    }
+
+    sync();
+    const pulso = window.setInterval(sync, 400);
+    const fin = window.setTimeout(() => window.clearInterval(pulso), 8000);
+    window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
+    return () => {
+      window.clearInterval(pulso);
+      window.clearTimeout(fin);
+      window.removeEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
+    };
   }, []);
 
-  function persist(allowNonEssential: boolean) {
-    window.localStorage.setItem(
-      COOKIE_CONSENT_KEY,
-      JSON.stringify(buildCookieConsent(allowNonEssential)),
-    );
+  function aceptar() {
+    window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(buildCookieConsent(true)));
     window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
+    reabierto.current = false;
+    cerrado.current = true;
+    setVisible(false);
+  }
+
+  function rechazar() {
+    window.localStorage.removeItem(COOKIE_CONSENT_KEY);
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
+    reabierto.current = false;
+    cerrado.current = true;
     setVisible(false);
   }
 
@@ -37,16 +82,16 @@ export function CookieBanner() {
       aria-describedby="cookie-banner-desc"
       className="fixed inset-x-0 bottom-0 z-50 p-4"
     >
-      <div className="mx-auto flex max-w-3xl flex-col gap-4 rounded-2xl border border-forest/15 bg-forest px-5 py-4 text-fog shadow-xl shadow-ink/20">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4 rounded-2xl border border-forest/15 bg-forest px-5 py-4 text-white shadow-xl shadow-ink/20">
         <div>
           <p id="cookie-banner-title" className="font-display text-lg font-bold">
             Cookies y privacidad
           </p>
-          <p id="cookie-banner-desc" className="mt-1 text-sm text-fog">
+          <p id="cookie-banner-desc" className="mt-1 text-sm text-white">
             Usamos almacenamientos técnicos necesarios. La publicidad de Google
             no se carga hasta que pulsas Aceptar. Puedes rechazar el resto.
             Más detalle en la{" "}
-            <Link href="/cookies" className="font-semibold text-gold underline underline-offset-2">
+            <Link href="/cookies" className="font-semibold text-white underline underline-offset-2">
               política de cookies
             </Link>
             .
@@ -55,15 +100,15 @@ export function CookieBanner() {
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
-            onClick={() => persist(false)}
-            className="rounded-full border border-fog/30 bg-transparent px-4 py-2.5 text-sm font-bold text-fog transition hover:bg-white/10"
+            onClick={rechazar}
+            className="rounded-full border border-white/40 bg-transparent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
           >
             Rechazar no esenciales
           </button>
           <button
             type="button"
-            onClick={() => persist(true)}
-            className="rounded-full bg-gold px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-gold/90"
+            onClick={aceptar}
+            className="rounded-full bg-white px-4 py-2.5 text-sm font-bold text-forest transition hover:bg-fog"
           >
             Aceptar
           </button>

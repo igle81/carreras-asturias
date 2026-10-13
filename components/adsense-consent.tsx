@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ADSENSE_SCRIPT_SRC, paginaPublicaParaAnuncios } from "@/lib/adsense";
+import { fundingChoices } from "@/lib/consentimiento-cookies";
 import { COOKIE_CONSENT_EVENT, parseCookieConsent, COOKIE_CONSENT_KEY } from "@/lib/legal";
 
 type Gtag = (...args: unknown[]) => void;
@@ -15,9 +16,21 @@ function consentimientoMarketing(): boolean {
   }
 }
 
+function gtagConsent(): Gtag | undefined {
+  return (window as Window & { gtag?: Gtag }).gtag;
+}
+
+function retirarAnuncios() {
+  gtagConsent()?.("consent", "update", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+  document.querySelectorAll("script[data-adsense='1']").forEach((nodo) => nodo.remove());
+}
+
 function concederAnuncios() {
-  const gtag = (window as Window & { gtag?: Gtag }).gtag;
-  gtag?.("consent", "update", {
+  gtagConsent()?.("consent", "update", {
     ad_storage: "granted",
     ad_user_data: "granted",
     ad_personalization: "granted",
@@ -37,7 +50,11 @@ export function AdsenseConsent() {
 
   useEffect(() => {
     function aplicar() {
-      if (!paginaPublicaParaAnuncios(pathname) || !consentimientoMarketing()) return;
+      if (fundingChoices()) return;
+      if (!paginaPublicaParaAnuncios(pathname) || !consentimientoMarketing()) {
+        retirarAnuncios();
+        return;
+      }
       concederAnuncios();
     }
     aplicar();

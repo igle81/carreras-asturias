@@ -1,8 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { EventCard } from "./event-card";
-import { MapaCarreras } from "./mapa-carreras";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
@@ -10,9 +10,16 @@ import { daysUntil } from "@/lib/dates";
 import { distanceToEvent, matchesConcejo, uniqueConcejos } from "@/lib/geo";
 import type { Evento } from "@/lib/types";
 
+const MapaCarreras = dynamic(
+  () => import("./mapa-carreras").then((mod) => mod.MapaCarreras),
+  { ssr: false, loading: () => <p className="text-sm text-muted">Cargando el mapa…</p> },
+);
+
 export function NearbySection({ events, title }: { events: Evento[]; title?: string }) {
   const { coords, concejo, status, showConcejoFallback } = useGeo();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [verMapa, setVerMapa] = useState(false);
+  const [visibles, setVisibles] = useState(20);
   const concejos = uniqueConcejos(events);
 
   const listed = useMemo(() => {
@@ -53,36 +60,59 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" />
-        <div className="grid max-h-[32rem] gap-3 overflow-y-auto pr-1">
-          {listed.map((event) => (
-            <div
-              key={event.id_canonico}
-              className={`rounded-[1.6rem] ${
-                selectedId === event.id_canonico ? "ring-2 ring-atlantic/50" : ""
-              }`}
-            >
-              <EventCard
-                event={event}
-                distanceKm={coords ? distanceToEvent(coords, event) : null}
-              />
-              <button
-                type="button"
-                onClick={() => setSelectedId(event.id_canonico)}
-                className="w-full px-4 pb-3 text-left text-xs font-semibold text-atlantic hover:text-forest"
-              >
-                Ver en el mapa
-              </button>
-            </div>
-          ))}
-          {!listed.length ? (
-            <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-muted">
-              No hay carreras con coordenadas {concejo ? `en ${concejo}` : "todavía"}.
-            </p>
-          ) : null}
+      {verMapa ? (
+        <div className="mb-4">
+          <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" />
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setVerMapa(true)}
+          className="mb-4 rounded-full bg-forest px-4 py-2 text-sm font-semibold text-white"
+        >
+          Ver mapa
+        </button>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {listed.slice(0, visibles).map((event) => (
+          <div
+            key={event.id_canonico}
+            className={`rounded-[1.6rem] ${
+              selectedId === event.id_canonico ? "ring-2 ring-atlantic/50" : ""
+            }`}
+          >
+            <EventCard
+              event={event}
+              distanceKm={coords ? distanceToEvent(coords, event) : null}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedId(event.id_canonico);
+                setVerMapa(true);
+              }}
+              className="w-full px-4 pb-3 text-left text-xs font-semibold text-atlantic hover:text-forest"
+            >
+              Ver en el mapa
+            </button>
+          </div>
+        ))}
+        {!listed.length ? (
+          <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-muted sm:col-span-2 lg:col-span-3">
+            No hay carreras con coordenadas {concejo ? `en ${concejo}` : "todavía"}.
+          </p>
+        ) : null}
       </div>
+      {listed.length > visibles ? (
+        <button
+          type="button"
+          onClick={() => setVisibles((actual) => actual + 20)}
+          className="mt-4 rounded-full border border-forest/20 bg-white px-4 py-2 text-sm font-semibold text-forest"
+        >
+          Ver más
+        </button>
+      ) : null}
     </section>
   );
 }

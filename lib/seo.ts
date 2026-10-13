@@ -90,8 +90,8 @@ export function pageMetadata({
 }
 
 /**
- * Las fichas celebradas no llevan noindex. Siguen siendo páginas públicas;
- * el sitemap les baja la prioridad (ver `prioridadFicha`).
+ * Las fichas celebradas no llevan noindex. Siguen siendo páginas públicas.
+ * El sitemap no las incluye (ver `incluirEnSitemap`).
  */
 export function eventMetadata(event: Evento): Metadata {
   const path = eventPath(event.id_canonico);

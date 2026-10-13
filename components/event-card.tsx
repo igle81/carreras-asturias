@@ -45,7 +45,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
           fill
           frameClassName="relative block aspect-[16/10] bg-moss/40"
           className="object-cover"
-          sizes={compact ? "280px" : "(max-width: 768px) 100vw, 33vw"}
+          sizes="400px"
         />
       ) : null}
       <div className="flex flex-1 flex-col gap-3 p-4">

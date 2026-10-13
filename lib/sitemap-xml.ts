@@ -52,12 +52,11 @@ function staticRows(today: string): SitemapRow[] {
 }
 
 /**
- * Fichas celebradas siguen indexables (no noindex): responden búsquedas de
- * resultados y de la prueba. En el sitemap bajan a 0.3 para que el rastreo
- * priorice las que aún no han acabado (0.6).
+ * Las fichas celebradas siguen accesibles e indexables (sin noindex).
+ * No entran en el sitemap: el rastreo se queda con las que aún no han acabado.
  */
-export function prioridadFicha(event: Evento, now: Date): "0.3" | "0.6" {
-  return isRaceFinished(event, now) ? "0.3" : "0.6";
+export function incluirEnSitemap(event: Evento, now: Date): boolean {
+  return !isRaceFinished(event, now);
 }
 
 function eventRows(events: Evento[], today: string, now: Date): SitemapRow[] {
@@ -67,7 +66,7 @@ function eventRows(events: Evento[], today: string, now: Date): SitemapRow[] {
   for (const event of events) {
     if (rows.length >= MAX_EVENT_URLS) break;
     const id = typeof event.id_canonico === "string" ? event.id_canonico.trim() : "";
-    if (!id || !EVENT_ID_RE.test(id) || seen.has(id)) continue;
+    if (!id || !EVENT_ID_RE.test(id) || seen.has(id) || !incluirEnSitemap(event, now)) continue;
 
     let url: string;
     try {
@@ -81,7 +80,7 @@ function eventRows(events: Evento[], today: string, now: Date): SitemapRow[] {
     rows.push({
       path: eventPath(id),
       changeFrequency: "weekly",
-      priority: prioridadFicha(event, now),
+      priority: "0.6",
       lastmod: lastmodDay(parseEventDate(event.fecha_inicio), now) || today,
     });
   }

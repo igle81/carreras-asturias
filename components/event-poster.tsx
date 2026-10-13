@@ -3,6 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { cartelOptimizable } from "@/lib/cartel";
+
+/** Un solo ancho: en móvil el DPR no pide el cartel original. */
+function loaderWebp400({ src }: { src: string }) {
+  return `/_next/image?url=${encodeURIComponent(src)}&w=400&q=60`;
+}
 
 type EventPosterProps = {
   src: string;
@@ -35,12 +41,14 @@ export function EventPoster({
       src={src}
       alt={alt}
       fill={fill}
-      width={fill ? undefined : 960}
-      height={fill ? undefined : 600}
+      width={fill ? undefined : 400}
+      height={fill ? undefined : 250}
       className={className}
-      sizes={sizes}
+      sizes={sizes ?? "400px"}
       priority={priority}
-      unoptimized
+      quality={60}
+      loader={cartelOptimizable(src) ? loaderWebp400 : undefined}
+      unoptimized={!cartelOptimizable(src)}
       onError={() => {
         setFailedSrc(src);
         onError?.();
@@ -91,11 +99,13 @@ export function EventDetailPoster({
       <Image
         src={src}
         alt={alt}
-        width={800}
-        height={1000}
-        unoptimized
+        width={400}
+        height={500}
+        quality={60}
+        loader={cartelOptimizable(src) ? loaderWebp400 : undefined}
+        unoptimized={!cartelOptimizable(src)}
         className="mx-auto h-auto max-h-[28rem] w-auto max-w-full object-contain"
-        sizes="(max-width: 768px) 100vw, 20rem"
+        sizes="400px"
         onError={() => setFailedSrc(src)}
       />
       {credit ? (

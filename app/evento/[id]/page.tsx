@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import ReactDOM from "react-dom";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivarAvisos } from "@/components/activar-avisos";
@@ -52,7 +51,6 @@ export default async function EventoPage({ params }: EventPageProps) {
   const days = daysUntil(event.fecha_inicio);
   const thisWeek = days !== null && days >= 0 && days <= 7;
   const poster = eventPosterUrl(event);
-  if (poster) ReactDOM.preload(poster, { as: "image", fetchPriority: "high" });
   const credit = eventPosterCredit(event);
   const pending = inscripcionPendienteLabel(event);
   const officialSite =

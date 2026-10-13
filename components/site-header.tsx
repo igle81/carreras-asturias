@@ -67,7 +67,7 @@ export function SiteHeader({
       {acciones.includes("avisos") ? (
         <Link
           href={RUTA_AVISOS}
-          className="text-xs font-medium text-ink/55 underline-offset-2 hover:text-forest hover:underline"
+          className="text-xs font-semibold text-forest underline-offset-2 hover:underline"
         >
           Mis avisos
         </Link>
@@ -139,7 +139,7 @@ export function SiteHeader({
 
         <button
           type="button"
-          className="rounded-full border border-forest/15 bg-white px-3 py-1.5 text-sm text-forest md:hidden"
+          className="rounded-full bg-forest px-3 py-1.5 text-sm font-semibold text-white md:hidden"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
         >
@@ -159,7 +159,11 @@ export function SiteHeader({
           <div className="flex flex-col gap-3" onClick={() => setOpen(false)}>
             {nav}
             {acciones.includes("registro") ? <Link href={RUTA_REGISTRO}>Registro</Link> : null}
-            {acciones.includes("avisos") ? <Link href={RUTA_AVISOS}>Mis avisos</Link> : null}
+            {acciones.includes("avisos") ? (
+              <Link href={RUTA_AVISOS} className="font-semibold text-forest">
+                Mis avisos
+              </Link>
+            ) : null}
             {acciones.includes("salir") ? (
               <button type="button" onClick={() => void alSalir()} className="text-left">
                 Salir

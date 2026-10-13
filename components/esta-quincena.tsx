@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { AnuncioInfeed } from "./anuncio-infeed";
 import { EventCard } from "./event-card";
 import { indiceAnuncioEntreTarjetas, slotAnuncioInfeed } from "@/lib/adsense";
@@ -15,6 +15,8 @@ export function EstaQuincena({ events }: { events: Evento[] }) {
     NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
   });
   const adAt = adSlot ? indiceAnuncioEntreTarjetas(filtered.length) : null;
+  const [visibles, setVisibles] = useState(20);
+  const mostradas = filtered.slice(0, visibles);
 
   return (
     <section id="quincena" className="mx-auto max-w-6xl px-4">
@@ -25,17 +27,28 @@ export function EstaQuincena({ events }: { events: Evento[] }) {
         <h2 className="font-display text-2xl font-bold text-ink">Esta quincena</h2>
       </div>
       {filtered.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((event, index) => (
-            <Fragment key={event.id_canonico}>
-              {adAt === index ? <AnuncioInfeed slot={adSlot} /> : null}
-              <EventCard
-                event={event}
-                distanceKm={coords ? distanceToEvent(coords, event) : null}
-              />
-            </Fragment>
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {mostradas.map((event, index) => (
+              <Fragment key={event.id_canonico}>
+                {adAt === index ? <AnuncioInfeed slot={adSlot} /> : null}
+                <EventCard
+                  event={event}
+                  distanceKm={coords ? distanceToEvent(coords, event) : null}
+                />
+              </Fragment>
+            ))}
+          </div>
+          {filtered.length > visibles ? (
+            <button
+              type="button"
+              onClick={() => setVisibles((actual) => actual + 20)}
+              className="mt-4 rounded-full border border-forest/20 bg-white px-4 py-2 text-sm font-semibold text-forest"
+            >
+              Ver más
+            </button>
+          ) : null}
+        </>
       ) : (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-muted">
           No hay carreras en esta quincena {concejo ? `en ${concejo}` : "por ahora"}.
