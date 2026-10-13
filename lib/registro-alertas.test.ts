@@ -104,6 +104,14 @@ test("la vuelta del magic link apunta a la confirmación", () => {
 
 test("el correo de confirmación usa el origen del navegador y la ruta de Carreras", () => {
   assert.equal(
+    redirectConfirmacionCarreras("https://www.carrerasasturias.es"),
+    "https://www.carrerasasturias.es/alertas/confirmar",
+  );
+  assert.equal(
+    redirectConfirmacionCarreras("https://carrerasasturias.es"),
+    "https://carrerasasturias.es/alertas/confirmar",
+  );
+  assert.equal(
     redirectConfirmacionCarreras("https://carreras.avilesia.es"),
     "https://carreras.avilesia.es/alertas/confirmar",
   );
@@ -116,10 +124,14 @@ test("el correo de confirmación usa el origen del navegador y la ruta de Carrer
   assert.equal(redirectConfirmacionCarreras("http://localhost:3000"), redirectConfirmacionCarreras("http://localhost:3000/"));
   assert.equal(origenConfirmacionPermitido("https://evil.example"), false);
   assert.equal(origenConfirmacionPermitido("https://carreras.avilesia.es.evil.com"), false);
+  assert.equal(origenConfirmacionPermitido("https://www.carrerasasturias.es.evil.com"), false);
+  assert.equal(origenConfirmacionPermitido("http://www.carrerasasturias.es"), false);
   assert.equal(origenConfirmacionPermitido("http://carreras.avilesia.es"), false);
   assert.equal(origenConfirmacionPermitido("https://otro-proyecto.vercel.app"), false);
   assert.equal(redirectConfirmacionCarreras("http://localhost:3000/acceso"), null);
   assert.deepEqual(AUTH_REDIRECT_URLS_CARRERAS, [
+    "https://www.carrerasasturias.es/**",
+    "https://carrerasasturias.es/**",
     "https://carreras.avilesia.es/**",
     "https://*-javiers-projects-32052beb.vercel.app/**",
     "http://localhost:3000/**",

@@ -9,6 +9,9 @@ export async function POST(request: Request) {
   if (!resultado.ok) {
     return NextResponse.json({ ok: false, error: resultado.error }, { status: resultado.status });
   }
+  if ("seco" in resultado) {
+    return NextResponse.json({ ok: true, seco: true, redirect: resultado.redirect });
+  }
   return NextResponse.json({
     ok: true,
     confirmarCorreo: resultado.confirmarCorreo,

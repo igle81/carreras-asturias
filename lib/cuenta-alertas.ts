@@ -4,6 +4,7 @@ import { avisarAdminAlCrearCuenta, cuentaRegistroValida, redirectConfirmacionCar
 import { getSupabaseAnonKey, getSupabaseUrl } from "./supabase";
 
 export type AltaCuenta =
+  | { ok: true; seco: true; redirect: string }
   | { ok: true; confirmarCorreo: boolean; avisos: ResultadoCanal[] }
   | { ok: false; status: number; error: string };
 
@@ -15,12 +16,22 @@ function cliente(accessToken?: string, schema?: "carreras") {
   });
 }
 
+function origenDe(entrada: unknown): unknown {
+  return entrada && typeof entrada === "object" ? (entrada as { origen?: unknown }).origen : null;
+}
+
 /** Alta con correo y contraseña, como asturRentIA. El aviso al administrador sale al confirmar. */
 export async function crearCuentaAlertas(entrada: unknown): Promise<AltaCuenta> {
+  const seco = Boolean(entrada && typeof entrada === "object" && (entrada as { seco?: unknown }).seco === true);
+  const redirect = redirectConfirmacionCarreras(origenDe(entrada));
+  if (seco) {
+    if (!redirect) {
+      return { ok: false, status: 400, error: "Abre el registro desde la web de Carreras para confirmar el correo." };
+    }
+    return { ok: true, seco: true, redirect };
+  }
   const validada = cuentaRegistroValida(entrada);
   if (!validada.ok) return { ok: false, status: 400, error: validada.error };
-  const origen = entrada && typeof entrada === "object" ? (entrada as { origen?: unknown }).origen : null;
-  const redirect = redirectConfirmacionCarreras(origen);
   if (!redirect) {
     return { ok: false, status: 400, error: "Abre el registro desde la web de Carreras para confirmar el correo." };
   }

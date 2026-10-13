@@ -54,11 +54,19 @@ export function urlConfirmarAlertas(origin: string): string {
  * El comodín `*` no cruza puntos; `**` sí cruza barras.
  */
 export const AUTH_REDIRECT_URLS_CARRERAS = [
+  "https://www.carrerasasturias.es/**",
+  "https://carrerasasturias.es/**",
   "https://carreras.avilesia.es/**",
   "https://*-javiers-projects-32052beb.vercel.app/**",
   "http://localhost:3000/**",
   "http://127.0.0.1:3000/**",
 ] as const;
+
+const HOSTS_PRODUCCION = new Set([
+  "www.carrerasasturias.es",
+  "carrerasasturias.es",
+  "carreras.avilesia.es",
+]);
 
 const HOST_PREVIEW = /^[a-z0-9-]+-javiers-projects-32052beb\.vercel\.app$/;
 
@@ -74,7 +82,7 @@ export function origenConfirmacionPermitido(origen: unknown): origen is string {
   if (url.username || url.password || url.search || url.hash) return false;
   if (url.pathname !== "/" && url.pathname !== "") return false;
   const host = url.hostname;
-  if (url.protocol === "https:" && host === "carreras.avilesia.es") return true;
+  if (url.protocol === "https:" && HOSTS_PRODUCCION.has(host)) return true;
   if (url.protocol === "https:" && HOST_PREVIEW.test(host)) return true;
   if (url.protocol === "http:" && (host === "localhost" || host === "127.0.0.1")) return true;
   return false;
