@@ -1,15 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ADSENSE_CLIENT } from "@/lib/adsense";
+import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, parseCookieConsent } from "@/lib/legal";
 
 /**
  * Bloque in-feed. Si no hay slot, no pinta el <ins>.
  * El slot solo llega desde NEXT_PUBLIC_ADSENSE_SLOT.
  */
 export function AnuncioInfeed({ slot }: { slot: string | null }) {
+  const [permitido, setPermitido] = useState(false);
+
   useEffect(() => {
-    if (!slot) return;
+    function leer() {
+      try {
+        setPermitido(parseCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY))?.marketing === true);
+      } catch {
+        setPermitido(false);
+      }
+    }
+    leer();
+    window.addEventListener(COOKIE_CONSENT_EVENT, leer);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, leer);
+  }, []);
+
+  useEffect(() => {
+    if (!slot || !permitido) return;
     const ventana = window as Window & { adsbygoogle?: Record<string, unknown>[] };
     ventana.adsbygoogle = ventana.adsbygoogle || [];
     try {
@@ -17,9 +33,9 @@ export function AnuncioInfeed({ slot }: { slot: string | null }) {
     } catch {
       // La cola del script puede rechazar un push duplicado en el mismo hueco.
     }
-  }, [slot]);
+  }, [slot, permitido]);
 
-  if (!slot) return null;
+  if (!slot || !permitido) return null;
 
   return (
     <aside

@@ -19,7 +19,7 @@ export function ConcejoSelect({ concejos, className = "", id }: ConcejoSelectPro
 
   return (
     <label className={`flex min-w-0 items-center gap-2 text-sm text-ink/80 ${className}`}>
-      <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-ink/50">
+      <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted">
         Concejo
       </span>
       <select

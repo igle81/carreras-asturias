@@ -18,7 +18,7 @@ export const metadata = pageMetadata({
 });
 
 function CalendarFallback() {
-  return <div className="mx-auto max-w-6xl px-4 py-16 text-ink/50">Cargando el calendario…</div>;
+  return <div className="mx-auto max-w-6xl px-4 py-16 text-muted">Cargando el calendario…</div>;
 }
 
 export default async function CorrerCalendarioPage() {

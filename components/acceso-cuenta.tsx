@@ -75,7 +75,7 @@ export function AccesoCuenta() {
       >
         {enviando ? "Entrando…" : "Entrar"}
       </button>
-      <p className="text-sm text-ink/60">
+      <p className="text-sm text-muted">
         ¿No tienes cuenta?{" "}
         <Link href={RUTA_REGISTRO} className="font-semibold text-forest underline-offset-2 hover:underline">
           Crear una cuenta

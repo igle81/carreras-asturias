@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
+  COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_KEY,
   buildCookieConsent,
   parseCookieConsent,
 } from "@/lib/legal";
 
-/**
- * Banner mínimo de consentimiento. Hoy no carga analítica ni marketing:
- * solo persiste la decisión para un hueco futuro (scripts de terceros).
- */
+/** Banner fijo: no empuja el contenido (evita un salto de layout). */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
@@ -20,20 +18,12 @@ export function CookieBanner() {
     if (!existing) setVisible(true);
   }, []);
 
-  useEffect(() => {
-    if (!visible) return;
-    const previous = document.body.style.paddingBottom;
-    document.body.style.paddingBottom = "11rem";
-    return () => {
-      document.body.style.paddingBottom = previous;
-    };
-  }, [visible]);
-
   function persist(allowNonEssential: boolean) {
     window.localStorage.setItem(
       COOKIE_CONSENT_KEY,
       JSON.stringify(buildCookieConsent(allowNonEssential)),
     );
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
     setVisible(false);
   }
 
@@ -52,11 +42,10 @@ export function CookieBanner() {
           <p id="cookie-banner-title" className="font-display text-lg font-bold">
             Cookies y privacidad
           </p>
-          <p id="cookie-banner-desc" className="mt-1 text-sm text-fog/80">
-            Usamos almacenamientos técnicos necesarios. La página carga el
-            script de Google AdSense. La analítica no está activa. Puedes
-            aceptar o rechazar el resto de almacenamientos no esenciales. Más
-            detalle en la{" "}
+          <p id="cookie-banner-desc" className="mt-1 text-sm text-fog">
+            Usamos almacenamientos técnicos necesarios. La publicidad de Google
+            no se carga hasta que pulsas Aceptar. Puedes rechazar el resto.
+            Más detalle en la{" "}
             <Link href="/cookies" className="font-semibold text-gold underline underline-offset-2">
               política de cookies
             </Link>

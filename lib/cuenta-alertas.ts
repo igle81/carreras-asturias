@@ -16,14 +16,10 @@ function cliente(accessToken?: string, schema?: "carreras") {
   });
 }
 
-function origenDe(entrada: unknown): unknown {
-  return entrada && typeof entrada === "object" ? (entrada as { origen?: unknown }).origen : null;
-}
-
-/** Alta con correo y contraseña, como asturRentIA. El aviso al administrador sale al confirmar. */
-export async function crearCuentaAlertas(entrada: unknown): Promise<AltaCuenta> {
+/** Alta con correo y contraseña. El origen válido es la cabecera Origin, no el cuerpo. */
+export async function crearCuentaAlertas(entrada: unknown, origenCabecera: unknown): Promise<AltaCuenta> {
   const seco = Boolean(entrada && typeof entrada === "object" && (entrada as { seco?: unknown }).seco === true);
-  const redirect = redirectConfirmacionCarreras(origenDe(entrada));
+  const redirect = redirectConfirmacionCarreras(origenCabecera);
   if (seco) {
     if (!redirect) {
       return { ok: false, status: 400, error: "Abre el registro desde la web de Carreras para confirmar el correo." };
@@ -49,18 +45,15 @@ export async function crearCuentaAlertas(entrada: unknown): Promise<AltaCuenta> 
   if (error) {
     const texto = error.message.toLowerCase();
     if (texto.includes("already") || texto.includes("registered") || texto.includes("exists")) {
-      return { ok: false, status: 400, error: "Ese correo ya tiene cuenta. Entra desde el acceso." };
-    }
-    if (texto.includes("password")) {
-      return { ok: false, status: 400, error: "La contraseña no vale. Usa al menos 8 caracteres." };
+      return { ok: true, confirmarCorreo: true, avisos: [] };
     }
     console.error("No se pudo crear la cuenta", error.message);
-    return { ok: false, status: 400, error: "No se pudo crear la cuenta." };
+    return { ok: false, status: 400, error: "No se ha podido completar el registro. Inténtalo de nuevo." };
   }
 
   const user = data.user;
   if (!user || (Array.isArray(user.identities) && user.identities.length === 0)) {
-    return { ok: false, status: 400, error: "Ese correo ya tiene cuenta. Entra desde el acceso." };
+    return { ok: true, confirmarCorreo: true, avisos: [] };
   }
 
   const token = data.session?.access_token;

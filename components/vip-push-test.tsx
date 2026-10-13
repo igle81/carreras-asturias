@@ -62,7 +62,7 @@ export function VipPushTest() {
     <div className="mt-8 rounded-[2rem] bg-ink px-6 py-8 text-white sm:px-10">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Interno</p>
       <h2 className="mt-2 font-display text-2xl font-black">Push VIP de prueba</h2>
-      <p className="mt-3 max-w-xl text-white/75">
+      <p className="mt-3 max-w-xl text-white">
         Este botón no es un enlace: activa las notificaciones en este mismo
         navegador y las asocia al perfil VIP de prueba. Usa HTTPS en el dominio
         de producción (www.carrerasasturias.es o carrerasasturias.es, según la

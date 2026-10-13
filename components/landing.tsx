@@ -12,7 +12,7 @@ export function Landing({ pieCount, biciCount }: { pieCount: number; biciCount: 
         <h1 className="mt-3 max-w-3xl font-display text-4xl font-black leading-tight sm:text-6xl">
           Elige tu terreno. Correr o bici, cada uno a lo suyo.
         </h1>
-        <p className="mt-4 max-w-xl text-lg text-white/75">
+        <p className="mt-4 max-w-xl text-lg text-white">
           Carreras a pie por un lado. Ciclismo por el otro. Con su mapa y las
           inscripciones que acaban de abrir.
         </p>
@@ -37,7 +37,7 @@ export function Landing({ pieCount, biciCount }: { pieCount: number; biciCount: 
           >
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Bici</p>
             <h2 className="mt-2 font-display text-3xl font-black">Ciclismo</h2>
-            <p className="mt-2 text-sm text-white/75">
+            <p className="mt-2 text-sm text-white">
               Carretera, BTT, enduro y cicloturismo. {biciCount} pruebas en el calendario.
             </p>
             <span className="mt-6 inline-flex rounded-full bg-gold px-4 py-2 text-sm font-bold text-ink">

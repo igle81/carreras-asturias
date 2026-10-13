@@ -131,7 +131,7 @@ export function HeroCarousel({
           <h1 className="mt-3 max-w-2xl font-display text-4xl font-black">
             El calendario de las montañas, el asfalto y la bici
           </h1>
-          <p className="mt-4 max-w-xl text-white/75">
+          <p className="mt-4 max-w-xl text-white">
             Aún no hay dorsales en esta modalidad. Prueba Todas o entra al calendario.
           </p>
         </div>
@@ -210,14 +210,14 @@ export function HeroCarousel({
               <AperturaBadge event={event} size="hero" />
             </p>
           ) : null}
-          <p className="text-sm font-medium text-white/80">
+          <p className="text-sm font-medium text-white">
             {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
             {event.municipio ? ` · ${event.municipio}` : ""}
           </p>
           <h1 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xl">
             {event.nombre}
           </h1>
-          <p className="mt-3 text-base text-white/85 sm:text-lg">
+          <p className="mt-3 text-base text-white sm:text-lg">
             {formatFechaHumana(event.fecha_inicio)}
             {event.localidad ? ` · ${event.localidad}` : ""}
           </p>

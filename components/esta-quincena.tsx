@@ -37,7 +37,7 @@ export function EstaQuincena({ events }: { events: Evento[] }) {
           ))}
         </div>
       ) : (
-        <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-ink/60">
+        <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-muted">
           No hay carreras en esta quincena {concejo ? `en ${concejo}` : "por ahora"}.
         </p>
       )}

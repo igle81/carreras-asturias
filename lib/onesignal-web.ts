@@ -1,10 +1,9 @@
 export const ONESIGNAL_APP_ID = "12796c96-a5cd-4db3-af58-584c429ce188";
 
 /**
- * Identificador externo de OneSignal (el external_id que usa n8n).
- * Hoy el único destinatario es Javier. Cuando haya sesión de usuario VIP,
- * este es el único punto donde hay que poner su identificador.
- * Se cambia con NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID; si falta, vale el de Javier.
+ * Identificador del administrador para los avisos internos de un alta.
+ * No se usa para vincular navegadores anónimos. Con sesión, el external_id
+ * es el user_id (ver `vincularPushAUsuario`).
  */
 const IDENTIFICADOR_EXTERNO_POR_DEFECTO = "60040074-3197-4584-855c-82f40ee8770e";
 
@@ -176,15 +175,17 @@ export function avisosActivadosLocalmente(): boolean {
     return false;
   }
   try {
-    return window.localStorage.getItem(AVISOS_CLAVE) === ONESIGNAL_EXTERNAL_ID;
+    return window.localStorage.getItem(AVISOS_CLAVE) === AVISOS_LOCAL;
   } catch {
     return false;
   }
 }
 
+const AVISOS_LOCAL = "local";
+
 function marcarAvisosActivados(): void {
   try {
-    window.localStorage.setItem(AVISOS_CLAVE, ONESIGNAL_EXTERNAL_ID);
+    window.localStorage.setItem(AVISOS_CLAVE, AVISOS_LOCAL);
   } catch {
     // El permiso queda en el navegador aunque no se pueda recordar la preferencia.
   }
@@ -239,10 +240,12 @@ export async function vincularPushAUsuario(userId: string): Promise<void> {
   await onesignal.login(id);
 }
 
-/** Pide el permiso y vincula este navegador al identificador externo público. No carga el SDK hasta llamarla. */
+/**
+ * Pide el permiso en este navegador. No llama a login(): sin sesión no hay
+ * external_id, y nunca el identificador fijo del administrador.
+ */
 export async function activarAvisos(): Promise<void> {
-  const onesignal = await asegurarPermisoPush();
-  await onesignal.login(ONESIGNAL_EXTERNAL_ID);
+  await asegurarPermisoPush();
   marcarAvisosActivados();
 }
 

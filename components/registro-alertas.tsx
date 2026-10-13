@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { cuentaRegistroValida, RUTA_ACCESO } from "@/lib/registro-alertas";
-import { getSupabase } from "@/lib/supabase";
+import { MENSAJE_ALTA_GENERICO, cuentaRegistroValida, RUTA_ACCESO } from "@/lib/registro-alertas";
 
 type Estado = "listo" | "enviando" | "hecho" | "error";
 
@@ -19,6 +18,8 @@ export function RegistroAlertas() {
   const [estado, setEstado] = useState<Estado>("listo");
   const [mensaje, setMensaje] = useState("");
   const bloqueado = estado === "enviando" || estado === "hecho";
+  const noCoinciden =
+    password.length > 0 && passwordRepetir.length > 0 && password !== passwordRepetir;
 
   async function alEnviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,35 +45,22 @@ export function RegistroAlertas() {
         origen: window.location.origin,
       }),
     });
-    const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; confirmarCorreo?: boolean };
+    const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; mensaje?: string };
     if (!response.ok || !body.ok) {
       setEstado("error");
-      setMensaje(body.error || "No se pudo crear la cuenta.");
-      return;
-    }
-
-    const acceso = await getSupabase().auth.signInWithPassword({
-      email: validada.cuenta.correo,
-      password: validada.cuenta.password,
-    });
-    if (acceso.data.session) {
-      window.location.href = "/avisos";
+      setMensaje(body.error || "No se ha podido completar el registro. Inténtalo de nuevo.");
       return;
     }
 
     setEstado("hecho");
-    setMensaje(
-      body.confirmarCorreo
-        ? "Cuenta creada. Revisa tu correo para confirmarla. Cuando entres, en «Mis avisos» puedes conectar Telegram y activar los avisos en este móvil."
-        : "Cuenta creada. Entra para conectar Telegram y activar los avisos.",
-    );
+    setMensaje(body.mensaje || MENSAJE_ALTA_GENERICO);
   }
 
   return (
     <form onSubmit={(event) => void alEnviar(event)} className="mt-6 space-y-4" noValidate>
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm text-ink/75">
         <h2 className="font-display text-lg font-bold text-ink">Cómo te avisamos</h2>
-        <p className="mt-1 text-ink/60">
+        <p className="mt-1 text-muted">
           Un aviso cuando abra una inscripción. Por correo se activa al crear la cuenta. Telegram y el móvil se
           encienden después, en Mis avisos.
         </p>
@@ -129,10 +117,14 @@ export function RegistroAlertas() {
           required
           value={passwordRepetir}
           disabled={bloqueado}
+          aria-invalid={noCoinciden}
           onChange={(event) => setPasswordRepetir(event.target.value)}
           className={CAMPO}
         />
       </label>
+      <p className="text-sm text-fire" role="status" aria-live="polite">
+        {noCoinciden ? "Las contraseñas no coinciden." : ""}
+      </p>
       <label className="block text-sm font-medium text-ink">
         Correo para los avisos
         <input
@@ -177,7 +169,7 @@ export function RegistroAlertas() {
       >
         {estado === "enviando" ? "Creando tu cuenta…" : "Crear cuenta"}
       </button>
-      <p className="text-sm text-ink/60">
+      <p className="text-sm text-muted">
         <Link href={RUTA_ACCESO} className="font-semibold text-forest underline-offset-2 hover:underline">
           Volver a entrar
         </Link>

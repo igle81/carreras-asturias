@@ -39,7 +39,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
           <h2 className="font-display text-2xl font-bold text-ink">
             {coords ? "Más cercanas a ti" : title ?? "Carreras por el Principado"}
           </h2>
-          <p className="mt-1 text-sm text-ink/60">
+          <p className="mt-1 text-sm text-muted">
             {status === "granted"
               ? "Ordenadas por distancia desde tu posición."
               : showConcejoFallback
@@ -77,7 +77,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
             </div>
           ))}
           {!listed.length ? (
-            <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-ink/60">
+            <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-10 text-center text-muted">
               No hay carreras con coordenadas {concejo ? `en ${concejo}` : "todavía"}.
             </p>
           ) : null}

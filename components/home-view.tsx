@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import ReactDOM from "react-dom";
 import { AvilesiaApps } from "./avilesia-apps";
 import { DecathlonAfiliado } from "./decathlon-afiliado";
 import { AvilesiaEscapada } from "./avilesia-escapada";
@@ -9,7 +10,7 @@ import { HomeBanner } from "./home-banner";
 import { NearbySection } from "./nearby-section";
 import { RecienAbiertasStrip } from "./recien-abiertas-strip";
 import { VipPromo } from "./vip-promo";
-import { estaQuincena, listedEvents, pickHeroSlides, recienAbiertas, upcomingEvents } from "@/lib/events";
+import { estaQuincena, eventPosterUrl, listedEvents, pickHeroSlides, recienAbiertas, upcomingEvents } from "@/lib/events";
 import { filterByModalidad } from "@/lib/modalidad";
 import type { Section } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
@@ -20,6 +21,8 @@ import { getVipCustomerPortalLoginUrl } from "@/lib/vip-paths";
 export function HomeView({ events, section }: { events: Evento[]; section: Section }) {
   const scoped = filterByModalidad(events, section.id);
   const hero = pickHeroSlides(scoped);
+  const portada = hero[0] ? eventPosterUrl(hero[0]) : null;
+  if (portada) ReactDOM.preload(portada, { as: "image", fetchPriority: "high" });
   const recien = recienAbiertas(upcomingEvents(scoped));
   const quincena = estaQuincena(scoped);
   const other = SECTIONS[section.other];
@@ -33,19 +36,19 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">{section.eyebrow}</p>
             <h2 className="font-display text-2xl font-bold text-ink">{section.title}</h2>
-            <p className="mt-1 text-sm text-ink/60">{section.blurb}</p>
+            <p className="mt-1 text-sm text-muted">{section.blurb}</p>
           </div>
           <a href={other.home} className="text-sm font-semibold text-atlantic">
             Ir a {other.nav} →
           </a>
         </div>
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-ink/45">
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Elige disciplina
         </p>
         <Suspense fallback={null}>
           <DisciplineLinkChips events={scoped} calendarPath={section.calendar} modalidad={section.id} />
         </Suspense>
-        <p className="mb-3 mt-5 text-xs font-bold uppercase tracking-[0.18em] text-ink/45">
+        <p className="mb-3 mt-5 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Filtros rápidos
         </p>
         <div className="flex flex-wrap gap-2">

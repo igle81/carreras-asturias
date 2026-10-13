@@ -123,7 +123,7 @@ export function MisAvisos() {
   }
 
   if (!listo) {
-    return <p className="mt-6 text-sm text-ink/60">Cargando tus avisos…</p>;
+    return <p className="mt-6 text-sm text-muted">Cargando tus avisos…</p>;
   }
 
   return (
