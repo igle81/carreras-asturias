@@ -38,7 +38,7 @@ export function RecienAbiertasStrip({
         </a>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-3 snap-x">
-        {events.map((event) => (
+        {events.slice(0, 12).map((event) => (
           <div key={event.id_canonico} className="snap-start">
             <EventCard
               event={event}

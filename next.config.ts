@@ -32,6 +32,8 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    formats: ["image/webp"],
+    imageSizes: [48, 96, 128, 256, 384, 400],
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "inscripciones.empa-t.com" },
@@ -48,6 +50,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "ccnorte.com" },
       { protocol: "https", hostname: "trailruntemple.com" },
       { protocol: "https", hostname: "endurastur.es" },
+      { protocol: "https", hostname: "www.avaibooksports.com" },
+      { protocol: "https", hostname: "s3.eu-west-1.amazonaws.com" },
+      { protocol: "https", hostname: "blogger.googleusercontent.com" },
+      { protocol: "https", hostname: "estaticos-cdn.prensaiberica.es" },
     ],
   },
 };

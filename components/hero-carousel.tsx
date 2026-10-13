@@ -163,9 +163,9 @@ export function HeroCarousel({
           src={poster}
           alt=""
           fill
-          priority
+          priority={index === 0}
           className="object-cover"
-          sizes="100vw"
+          sizes="(max-width: 768px) 400px, 960px"
           onError={backdrop.onError}
         />
       ) : null}
