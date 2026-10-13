@@ -120,7 +120,7 @@ export function VipPromo({
         ) : (
           <button type="button" onClick={handleInterestClick} className={CTA_CLASS}>
             Avísame al abrir
-            <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink/70">
+            <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink">
               Pronto
             </span>
           </button>
