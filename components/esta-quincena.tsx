@@ -1,6 +1,9 @@
 "use client";
 
+import { Fragment } from "react";
+import { AnuncioInfeed } from "./anuncio-infeed";
 import { EventCard } from "./event-card";
+import { indiceAnuncioEntreTarjetas, slotAnuncioInfeed } from "@/lib/adsense";
 import { useGeo } from "./geo-provider";
 import { distanceToEvent, matchesConcejo } from "@/lib/geo";
 import type { Evento } from "@/lib/types";
@@ -8,6 +11,10 @@ import type { Evento } from "@/lib/types";
 export function EstaQuincena({ events }: { events: Evento[] }) {
   const { coords, concejo } = useGeo();
   const filtered = concejo ? events.filter((event) => matchesConcejo(event, concejo)) : events;
+  const adSlot = slotAnuncioInfeed({
+    NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
+  });
+  const adAt = adSlot ? indiceAnuncioEntreTarjetas(filtered.length) : null;
 
   return (
     <section id="quincena" className="mx-auto max-w-6xl px-4">
@@ -19,12 +26,14 @@ export function EstaQuincena({ events }: { events: Evento[] }) {
       </div>
       {filtered.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((event) => (
-            <EventCard
-              key={event.id_canonico}
-              event={event}
-              distanceKm={coords ? distanceToEvent(coords, event) : null}
-            />
+          {filtered.map((event, index) => (
+            <Fragment key={event.id_canonico}>
+              {adAt === index ? <AnuncioInfeed slot={adSlot} /> : null}
+              <EventCard
+                event={event}
+                distanceKm={coords ? distanceToEvent(coords, event) : null}
+              />
+            </Fragment>
           ))}
         </div>
       ) : (

@@ -8,6 +8,7 @@ import { ActivarAvisos } from "./activar-avisos";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
+import { RUTA_AVISOS, RUTA_REGISTRO } from "@/lib/registro-alertas";
 import { SECTIONS, sectionFromPath } from "@/lib/sections";
 
 export function SiteHeader({
@@ -89,8 +90,20 @@ export function SiteHeader({
       </div>
 
       <div className="border-t border-forest/10 px-4 py-2">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2">
           <ActivarAvisos />
+          <Link
+            href={RUTA_REGISTRO}
+            className="inline-flex items-center justify-center rounded-full border border-forest/15 bg-white px-3 py-1.5 text-xs font-semibold text-forest shadow-sm hover:border-atlantic/40"
+          >
+            Registro
+          </Link>
+          <Link
+            href={RUTA_AVISOS}
+            className="text-xs font-medium text-ink/55 underline-offset-2 hover:text-forest hover:underline"
+          >
+            Mis avisos
+          </Link>
         </div>
       </div>
 
@@ -98,6 +111,8 @@ export function SiteHeader({
         <div className="space-y-3 border-t border-forest/10 px-4 py-3 text-sm font-medium md:hidden">
           <div className="flex flex-col gap-3" onClick={() => setOpen(false)}>
             {nav}
+            <Link href={RUTA_REGISTRO}>Registro</Link>
+            <Link href={RUTA_AVISOS}>Mis avisos</Link>
           </div>
           {section ? (
             <>

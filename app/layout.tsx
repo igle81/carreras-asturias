@@ -6,6 +6,7 @@ import { FranjaEnConstruccion } from "@/components/franja-en-construccion";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { ADSENSE_SCRIPT_SRC } from "@/lib/adsense";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
@@ -72,7 +73,9 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
-      <head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5660728155340779" crossOrigin="anonymous"></script></head>
+      <head>
+        <script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" />
+      </head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
           <div className="sticky top-0 z-40">
