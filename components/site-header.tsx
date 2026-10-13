@@ -4,14 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ActivarAvisos } from "./activar-avisos";
+import dynamic from "next/dynamic";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
 import { accionesCuentaVisible, RUTA_AVISOS, RUTA_REGISTRO } from "@/lib/registro-alertas";
 import { cerrarSesion } from "@/lib/sesion-cuenta";
-import { getSupabase } from "@/lib/supabase";
 import { SECTIONS, sectionFromPath } from "@/lib/sections";
+
+const ActivarAvisos = dynamic(() => import("./activar-avisos").then((m) => m.ActivarAvisos), {
+  ssr: false,
+});
+
+/** Sesión guardada por supabase-js (sb-<ref>-auth-token): sin ella no cargamos el cliente. */
+function haySesionGuardada(): boolean {
+  try {
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const k = window.localStorage.key(i) ?? "";
+      if (k.startsWith("sb-") && k.endsWith("-auth-token")) return true;
+    }
+  } catch {
+    /* sin acceso */
+  }
+  return false;
+}
 
 export function SiteHeader({
   concejosPie,
@@ -30,19 +46,29 @@ export function SiteHeader({
   const mapHref = section ? `${section.home}#mapa` : "/correr#mapa";
 
   useEffect(() => {
-    const supabase = getSupabase();
+    // supabase-js (~65 KB) solo se descarga si hay una sesión guardada.
+    if (!haySesionGuardada()) {
+      setHaySesion(false);
+      return;
+    }
     let cancelado = false;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!cancelado) setHaySesion(Boolean(data.session));
-    });
-    const { data } = supabase.auth.onAuthStateChange((_evento, session) => {
-      setHaySesion(Boolean(session));
+    let desuscribir: (() => void) | null = null;
+    void import("@/lib/supabase").then(({ getSupabase }) => {
+      if (cancelado) return;
+      const supabase = getSupabase();
+      void supabase.auth.getSession().then(({ data }) => {
+        if (!cancelado) setHaySesion(Boolean(data.session));
+      });
+      const { data } = supabase.auth.onAuthStateChange((_evento, session) => {
+        setHaySesion(Boolean(session));
+      });
+      desuscribir = () => data.subscription.unsubscribe();
     });
     return () => {
       cancelado = true;
-      data.subscription.unsubscribe();
+      desuscribir?.();
     };
-  }, []);
+  }, [pathname]);
 
   const acciones = accionesCuentaVisible(haySesion);
 

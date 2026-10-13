@@ -1,5 +1,4 @@
 import { RUTA_PORTADA } from "./registro-alertas";
-import { getSupabase } from "./supabase";
 
 type ClienteCierre = {
   auth: { signOut: () => Promise<{ error: { message: string } | null }> };
@@ -11,10 +10,11 @@ function irAPortada(ruta: string) {
 
 /** Cierra la sesión de Supabase y vuelve a la portada. */
 export async function cerrarSesion(
-  cliente: ClienteCierre = getSupabase(),
+  cliente?: ClienteCierre,
   irA: (ruta: string) => void = irAPortada,
 ): Promise<void> {
-  const { error } = await cliente.auth.signOut();
+  const c = cliente ?? (await import("./supabase")).getSupabase();
+  const { error } = await c.auth.signOut();
   if (error) throw new Error(error.message);
   irA(RUTA_PORTADA);
 }

@@ -44,12 +44,18 @@ function cargarFundingChoices() {
 }
 
 /** adsbygoogle.js solo con consentimiento, y en diferido (tras load / en idle). */
+let adsensePermitido = false;
+
 function cargarAdsenseDiferido() {
   if (!paginaPublicaParaAnuncios(window.location.pathname)) return;
+  adsensePermitido = true;
+  const inyectarSiSigue = () => {
+    if (adsensePermitido) inyectar(ADSENSE_SCRIPT_SRC, "adsense");
+  };
   const ir = () => {
     const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void };
-    if (w.requestIdleCallback) w.requestIdleCallback(() => inyectar(ADSENSE_SCRIPT_SRC, "adsense"), { timeout: 4000 });
-    else window.setTimeout(() => inyectar(ADSENSE_SCRIPT_SRC, "adsense"), 1500);
+    if (w.requestIdleCallback) w.requestIdleCallback(inyectarSiSigue, { timeout: 4000 });
+    else window.setTimeout(inyectarSiSigue, 1500);
   };
   if (document.readyState === "complete") ir();
   else window.addEventListener("load", ir, { once: true });
@@ -73,8 +79,13 @@ function aplicarRespaldo() {
   } catch {
     aceptado = false;
   }
-  if (aceptado) cargarAdsenseDiferido();
-  else if (adsenseCargado()) window.location.reload();
+  if (aceptado) {
+    cargarAdsenseDiferido();
+    return;
+  }
+  // Consentimiento retirado: nada más de AdSense y, si ya estaba, recarga limpia.
+  adsensePermitido = false;
+  if (adsenseCargado()) window.location.reload();
 }
 
 /** Escucha la decisión TCF de la CMP de Google cuando esté disponible. */

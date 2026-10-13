@@ -69,13 +69,17 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
         <div className="mx-auto max-w-6xl px-4">
           <AvilesiaEscapada modalidad={section.id} comarca />
         </div>
-        <EstaQuincena events={quincena} />
+        <div className="cv-auto">
+          <EstaQuincena events={quincena} />
+        </div>
         {section.id === "pie" ? (
           <div className="mx-auto max-w-6xl px-4">
             <DecathlonAfiliado />
           </div>
         ) : null}
-        <NearbySection events={listedEvents(scoped)} title={section.mapTitle} />
+        <div className="cv-auto">
+          <NearbySection events={listedEvents(scoped)} title={section.mapTitle} />
+        </div>
         <VipPromo
           checkoutUrl={getVipCheckoutUrl()}
           portalLoginUrl={getVipCustomerPortalLoginUrl()}

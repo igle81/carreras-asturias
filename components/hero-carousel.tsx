@@ -163,7 +163,7 @@ export function HeroCarousel({
           src={poster}
           alt=""
           fill
-          priority={index === 0}
+          priority
           className="object-cover"
           sizes="(max-width: 768px) 400px, 960px"
           onError={backdrop.onError}

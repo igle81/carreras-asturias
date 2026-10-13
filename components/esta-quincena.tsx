@@ -15,7 +15,7 @@ export function EstaQuincena({ events }: { events: Evento[] }) {
     NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
   });
   const adAt = adSlot ? indiceAnuncioEntreTarjetas(filtered.length) : null;
-  const [visibles, setVisibles] = useState(20);
+  const [visibles, setVisibles] = useState(12);
   const mostradas = filtered.slice(0, visibles);
 
   return (

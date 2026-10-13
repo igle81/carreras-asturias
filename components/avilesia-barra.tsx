@@ -35,7 +35,9 @@ export function AvilesiaBarra() {
       return;
     }
     root.dataset.avilesiaBarra = "on";
-    lastY.current = window.scrollY;
+    const raf = window.requestAnimationFrame(() => {
+      lastY.current = window.scrollY;
+    });
     const onScroll = () => {
       const y = window.scrollY;
       const delta = y - lastY.current;
@@ -45,6 +47,7 @@ export function AvilesiaBarra() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      window.cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
       delete root.dataset.avilesiaBarra;
     };
