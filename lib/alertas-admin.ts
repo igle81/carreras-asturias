@@ -24,6 +24,8 @@ export type AvisoRegistro = {
   userId: string;
   nombre: string;
   instagram: string | null;
+  correoAvisos: string;
+  telegram: "pendiente" | "conectado";
   pushActivado: boolean;
 };
 
@@ -53,6 +55,8 @@ type CuerpoBase = {
   mensaje: string;
   nombre: string;
   instagram: string | null;
+  correo_avisos: string;
+  telegram: "pendiente" | "conectado";
   push_activado: boolean;
 };
 
@@ -132,13 +136,13 @@ export function mensajeRegistro(aviso: AvisoRegistro, prueba: boolean): { asunto
       "[PRUEBA] Registro de avisos de Carreras Asturias. No es un alta real. ok_emitir=false.";
     return { asunto: "[PRUEBA] Carreras Asturias · registro de avisos", mensaje };
   }
-  const instagram = aviso.instagram ?? "no indicado";
   const push = aviso.pushActivado ? "sí" : "no";
+  const telegram = aviso.telegram === "conectado" ? "conectado" : "pendiente";
   const mensaje = [
     "Nuevo registro de avisos en Carreras Asturias.",
-    `Nombre: ${aviso.nombre}.`,
     `Correo: ${aviso.email}.`,
-    `Instagram: ${instagram}.`,
+    `Avisos: ${aviso.correoAvisos}.`,
+    `Telegram: ${telegram}.`,
     `Push: ${push}.`,
   ].join(" ");
   return { asunto: "Nuevo registro de avisos · Carreras Asturias", mensaje };
@@ -167,6 +171,8 @@ export function cuerpoWebhook(
     mensaje: texto.mensaje,
     nombre: aviso.nombre,
     instagram: aviso.instagram,
+    correo_avisos: aviso.correoAvisos,
+    telegram: aviso.telegram,
     push_activado: aviso.pushActivado,
   };
 

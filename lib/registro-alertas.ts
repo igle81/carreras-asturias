@@ -24,8 +24,15 @@ export function emailRegistroValido(value: unknown): string | null {
   return email;
 }
 
-/** Página del alta. La cabecera solo enlaza aquí; el campo de correo no va en portada ni en el header. */
+/** Página del alta. En la portada y la cabecera solo hay el botón, sin campos. */
 export const RUTA_REGISTRO = "/registro";
+export const RUTA_ACCESO = "/acceso";
+export const RUTA_AVISOS = "/avisos";
+export const TELEGRAM_BOT = "AvilesIA_bot";
+
+export function urlTelegramBot(codigo: string): string {
+  return `https://t.me/${TELEGRAM_BOT}?start=${codigo}`;
+}
 
 export const ALERTAS_CONFIRMAR_PATH = "/alertas/confirmar";
 
@@ -99,4 +106,31 @@ export function leerRegistroPendiente(): RegistroPendiente | null {
 export function borrarRegistroPendiente(): void {
   if (typeof window === "undefined") return;
   window.sessionStorage.removeItem(REGISTRO_PENDIENTE_CLAVE);
+}
+
+export type CuentaRegistro = {
+  correo: string;
+  password: string;
+  correoAvisos: string;
+};
+
+/** Misma regla de correo que asturRentIA, y la contraseña de al menos 8 caracteres. */
+export function cuentaRegistroValida(
+  input: unknown,
+): { ok: true; cuenta: CuentaRegistro } | { ok: false; error: string } {
+  if (!input || typeof input !== "object") return { ok: false, error: "Revisa los datos." };
+  const raw = input as Record<string, unknown>;
+  const correo = emailRegistroValido(raw.correo ?? raw.email);
+  if (!correo || correo.length > 254) return { ok: false, error: "Escribe un correo válido." };
+  if (typeof raw.password !== "string" || raw.password.length < 8) {
+    return { ok: false, error: "La contraseña tiene que tener al menos 8 caracteres." };
+  }
+  if (raw.password.length > 72) return { ok: false, error: "La contraseña es demasiado larga." };
+  const avisosEnBlanco = typeof raw.correoAvisos !== "string" || raw.correoAvisos.trim() === "";
+  const correoAvisos = avisosEnBlanco ? correo : emailRegistroValido(raw.correoAvisos);
+  if (!correoAvisos) return { ok: false, error: "El correo para los avisos no es válido." };
+  if (raw.consentimiento !== true) {
+    return { ok: false, error: "Hace falta aceptar los avisos para crear la cuenta." };
+  }
+  return { ok: true, cuenta: { correo, password: raw.password, correoAvisos } };
 }

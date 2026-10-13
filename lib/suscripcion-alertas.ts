@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { notificarAdminRegistro, type ResultadoCanal } from "./alertas-admin";
-import { resolverDatosAlta } from "./registro-alertas";
+import { emailRegistroValido, resolverDatosAlta } from "./registro-alertas";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./supabase";
 
 export type ConfirmarSuscripcion =
@@ -47,14 +47,18 @@ export async function confirmarSuscripcionAlertas(
   if (existing) return { ok: true, nueva: false, email, avisos: [] };
 
   const datos = resolverDatosAlta(entrada, data.user.user_metadata);
-  if (!datos) return { ok: false, status: 400, error: "datos_invalidos" };
+  const meta = data.user.user_metadata as { correo_avisos?: unknown } | undefined;
+  const correoAvisos = emailRegistroValido(meta?.correo_avisos) ?? email;
 
   const { error: insertError } = await db.from("suscripciones_alertas").insert({
     user_id: data.user.id,
     email,
-    nombre: datos.nombre,
-    instagram: datos.instagram,
-    push_activado: datos.pushActivado,
+    nombre: datos?.nombre ?? null,
+    instagram: datos?.instagram ?? null,
+    correo_avisos: correoAvisos,
+    consentimiento: true,
+    consentimiento_en: new Date().toISOString(),
+    push_activado: datos?.pushActivado ?? false,
     origen: "web",
   });
 
@@ -67,9 +71,11 @@ export async function confirmarSuscripcionAlertas(
   const avisos = await notificarAdminRegistro({
     email,
     userId: data.user.id,
-    nombre: datos.nombre,
-    instagram: datos.instagram,
-    pushActivado: datos.pushActivado,
+    nombre: datos?.nombre ?? "",
+    instagram: datos?.instagram ?? null,
+    correoAvisos,
+    telegram: "pendiente",
+    pushActivado: datos?.pushActivado ?? false,
   });
   return { ok: true, nueva: true, email, avisos };
 }

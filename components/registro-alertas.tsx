@@ -1,202 +1,164 @@
 "use client";
 
-import { FormEvent, useId, useState } from "react";
-import {
-  emailRegistroValido,
-  guardarRegistroPendiente,
-  instagramRegistro,
-  nombreRegistroValido,
-  urlConfirmarAlertas,
-} from "@/lib/registro-alertas";
-import { mensajeErrorAvisos, prepararPushRegistro } from "@/lib/onesignal-web";
+import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { cuentaRegistroValida, RUTA_ACCESO } from "@/lib/registro-alertas";
 import { getSupabase } from "@/lib/supabase";
 
-type Estado = "listo" | "enviando" | "enviado" | "error";
+type Estado = "listo" | "enviando" | "hecho" | "error";
 
 const CAMPO =
-  "w-full rounded-2xl border border-forest/15 bg-white px-4 py-3 text-sm text-ink outline-none placeholder:text-ink/40 focus:border-atlantic/50 disabled:opacity-70";
+  "mt-1.5 w-full rounded-2xl border border-forest/15 bg-white px-4 py-3 text-sm text-ink outline-none placeholder:text-ink/40 focus:border-atlantic/50 disabled:opacity-70";
 
 export function RegistroAlertas() {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [push, setPush] = useState(false);
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
+  const [correoAvisos, setCorreoAvisos] = useState("");
+  const [consentimiento, setConsentimiento] = useState(false);
   const [estado, setEstado] = useState<Estado>("listo");
   const [mensaje, setMensaje] = useState("");
-  const nombreId = useId();
-  const emailId = useId();
-  const instagramId = useId();
-  const pushId = useId();
-  const ayudaId = useId();
-  const bloqueado = estado === "enviando" || estado === "enviado";
-
-  function limpiarError() {
-    if (estado === "error") setEstado("listo");
-  }
+  const bloqueado = estado === "enviando" || estado === "hecho";
 
   async function alEnviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (estado === "enviando") return;
-    const nombreLimpio = nombreRegistroValido(nombre);
-    if (!nombreLimpio) {
+    if (bloqueado) return;
+    const validada = cuentaRegistroValida({ correo, password, correoAvisos, consentimiento });
+    if (!validada.ok) {
       setEstado("error");
-      setMensaje("Escribe tu nombre.");
-      return;
-    }
-    const correo = emailRegistroValido(email);
-    if (!correo) {
-      setEstado("error");
-      setMensaje("Escribe un correo válido.");
-      return;
-    }
-    const red = instagramRegistro(instagram);
-    if (!red.ok) {
-      setEstado("error");
-      setMensaje("El usuario de Instagram no es válido. Usa un @usuario.");
+      setMensaje(validada.error);
       return;
     }
 
     setEstado("enviando");
     setMensaje("");
-
-    let pushConcedido = false;
-    if (push) {
-      try {
-        await prepararPushRegistro();
-        pushConcedido = true;
-      } catch (error) {
-        console.error(error);
-        setEstado("error");
-        setMensaje(mensajeErrorAvisos(error));
-        return;
-      }
-    }
-
-    guardarRegistroPendiente({
-      nombre: nombreLimpio,
-      instagram: red.instagram,
-      push: pushConcedido,
+    const response = await fetch("/api/registro", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ correo, password, correoAvisos, consentimiento }),
     });
-
-    const { error } = await getSupabase().auth.signInWithOtp({
-      email: correo,
-      options: {
-        emailRedirectTo: urlConfirmarAlertas(window.location.origin),
-        shouldCreateUser: true,
-        data: {
-          nombre: nombreLimpio,
-          instagram: red.instagram ?? "",
-          push_activado: pushConcedido,
-        },
-      },
-    });
-
-    if (error) {
-      console.error(error);
+    const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; confirmarCorreo?: boolean };
+    if (!response.ok || !body.ok) {
       setEstado("error");
-      const texto = error.message.toLowerCase();
-      setMensaje(
-        texto.includes("redirect") || texto.includes("not allowed")
-          ? "Este sitio todavía no puede enviar el enlace. Inténtalo más tarde."
-          : "No se ha podido enviar el enlace. Inténtalo de nuevo en unos minutos.",
-      );
+      setMensaje(body.error || "No se pudo crear la cuenta.");
       return;
     }
 
-    setEstado("enviado");
-    setMensaje("Revisa tu correo y abre el enlace en este mismo navegador.");
+    const acceso = await getSupabase().auth.signInWithPassword({
+      email: validada.cuenta.correo,
+      password: validada.cuenta.password,
+    });
+    if (acceso.data.session) {
+      window.location.href = "/avisos";
+      return;
+    }
+
+    setEstado("hecho");
+    setMensaje(
+      body.confirmarCorreo
+        ? "Cuenta creada. Revisa tu correo para confirmarla. Cuando entres, en «Mis avisos» puedes conectar Telegram y activar los avisos en este móvil."
+        : "Cuenta creada. Entra para conectar Telegram y activar los avisos.",
+    );
   }
 
   return (
-    <form onSubmit={(event) => void alEnviar(event)} className="mt-6 space-y-4">
-      <div>
-        <label htmlFor={nombreId} className="block text-sm font-medium text-ink">
-          Nombre
-        </label>
+    <form onSubmit={(event) => void alEnviar(event)} className="mt-6 space-y-4" noValidate>
+      <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm text-ink/75">
+        <h2 className="font-display text-lg font-bold text-ink">Cómo te avisamos</h2>
+        <p className="mt-1 text-ink/60">
+          Un aviso cuando abra una inscripción. Por correo se activa al crear la cuenta. Telegram y el móvil se
+          encienden después, en Mis avisos.
+        </p>
+        <ul className="mt-3 space-y-2">
+          <li>
+            <strong>Correo.</strong> Un mensaje con el aviso. Se activa al crear la cuenta; solo tienes que confirmar
+            tu correo.
+          </li>
+          <li>
+            <strong>Telegram.</strong> El mismo aviso en un chat privado con el bot @AvilesIA_bot, que solo ves tú.
+            Actívalo después en «Mis avisos» con el botón «Conectar Telegram».
+          </li>
+          <li>
+            <strong>En el navegador o el móvil.</strong> Una notificación en la pantalla. Actívala después en «Mis
+            avisos» con el botón «Activar avisos en este móvil». En iPhone solo funciona si antes añades esta web a
+            la pantalla de inicio (Compartir → «Añadir a pantalla de inicio») y la abres desde ese icono.
+          </li>
+        </ul>
+      </section>
+      <label className="block text-sm font-medium text-ink">
+        Correo electrónico
         <input
-          id={nombreId}
-          name="nombre"
-          autoComplete="name"
-          required
-          value={nombre}
-          disabled={bloqueado}
-          onChange={(event) => {
-            setNombre(event.target.value);
-            limpiarError();
-          }}
-          className={`mt-1.5 ${CAMPO}`}
-        />
-      </div>
-      <div>
-        <label htmlFor={emailId} className="block text-sm font-medium text-ink">
-          Correo
-        </label>
-        <input
-          id={emailId}
           type="email"
-          name="email"
+          name="correo"
           autoComplete="email"
-          inputMode="email"
           required
-          value={email}
+          value={correo}
           disabled={bloqueado}
-          onChange={(event) => {
-            setEmail(event.target.value);
-            limpiarError();
-          }}
-          placeholder="tu@correo.es"
-          aria-describedby={ayudaId}
-          className={`mt-1.5 ${CAMPO}`}
+          onChange={(event) => setCorreo(event.target.value)}
+          className={CAMPO}
         />
-      </div>
-      <div>
-        <label htmlFor={instagramId} className="block text-sm font-medium text-ink">
-          Instagram <span className="font-normal text-ink/50">(opcional)</span>
-        </label>
+      </label>
+      <label className="block text-sm font-medium text-ink">
+        Contraseña
         <input
-          id={instagramId}
-          name="instagram"
-          autoComplete="off"
-          value={instagram}
+          type="password"
+          name="password"
+          autoComplete="new-password"
+          minLength={8}
+          required
+          value={password}
           disabled={bloqueado}
-          onChange={(event) => {
-            setInstagram(event.target.value);
-            limpiarError();
-          }}
-          placeholder="@usuario"
-          className={`mt-1.5 ${CAMPO}`}
+          onChange={(event) => setPassword(event.target.value)}
+          className={CAMPO}
         />
-      </div>
-      <label htmlFor={pushId} className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-white/70 px-4 py-3">
+      </label>
+      <label className="block text-sm font-medium text-ink">
+        Correo para los avisos
         <input
-          id={pushId}
+          type="email"
+          name="correoAvisos"
+          autoComplete="email"
+          placeholder="Si lo dejas vacío, el mismo de la cuenta"
+          value={correoAvisos}
+          disabled={bloqueado}
+          onChange={(event) => setCorreoAvisos(event.target.value)}
+          className={CAMPO}
+        />
+      </label>
+      <label className="flex items-start gap-3 rounded-2xl border border-forest/10 bg-white/70 px-4 py-3 text-sm text-ink/80">
+        <input
           type="checkbox"
-          name="push"
-          checked={push}
+          name="consentimiento"
+          required
+          checked={consentimiento}
           disabled={bloqueado}
-          onChange={(event) => {
-            setPush(event.target.checked);
-            limpiarError();
-          }}
+          onChange={(event) => setConsentimiento(event.target.checked)}
           className="mt-0.5 h-4 w-4 accent-forest"
         />
         <span>
-          <span className="block text-sm font-medium text-ink">Activar avisos en este navegador</span>
-          <span className="mt-0.5 block text-xs leading-snug text-ink/55">
-            Los mismos avisos push. Al enviar el formulario pedimos permiso y, al abrir el enlace, se vinculan a tu
-            cuenta.
-          </span>
+          Acepto recibir avisos de carreras en ese correo (y, si los activo, por Telegram y en el navegador), y que se
+          guarde para ese único fin. Puedo darme de baja cuando quiera en «Mis avisos». He leído la{" "}
+          <Link href="/privacidad" target="_blank" className="font-semibold text-forest underline-offset-2 hover:underline">
+            política de privacidad
+          </Link>
+          .
         </span>
       </label>
+      {mensaje ? (
+        <p className={estado === "error" ? "text-sm text-fire" : "text-sm text-ink/70"} role={estado === "error" ? "alert" : "status"}>
+          {mensaje}
+        </p>
+      ) : null}
       <button
         type="submit"
         disabled={bloqueado}
         className="inline-flex items-center justify-center rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-pine disabled:cursor-default disabled:opacity-90"
       >
-        {estado === "enviando" ? "Enviando…" : estado === "enviado" ? "Enlace enviado" : "Enviarme el enlace"}
+        {estado === "enviando" ? "Creando tu cuenta…" : "Crear cuenta"}
       </button>
-      <p id={ayudaId} className={`text-sm leading-snug ${estado === "error" ? "text-fire" : "text-ink/60"}`}>
-        {mensaje || "Te escribimos cuando abra una inscripción. El enlace hay que abrirlo aquí."}
+      <p className="text-sm text-ink/60">
+        <Link href={RUTA_ACCESO} className="font-semibold text-forest underline-offset-2 hover:underline">
+          Volver a entrar
+        </Link>
       </p>
     </form>
   );

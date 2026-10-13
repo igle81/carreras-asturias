@@ -2,12 +2,16 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ALERTAS_CONFIRMAR_PATH,
+  cuentaRegistroValida,
   emailRegistroValido,
   instagramRegistro,
   nombreRegistroValido,
   resolverDatosAlta,
+  RUTA_ACCESO,
+  RUTA_AVISOS,
   RUTA_REGISTRO,
   urlConfirmarAlertas,
+  urlTelegramBot,
 } from "./registro-alertas";
 
 test("acepta un correo y lo pasa a minúsculas", () => {
@@ -43,10 +47,39 @@ test("nombre e instagram se normalizan y el cuerpo manda sobre la metadata", () 
   );
 });
 
-test("el alta está en /registro y el magic link vuelve a confirmar", () => {
+test("la cuenta pide correo, contraseña y consentimiento, y el aviso puede ser otro correo", () => {
+  assert.equal(
+    cuentaRegistroValida({ correo: "Ana@Ejemplo.es", password: "corta", consentimiento: true }).ok,
+    false,
+  );
+  assert.equal(
+    cuentaRegistroValida({ correo: "ana@ejemplo.es", password: "secreto88", consentimiento: false }).ok,
+    false,
+  );
+  assert.deepEqual(
+    cuentaRegistroValida({
+      correo: " Ana@Ejemplo.es ",
+      password: "secreto88",
+      correoAvisos: "",
+      consentimiento: true,
+    }),
+    { ok: true, cuenta: { correo: "ana@ejemplo.es", password: "secreto88", correoAvisos: "ana@ejemplo.es" } },
+  );
+  const otro = cuentaRegistroValida({
+    correo: "ana@ejemplo.es",
+    password: "secreto88",
+    correoAvisos: "Avisos@Ejemplo.es",
+    consentimiento: true,
+  });
+  assert.equal(otro.ok && otro.cuenta.correoAvisos, "avisos@ejemplo.es");
+});
+
+test("el botón de registro no lleva campos y Telegram abre el bot", () => {
   assert.equal(RUTA_REGISTRO, "/registro");
+  assert.equal(RUTA_ACCESO, "/acceso");
+  assert.equal(RUTA_AVISOS, "/avisos");
   assert.equal(ALERTAS_CONFIRMAR_PATH, "/alertas/confirmar");
-  assert.equal(RUTA_REGISTRO.includes("confirmar"), false);
+  assert.equal(urlTelegramBot("abc"), "https://t.me/AvilesIA_bot?start=abc");
 });
 
 test("la vuelta del magic link apunta a la confirmación", () => {

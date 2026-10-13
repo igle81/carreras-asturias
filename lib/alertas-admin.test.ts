@@ -11,9 +11,11 @@ import {
 const AVISO = {
   email: "corredor@ejemplo.es",
   userId: "user-1",
-  nombre: "Ana Ruta",
-  instagram: "@ana.ruta" as string | null,
-  pushActivado: true,
+  nombre: "",
+  instagram: null as string | null,
+  correoAvisos: "avisos@ejemplo.es",
+  telegram: "pendiente" as const,
+  pushActivado: false,
 };
 
 test("un alta real pide emitir y el correo lleva el texto en los campos de n8n", () => {
@@ -28,13 +30,14 @@ test("un alta real pide emitir y el correo lleva el texto en los campos de n8n",
   assert.equal(cuerpo.copy, cuerpo.mensaje);
   assert.equal(cuerpo.html, cuerpo.mensaje);
   assert.equal(cuerpo.body, cuerpo.mensaje);
-  assert.equal(cuerpo.nombre, "Ana Ruta");
-  assert.equal(cuerpo.instagram, "@ana.ruta");
-  assert.equal(cuerpo.push_activado, true);
-  assert.match(cuerpo.mensaje, /Nombre: Ana Ruta/);
+  assert.equal(cuerpo.correo_avisos, "avisos@ejemplo.es");
+  assert.equal(cuerpo.telegram, "pendiente");
+  assert.equal(cuerpo.push_activado, false);
+  assert.equal(cuerpo.instagram, null);
   assert.match(cuerpo.mensaje, /corredor@ejemplo.es/);
-  assert.match(cuerpo.mensaje, /Instagram: @ana.ruta/);
-  assert.match(cuerpo.mensaje, /Push: sí/);
+  assert.match(cuerpo.mensaje, /Avisos: avisos@ejemplo.es/);
+  assert.match(cuerpo.mensaje, /Telegram: pendiente/);
+  assert.match(cuerpo.mensaje, /Push: no/);
   assert.equal(cuerpo.chat_id, TELEGRAM_CHAT_ID_POR_DEFECTO);
 });
 
@@ -46,15 +49,15 @@ test("la prueba no emite y el texto va marcado", () => {
   assert.equal(cuerpo.id_dedup, "registro-user-1");
   assert.match(cuerpo.mensaje, /^\[PRUEBA\]/);
   assert.equal(cuerpo.mensaje.includes("corredor@ejemplo.es"), false);
-  assert.equal(cuerpo.mensaje.includes("Ana Ruta"), false);
-  assert.equal(cuerpo.nombre, "Ana Ruta");
-  assert.equal(cuerpo.push_activado, true);
+  assert.equal(cuerpo.mensaje.includes("avisos@ejemplo.es"), false);
+  assert.equal(cuerpo.telegram, "pendiente");
+  assert.equal(cuerpo.push_activado, false);
 });
 
-test("sin instagram ni push el aviso lo dice", () => {
-  const texto = mensajeRegistro({ ...AVISO, instagram: null, pushActivado: false }, false);
-  assert.match(texto.mensaje, /Instagram: no indicado/);
-  assert.match(texto.mensaje, /Push: no/);
+test("telegram conectado y push sí salen en el aviso", () => {
+  const texto = mensajeRegistro({ ...AVISO, telegram: "conectado", pushActivado: true }, false);
+  assert.match(texto.mensaje, /Telegram: conectado/);
+  assert.match(texto.mensaje, /Push: sí/);
 });
 
 test("el push repite asunto y mensaje como title y body", () => {
