@@ -6,10 +6,11 @@ import { DisciplineLinkChips } from "./discipline-chips";
 import { EstaQuincena } from "./esta-quincena";
 import { HeroCarousel } from "./hero-carousel";
 import { HomeBanner } from "./home-banner";
-import { NearbySection } from "./nearby-section";
+import { AlVer } from "./al-ver";
+import { NearbySectionDiferida as NearbySection } from "./nearby-diferida";
 import { RecienAbiertasStrip } from "./recien-abiertas-strip";
 import { VipPromo } from "./vip-promo";
-import { estaQuincena, listedEvents, pickHeroSlides, recienAbiertas, upcomingEvents } from "@/lib/events";
+import { aligerarEventos, estaQuincena, listedEvents, pickHeroSlides, recienAbiertas, upcomingEvents } from "@/lib/events";
 import { filterByModalidad } from "@/lib/modalidad";
 import type { Section } from "@/lib/sections";
 import { SECTIONS } from "@/lib/sections";
@@ -18,10 +19,13 @@ import { getVipCheckoutUrl } from "@/lib/vip-checkout";
 import { getVipCustomerPortalLoginUrl } from "@/lib/vip-paths";
 
 export function HomeView({ events, section }: { events: Evento[]; section: Section }) {
-  const scoped = filterByModalidad(events, section.id);
-  const hero = pickHeroSlides(scoped);
-  const recien = recienAbiertas(upcomingEvents(scoped));
-  const quincena = estaQuincena(scoped);
+  const scopedFull = filterByModalidad(events, section.id);
+  const hero = aligerarEventos(pickHeroSlides(scopedFull));
+  const recien = aligerarEventos(recienAbiertas(upcomingEvents(scopedFull)));
+  const quincena = aligerarEventos(estaQuincena(scopedFull));
+  const listados = aligerarEventos(listedEvents(scopedFull));
+  // Los chips de «a pie» son fijos; solo ciclismo los deduce de los datos.
+  const scoped = section.id === "pie" ? [] : aligerarEventos(scopedFull);
   const other = SECTIONS[section.other];
 
   return (
@@ -78,7 +82,9 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
           </div>
         ) : null}
         <div className="cv-auto">
-          <NearbySection events={listedEvents(scoped)} title={section.mapTitle} />
+          <AlVer>
+            <NearbySection events={listados} title={section.mapTitle} />
+          </AlVer>
         </div>
         <VipPromo
           checkoutUrl={getVipCheckoutUrl()}

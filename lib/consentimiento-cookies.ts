@@ -37,3 +37,27 @@ export function abrirConfiguracionCookies() {
   (window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies = true;
   window.dispatchEvent(new Event(EVENTO_CONFIGURAR_COOKIES));
 }
+
+type AlmacenMinimo = Pick<Storage, "setItem">;
+
+/**
+ * Guarda la decisión del banner propio. «Aceptar» → marketing:true;
+ * «Rechazar no esenciales» → marketing:false (se recuerda y el banner no vuelve).
+ * Solo «Configurar cookies» reabre el banner para cambiarla.
+ */
+export function guardarDecisionCookies(
+  almacen: AlmacenMinimo,
+  clave: string,
+  aceptar: boolean,
+  ahora: Date = new Date(),
+): string {
+  const valor = JSON.stringify({
+    version: 1,
+    necessary: true,
+    analytics: aceptar,
+    marketing: aceptar,
+    decidedAt: ahora.toISOString(),
+  });
+  almacen.setItem(clave, valor);
+  return valor;
+}
