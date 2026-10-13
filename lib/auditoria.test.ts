@@ -8,7 +8,9 @@ import { LEGAL_DOCUMENTS, LEGAL_PLACEHOLDERS } from "./legal";
 import { familiaNavegador, rutaVipValida } from "./vip-cta";
 import { crearLimiteIp } from "./limite-ip";
 import { MENSAJE_ALTA_GENERICO } from "./registro-alertas";
-import { prioridadFicha } from "./sitemap-xml";
+import { incluirEnSitemap } from "./sitemap-xml";
+import { cartelOptimizable } from "./cartel";
+import { debeMostrarBannerPropio } from "./consentimiento-cookies";
 import type { Evento } from "./types";
 
 test("los anuncios no entran en registro ni en avisos", () => {
@@ -109,16 +111,30 @@ test("el aviso legal ya no tiene marcadores", () => {
   assert.equal(JSON.stringify(LEGAL_PLACEHOLDERS).includes("[completar]"), false);
 });
 
-test("una ficha celebrada baja la prioridad y sigue en el sitemap", () => {
+test("una ficha celebrada no entra en el sitemap", () => {
+  const ahora = new Date("2026-10-13T12:00:00Z");
   const base = {
     id_canonico: "x",
     nombre: "Prueba",
     fecha_inicio: "2020-01-01",
     fecha_fin: "2020-01-01",
   } as Evento;
-  assert.equal(prioridadFicha(base, new Date("2026-10-13T12:00:00Z")), "0.3");
+  assert.equal(incluirEnSitemap(base, ahora), false);
   assert.equal(
-    prioridadFicha({ ...base, fecha_inicio: "2026-12-01", fecha_fin: "2026-12-01" }, new Date("2026-10-13T12:00:00Z")),
-    "0.6",
+    incluirEnSitemap({ ...base, fecha_inicio: "2026-12-01", fecha_fin: "2026-12-01" }, ahora),
+    true,
   );
+});
+
+test("el cartel de empa-t se puede servir en WebP y un host desconocido no", () => {
+  assert.equal(cartelOptimizable("https://inscripciones.empa-t.com/cartel.jpg"), true);
+  assert.equal(cartelOptimizable("http://inscripciones.empa-t.com/cartel.jpg"), false);
+  assert.equal(cartelOptimizable("https://ejemplo.test/cartel.jpg"), false);
+});
+
+test("con la CMP de Google no se duplica el banner", () => {
+  assert.equal(debeMostrarBannerPropio({ googleFc: true, tieneDecision: false, reabierto: true }), false);
+  assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: false, reabierto: false }), true);
+  assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: true, reabierto: false }), false);
+  assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: true, reabierto: true }), true);
 });

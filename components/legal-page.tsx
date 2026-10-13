@@ -1,6 +1,13 @@
+import type { ReactNode } from "react";
 import type { LegalDocument } from "@/lib/legal";
 
-export function LegalPage({ document }: { document: LegalDocument }) {
+export function LegalPage({
+  document,
+  accion,
+}: {
+  document: LegalDocument;
+  accion?: ReactNode;
+}) {
   return (
     <article className="mx-auto max-w-3xl px-4 py-12">
       {document.badge ? (
@@ -15,6 +22,7 @@ export function LegalPage({ document }: { document: LegalDocument }) {
       </h1>
       <p className="mt-2 text-sm text-ink/55">{document.updatedLabel}</p>
       <p className="mt-4 text-lg text-ink/70">{document.description}</p>
+      {accion ? <div className="mt-6">{accion}</div> : null}
 
       <div className="mt-10 space-y-8 text-[17px] leading-relaxed text-ink/85">
         {document.sections.map((section) => (
