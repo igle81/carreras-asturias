@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { enlaceClasificacionTarjeta } from "./clasificacion";
+import { enlaceClasificacionTarjeta, etiquetaCta } from "./clasificacion";
 import { clasificacionDueAt, isListedOnPortal, isRaceFinished, POST_RACE_RETENTION_DAYS } from "./fin-estimado";
 import {
   eventosVisiblesEnCalendario,
@@ -143,6 +143,22 @@ test("la tarjeta enlaza la clasificación cuando hay URL, también con datos de 
     label: "Ver clasificación",
   });
   assert.equal(enlaceClasificacionTarjeta(sample({ url_clasificacion: "nota-interna" })), null);
+  assert.equal(
+    etiquetaCta(campa, {
+      label: "Inscribirme",
+      href: URL_CAMPA,
+      external: true,
+    }),
+    "Ver clasificación",
+  );
+  assert.equal(
+    etiquetaCta(campa, {
+      label: "Inscribirme",
+      href: "https://ejemplo.test/inscripcion",
+      external: true,
+    }),
+    "Inscribirme",
+  );
 });
 
 test("el recuento y el vacío hablan en español", () => {
