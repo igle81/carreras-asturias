@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { paginaPublicaParaAnuncios } from "./adsense";
 import { appsVisibles, esEstaApp, parseAppsAvilesia } from "./avilesia-apps";
-import { CABECERAS_SEGURIDAD } from "./cabeceras";
+import { CABECERAS_SEGURIDAD, HSTS } from "./cabeceras";
 import { DECATHLON_RUNNING_HREF } from "./afiliado";
-import { LEGAL_PLACEHOLDERS } from "./legal";
+import { LEGAL_DOCUMENTS, LEGAL_PLACEHOLDERS } from "./legal";
+import { familiaNavegador, rutaVipValida } from "./vip-cta";
 import { crearLimiteIp } from "./limite-ip";
 import { MENSAJE_ALTA_GENERICO } from "./registro-alertas";
 import { prioridadFicha } from "./sitemap-xml";
@@ -21,12 +22,41 @@ test("los anuncios no entran en registro ni en avisos", () => {
 test("las cabeceras piden nosniff, frame-ancestors y referrer", () => {
   const mapa = Object.fromEntries(CABECERAS_SEGURIDAD.map((item) => [item.key, item.value]));
   assert.equal(mapa["X-Content-Type-Options"], "nosniff");
+  assert.equal(mapa["Strict-Transport-Security"], HSTS);
+  assert.match(mapa["Strict-Transport-Security"], /includeSubDomains/);
+  assert.equal(mapa["Strict-Transport-Security"].includes("preload"), false);
   assert.match(mapa["Content-Security-Policy"], /frame-ancestors 'none'/);
+  assert.match(mapa["Content-Security-Policy"], /unsafe-inline/);
   assert.match(mapa["Content-Security-Policy"], /googlesyndication/);
   assert.match(mapa["Content-Security-Policy"], /supabase/);
   assert.match(mapa["Content-Security-Policy"], /onesignal/);
   assert.equal(mapa["Referrer-Policy"], "strict-origin-when-cross-origin");
   assert.match(mapa["Permissions-Policy"], /geolocation=\(self\)/);
+});
+
+test("el clic VIP guarda la familia del navegador y una ruta interna", () => {
+  const chrome =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+  const edge = `${chrome} Edg/120.0.0.0`;
+  assert.equal(familiaNavegador(edge), "Edge");
+  assert.equal(familiaNavegador(chrome), "Chrome");
+  assert.equal(familiaNavegador("Mozilla/5.0 (Macintosh) Version/17.0 Safari/605.1.15"), "Safari");
+  assert.equal(familiaNavegador("Edge"), "Edge");
+  assert.equal(familiaNavegador(""), null);
+  assert.equal(familiaNavegador(chrome).includes("Mozilla"), false);
+  assert.equal(rutaVipValida("/correr"), "/correr");
+  assert.equal(rutaVipValida("/"), "/");
+  assert.equal(rutaVipValida("https://evil.example/correr"), null);
+  assert.equal(rutaVipValida("//evil.example"), null);
+  assert.equal(rutaVipValida("/correr/../aviso-legal"), null);
+  assert.equal(rutaVipValida("/correr?x=1"), null);
+});
+
+test("la privacidad fija 12 meses para los clics VIP", () => {
+  const texto = JSON.stringify(LEGAL_DOCUMENTS.privacidad);
+  assert.match(texto, /familia del navegador/);
+  assert.match(texto, /clics del aviso VIP/);
+  assert.match(texto, /12 meses/);
 });
 
 test("el alta no dice si el correo existe", () => {

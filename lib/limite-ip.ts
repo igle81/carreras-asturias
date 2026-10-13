@@ -33,3 +33,4 @@ export function ipDeLaPeticion(cabeceras: { get(nombre: string): string | null }
 
 export const limiteRegistro = crearLimiteIp({ max: 8, ventanaMs: 15 * 60 * 1000 });
 export const limiteClicAfiliado = crearLimiteIp({ max: 30, ventanaMs: 60 * 1000 });
+export const limiteClicVip = crearLimiteIp({ max: 30, ventanaMs: 60 * 1000 });

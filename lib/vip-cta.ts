@@ -1,10 +1,10 @@
 import { getSupabase } from "./supabase";
 
-export const VIP_CTA_TABLE = "vip_cta_clicks";
 export const VIP_CTA_COUNT_RPC = "vip_cta_clicks_count";
+export const VIP_CTA_INSERT_RPC = "vip_cta_clicks_registrar";
 
 const MAX_PATH = 300;
-const MAX_USER_AGENT = 500;
+const RUTA_VIP = /^\/[A-Za-z0-9._~%/]*$/;
 
 type SupabaseErrorLike = {
   message?: string;
@@ -29,18 +29,33 @@ export function isMissingVipCtaSchema(error: SupabaseErrorLike): boolean {
   );
 }
 
-export function sanitizeVipCtaPath(value: unknown): string {
-  if (typeof value !== "string") return "/";
-  const trimmed = value.trim();
-  if (!trimmed.startsWith("/")) return "/";
-  return trimmed.slice(0, MAX_PATH);
-}
-
-export function sanitizeUserAgent(value: unknown): string | null {
+/** Ruta interna. Null si no es un path del sitio (sin esquema, query ni `..`). */
+export function rutaVipValida(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
-  if (!trimmed) return null;
-  return trimmed.slice(0, MAX_USER_AGENT);
+  if (!trimmed || trimmed.length > MAX_PATH) return null;
+  if (!RUTA_VIP.test(trimmed)) return null;
+  if (trimmed.includes("//") || trimmed.includes("..")) return null;
+  return trimmed;
+}
+
+const FAMILIAS = ["Edge", "Opera", "Samsung", "Firefox", "Chrome", "Safari", "Otro"] as const;
+
+/** Solo la familia del navegador. El user-agent completo no se guarda. */
+export function familiaNavegador(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const bruto = value.trim();
+  if (!bruto) return null;
+  const ua = bruto.slice(0, 400).toLowerCase();
+  const conocida = FAMILIAS.find((nombre) => nombre.toLowerCase() === ua);
+  if (conocida) return conocida;
+  if (ua.includes("edg/") || ua.includes("edge/")) return "Edge";
+  if (ua.includes("opr/") || ua.includes("opera")) return "Opera";
+  if (ua.includes("samsungbrowser")) return "Samsung";
+  if (ua.includes("firefox") || ua.includes("fxios")) return "Firefox";
+  if (ua.includes("chrome") || ua.includes("crios") || ua.includes("chromium")) return "Chrome";
+  if (ua.includes("safari")) return "Safari";
+  return "Otro";
 }
 
 export async function recordVipCtaClick(input: {
@@ -48,12 +63,15 @@ export async function recordVipCtaClick(input: {
   userAgent?: unknown;
 }): Promise<{ recorded: boolean }> {
   try {
-    const { error } = await getSupabase().from(VIP_CTA_TABLE).insert({
-      path: sanitizeVipCtaPath(input.path),
-      user_agent: sanitizeUserAgent(input.userAgent),
+    const path = rutaVipValida(input.path);
+    if (!path) return { recorded: false };
+
+    const { data, error } = await getSupabase().rpc(VIP_CTA_INSERT_RPC, {
+      p_path: path,
+      p_user_agent: familiaNavegador(input.userAgent),
     });
 
-    if (!error) return { recorded: true };
+    if (!error) return { recorded: data === true };
     if (isMissingVipCtaSchema(error)) {
       console.warn("vip_cta_clicks no está lista", error.message);
       return { recorded: false };
