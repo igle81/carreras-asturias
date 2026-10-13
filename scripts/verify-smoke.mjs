@@ -14,9 +14,9 @@
  * `/vip` is not a page (no app/vip/page.tsx). `/vip` 404 is OK.
  * Public `/correr` and `/ciclismo` must render `#vip` with the human
  * copy (Tranquilidad, Avísame al abrir) and must not show price,
- * «Cancelar suscripción», checkout CTA, or «Página en pruebas».
- * «En construcción» must sit above the header on `/`, `/correr`,
- * `/ciclismo`, and one `/evento/<id>` linked from those pages.
+ * «Cancelar suscripción», checkout CTA, «Página en pruebas», or
+ * «En construcción». The construction strip is gone on every page,
+ * including `/`, `/correr`, `/ciclismo`, and one `/evento/<id>`.
  */
 
 const DEFAULT_BASE_URL = "https://www.carrerasasturias.es";
@@ -233,28 +233,24 @@ async function main() {
     failures.push(`${path}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
   }
 
-  function construccionArriba(html) {
-    const bannerAt = html.indexOf(CONSTRUCCION_NEEDLE);
-    const headerAt = html.indexOf("<header");
-    if (bannerAt < 0) return `falta «${CONSTRUCCION_NEEDLE}»`;
-    if (headerAt < 0) return "falta la cabecera";
-    if (bannerAt > headerAt) return `«${CONSTRUCCION_NEEDLE}» no está arriba de la cabecera`;
-    return null;
-  }
-
-  for (const path of ["/", "/correr", "/ciclismo"]) {
-    const problem = construccionArriba(bodies.get(path) || "");
-    if (problem) {
-      rows.push({ path: `${path}#en-construccion`, status: 200, note: problem, result: "FAIL" });
-      failures.push(`${path}: ${problem}`);
+  for (const path of PUBLIC_BANNER_PATHS) {
+    const html = bodies.get(path) || "";
+    if (!html.includes(CONSTRUCCION_NEEDLE)) {
+      rows.push({
+        path: `${path}#en-construccion`,
+        status: 200,
+        note: "sin «En construcción»",
+        result: "OK",
+      });
       continue;
     }
     rows.push({
       path: `${path}#en-construccion`,
       status: 200,
-      note: "«En construcción» arriba de la cabecera",
-      result: "OK",
+      note: `aviso still visible: ${CONSTRUCCION_NEEDLE}`,
+      result: "FAIL",
     });
+    failures.push(`${path}: «${CONSTRUCCION_NEEDLE}» still rendered`);
   }
 
   const eventSource = ["/correr", "/ciclismo", "/", "/correr/calendario", "/ciclismo/calendario"]
@@ -269,7 +265,7 @@ async function main() {
       note: "no /evento/<id> link on /, /correr or /ciclismo",
       result: "FAIL",
     });
-    failures.push("no /evento/<id> link to check «En construcción»");
+    failures.push("no /evento/<id> link to check banners");
   } else {
     let eventFetched;
     try {
@@ -303,15 +299,21 @@ async function main() {
           result: "FAIL",
         });
         failures.push(`${eventPath}: «${PRUEBAS_BANNER_NEEDLE}» still rendered`);
-      } else {
-        const problem = construccionArriba(eventFetched.body);
+      } else if (eventFetched.body.includes(CONSTRUCCION_NEEDLE)) {
         rows.push({
           path: `${eventPath}#en-construccion`,
           status: 200,
-          note: problem || "«En construcción» arriba de la cabecera",
-          result: problem ? "FAIL" : "OK",
+          note: `aviso still visible: ${CONSTRUCCION_NEEDLE}`,
+          result: "FAIL",
         });
-        if (problem) failures.push(`${eventPath}: ${problem}`);
+        failures.push(`${eventPath}: «${CONSTRUCCION_NEEDLE}» still rendered`);
+      } else {
+        rows.push({
+          path: `${eventPath}#en-construccion`,
+          status: 200,
+          note: "sin «En construcción»",
+          result: "OK",
+        });
       }
     }
   }
