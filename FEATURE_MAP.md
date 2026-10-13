@@ -40,7 +40,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 
 ## Global chrome
 
-- Header (`components/site-header.tsx`) is sticky at the top of every public page. Above it, on every page including production, `components/franja-en-construccion.tsx` renders «En construcción» until Javier signs off. There is no «Página en pruebas» banner. To remove the strip: delete that component and its single line in `app/layout.tsx`.
+- Header (`components/site-header.tsx`) is sticky at the top of every public page. There is no «En construcción» strip and no «Página en pruebas» banner (Javier, 2026-10-13).
 
 ## Nav labels
 
@@ -62,5 +62,5 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 - `npm run lint`
 - `npm run test:event-jsonld` (runs when `lib/sports-event-jsonld.test.ts` exists)
 - `npm run test:recien-abiertas` (strip: abierta + `recien_abierta` + ≤3 días)
-- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). Expects «En construcción» above the header on `/`, `/correr`, `/ciclismo`, and one `/evento/<id>`. PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel HTML is not success
+- `npm run verify:smoke` — public PRO (`https://www.carrerasasturias.es`). Fails if «En construcción» or «Página en pruebas» appears on `/`, `/correr`, `/ciclismo`, the calendars, the legal pages, or one `/evento/<id>`. PRE `*.vercel.app` is behind Vercel Deployment Protection; Login–Vercel HTML is not success
 - GitHub Actions: `.github/workflows/ci.yml`, job name **`ci`** (lint + JSON-LD test + build) on pull_request/push to `pre` and `main`
