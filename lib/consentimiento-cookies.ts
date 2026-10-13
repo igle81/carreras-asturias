@@ -8,11 +8,8 @@ type GoogleFundingChoices = {
 export function fundingChoices(): GoogleFundingChoices | null {
   if (typeof window === "undefined") return null;
   const fc = (window as Window & { googlefc?: { showRevocationMessage?: unknown } }).googlefc;
-  if (!fc) return null;
-  if (typeof fc.showRevocationMessage !== "function") {
-    // googlefc existe pero aún no está listo: lo tratamos como presente.
-    return { showRevocationMessage: () => window.setTimeout(abrirConfiguracionCookies, 500) };
-  }
+  // El stub `googlefc = {__fci}` (Funding Choices no cargado) cuenta como «sin CMP».
+  if (!fc || typeof fc.showRevocationMessage !== "function") return null;
   return fc as GoogleFundingChoices;
 }
 
@@ -36,5 +33,7 @@ export function abrirConfiguracionCookies() {
     fc.showRevocationMessage();
     return;
   }
+  // Respaldo: el banner propio (si aún no se ha montado, lo lee al montar).
+  (window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies = true;
   window.dispatchEvent(new Event(EVENTO_CONFIGURAR_COOKIES));
 }

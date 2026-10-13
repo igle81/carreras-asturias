@@ -162,7 +162,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "1. Qué usamos hoy",
         paragraphs: [
-          "Carreras Asturias no descarga publicidad hasta que pulsas Aceptar. El modo de consentimiento de Google queda denegado por defecto. El script de AdSense (cliente ca-pub-5660728155340779) solo se pide entonces, y no en las páginas de cuenta (/registro, /avisos). El anuncio entre tarjetas solo se pinta si además hay un espacio configurado.",
+          "Carreras Asturias no descarga publicidad hasta que pulsas Aceptar. El modo de consentimiento de Google queda denegado por defecto. Cargamos el mensaje de consentimiento certificado de Google (CMP) solo para mostrarte el aviso; hasta que decides no se usan cookies publicitarias. El script de AdSense (cliente ca-pub-5660728155340779) solo se pide entonces, y no en las páginas de cuenta (/registro, /avisos). El anuncio entre tarjetas solo se pinta si además hay un espacio configurado.",
           "Los avisos de aperturas y clasificaciones son aparte: el código de OneSignal solo se descarga si pulsas «Activar avisos». Puedes desactivarlos después en la configuración del navegador.",
         ],
       },
