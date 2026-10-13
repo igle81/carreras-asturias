@@ -28,6 +28,14 @@ export function emailRegistroValido(value: unknown): string | null {
 export const RUTA_REGISTRO = "/registro";
 export const RUTA_ACCESO = "/acceso";
 export const RUTA_AVISOS = "/avisos";
+export const RUTA_PORTADA = "/";
+
+export type AccionCuenta = "registro" | "avisos" | "salir";
+
+/** Con sesión, la cabecera muestra Mis avisos y Salir. Sin sesión, Registro y Mis avisos. */
+export function accionesCuentaVisible(haySesion: boolean): AccionCuenta[] {
+  return haySesion ? ["avisos", "salir"] : ["registro", "avisos"];
+}
 export const TELEGRAM_BOT = "AvilesIA_bot";
 /** Prefijo de /start. asturRentIA usa ar_; el webhook padre ignora el resto hasta que lo enrute. */
 export const TELEGRAM_PREFIJO_CARRERAS = "ca_";
