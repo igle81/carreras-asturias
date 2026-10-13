@@ -8,7 +8,11 @@ type GoogleFundingChoices = {
 export function fundingChoices(): GoogleFundingChoices | null {
   if (typeof window === "undefined") return null;
   const fc = (window as Window & { googlefc?: { showRevocationMessage?: unknown } }).googlefc;
-  if (!fc || typeof fc.showRevocationMessage !== "function") return null;
+  if (!fc) return null;
+  if (typeof fc.showRevocationMessage !== "function") {
+    // googlefc existe pero aún no está listo: lo tratamos como presente.
+    return { showRevocationMessage: () => window.setTimeout(abrirConfiguracionCookies, 500) };
+  }
   return fc as GoogleFundingChoices;
 }
 

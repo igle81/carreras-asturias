@@ -20,7 +20,7 @@ export function LegalPage({
       >
         {document.title}
       </h1>
-      <p className="mt-2 text-sm text-ink/55">{document.updatedLabel}</p>
+      <p className="mt-2 text-sm text-ink/75">{document.updatedLabel}</p>
       <p className="mt-4 text-lg text-ink/70">{document.description}</p>
       {accion ? <div className="mt-6">{accion}</div> : null}
 
