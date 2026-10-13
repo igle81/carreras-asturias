@@ -71,7 +71,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
               Clasificación
             </span>
           ) : clasificacion === "pendiente" ? (
-            <span className="rounded-full bg-ink/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">
+            <span className="rounded-full bg-ink/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-muted">
               Sin clasificación
             </span>
           ) : null}
@@ -98,7 +98,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
           {event.municipio ? ` · ${event.municipio}` : ""}
         </p>
         {event.localidad ? (
-          <p className="text-xs text-ink/50">{event.localidad}</p>
+          <p className="text-xs text-muted">{event.localidad}</p>
         ) : null}
         {distances ? <p className="text-sm font-medium text-forest">{distances}</p> : null}
       </div>
@@ -139,7 +139,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
         )}
         <Link
           href={`/evento/${event.id_canonico}`}
-          className="rounded-full px-3 py-2 text-sm text-ink/60 hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+          className="rounded-full px-3 py-2 text-sm text-muted hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
         >
           Ficha
         </Link>

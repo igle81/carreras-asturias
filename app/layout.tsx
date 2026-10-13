@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { AdsenseConsent } from "@/components/adsense-consent";
 import { AvilesiaBarra } from "@/components/avilesia-barra";
 import { CookieBanner } from "@/components/cookie-banner";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { ADSENSE_SCRIPT_SRC } from "@/lib/adsense";
+import { CONSENT_DEFAULT_SCRIPT } from "@/lib/adsense";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
@@ -71,9 +72,9 @@ export default async function RootLayout({
   const concejosBici = uniqueConcejos(filterByModalidad(events, "ciclismo"));
 
   return (
-    <html lang="es">
+    <html lang="es" data-avilesia-barra="on">
       <head>
-        <script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_DEFAULT_SCRIPT }} />
       </head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
         <GeoProvider>
@@ -84,6 +85,7 @@ export default async function RootLayout({
           <SiteFooter />
           <AvilesiaBarra />
           <CookieBanner />
+          <AdsenseConsent />
         </GeoProvider>
       </body>
     </html>

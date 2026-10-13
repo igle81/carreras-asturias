@@ -7,7 +7,7 @@ export default function NotFound() {
       <h1 className="mt-2 font-display text-3xl font-black text-ink">
         Esta carrera se ha perdido en la niebla
       </h1>
-      <p className="mt-3 text-ink/65">
+      <p className="mt-3 text-muted">
         No encontramos esa ficha. Vuelve al calendario y elige otro dorsal.
       </p>
       <Link

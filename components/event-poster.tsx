@@ -99,7 +99,7 @@ export function EventDetailPoster({
         onError={() => setFailedSrc(src)}
       />
       {credit ? (
-        <figcaption className="px-2 pt-2 pb-1 text-center text-[11px] text-ink/40">{credit}</figcaption>
+        <figcaption className="px-2 pt-2 pb-1 text-center text-[11px] text-muted">{credit}</figcaption>
       ) : null}
     </figure>
   );

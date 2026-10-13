@@ -1,15 +1,12 @@
-/** Nota suave cuando falta NIF/domicilio. No usar un banner de «Borrador» en privacidad. */
-export const LEGAL_IDENTITY_PENDING_NOTE =
-  "Identidad del titular pendiente (NIF/domicilio)";
-
 export const LEGAL_PLACEHOLDERS = {
-  titular: "[NOMBRE/RAZÓN SOCIAL]",
-  nif: "[completar]",
-  domicilio: "[completar]",
+  titular: "Javier Iglesias",
+  nif: "71880314R",
+  domicilio: "C/ Juan XXIII, 33400 Avilés (Asturias)",
   email: "avilesia2026@gmail.com",
 } as const;
 
 export const COOKIE_CONSENT_KEY = "ca-cookie-consent";
+export const COOKIE_CONSENT_EVENT = "ca-consent";
 export const COOKIE_CONSENT_VERSION = 1 as const;
 
 export type CookieConsentDecision = {
@@ -43,49 +40,43 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-const { nif, domicilio, email } = LEGAL_PLACEHOLDERS;
+const { titular, nif, domicilio, email } = LEGAL_PLACEHOLDERS;
 
 export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
   privacidad: {
     slug: "privacidad",
     title: "Política de privacidad",
     description:
-      "Cómo trata Carreras Asturias los datos personales: responsable, canal VIP, encargados, transferencias, automatización y derechos ARCO+.",
-    updatedLabel: "Actualizado 8 de septiembre de 2026 · NIF y domicilio pendientes",
-    badge: LEGAL_IDENTITY_PENDING_NOTE,
+      "Cómo trata Carreras Asturias los datos personales: cuenta, avisos, encargados y derechos.",
+    updatedLabel: "Actualizado 13 de octubre de 2026",
+    badge: null,
     sections: [
       {
         heading: "1. Responsable del tratamiento",
         paragraphs: [
-          `Contacto del responsable del tratamiento: ${email}. NIF ${nif}, domicilio ${domicilio}.`,
-          "Los datos identificativos del titular (NIF y domicilio) están pendientes de completar. Hasta entonces, el correo anterior es el canal de contacto del responsable.",
+          `Responsable: ${titular}. NIF ${nif}. Domicilio: ${domicilio}. Contacto: ${email}.`,
         ],
       },
       {
         heading: "2. Datos que se tratan",
         paragraphs: [
-          "Puedes apuntarte a los avisos por correo con un enlace de un solo uso (magic link). No hay contraseña. Podemos tratar las categorías siguientes, según cómo uses el sitio y si te suscribes a los avisos o al canal VIP:",
+          "Si creas una cuenta, tratamos el correo, la contraseña (la guarda Supabase Auth; esta web no la almacena en claro), el correo donde quieres los avisos y el momento del consentimiento. La fila está en el esquema carreras de Supabase y cada persona solo ve la suya.",
         ],
         bullets: [
           "Registros técnicos de seguridad y funcionamiento (dirección IP, user-agent, ruta y marca temporal) generados por el hosting.",
           "Geolocalización del navegador solo si la activas con el botón de cercanía. Las coordenadas se usan en el dispositivo para calcular distancias y no se guardan como un perfil persistente de ubicación.",
           "Preferencia de cookies en el navegador (localStorage, clave `ca-cookie-consent`).",
-          "Si creas una cuenta para los avisos: el correo de la cuenta, el correo donde quieres los avisos, la contraseña (la guarda Supabase Auth, no esta tabla), el consentimiento, si activaste el push y, si conectas Telegram, el identificador del chat privado con @AvilesIA_bot. La fila está en `carreras.suscripciones_alertas` y el chat en `carreras.alertas_telegram`. Cada persona solo ve lo suyo.",
-          "Si pulsas el botón de interés VIP, la ruta de la página y el user-agent para contar clics.",
-          "Canal VIP (cuando hay suscripción o prueba): correo electrónico, datos de facturación y de cliente en Stripe, identificador de Telegram para el canal VIP privado, y datos de dispositivo/suscripción de notificaciones push en OneSignal.",
+          "Si conectas Telegram, el identificador del chat privado con el bot @AvilesIA_bot. El aviso te llega a ese chat, que solo ves tú.",
+          "Si activas los avisos en el móvil o el navegador con la sesión iniciada, OneSignal vincula ese dispositivo a tu user_id. Sin sesión no se asocia el navegador a un identificador de otra persona.",
+          "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
+          "Si aceptas las cookies no esenciales, Google AdSense puede guardar identificadores para mostrar y medir anuncios. Hasta que pulsas Aceptar, el script no se descarga.",
         ],
       },
       {
-        heading: "3. Canal VIP (correo, pago, Telegram y push)",
+        heading: "3. Avisos por correo, Telegram y push",
         paragraphs: [
-          "El canal VIP está pensado para avisos de inscripciones (víspera y mismo día) por correo, canal privado de Telegram y notificación push. El botón de alta puede aparecer como «Próximamente» en producción; en preproducción el checkout puede estar activo en modo de prueba. Esta política describe el tratamiento aplicable cuando te suscribes o pruebas esos canales, aunque el alta pública aún no esté abierta.",
-          "Carreras Asturias no almacena el número completo de la tarjeta (PAN) ni el CVV. El pago de la suscripción se procesa en Stripe. No hay un enlace público permanente de Telegram (`t.me`); el acceso al canal VIP privado se gestiona tras la suscripción.",
-        ],
-        bullets: [
-          "Correo electrónico: avisos VIP y comunicaciones relacionadas con la suscripción.",
-          "Stripe: cobro de la cuota, cliente de facturación y, si estás suscrito, baja o gestión a través del Customer Portal de Stripe.",
-          "Telegram: envío de avisos al canal VIP privado.",
-          "OneSignal: avisos en el navegador o dispositivo, solo si pulsas «Activar avisos» y aceptas el permiso. El código no se carga antes. Son avisos de aperturas y clasificaciones, y se pueden desactivar en el navegador.",
+          "Los avisos de inscripciones salen por el correo que indicas, por un chat privado con @AvilesIA_bot si lo conectas en Mis avisos, y por notificación de OneSignal si activas el permiso en ese mismo sitio con la sesión iniciada.",
+          "El código de OneSignal no se descarga hasta que pulsas el botón. Puedes darte de baja de los avisos en Mis avisos y revocar el permiso en el navegador.",
         ],
       },
       {
@@ -93,15 +84,15 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         paragraphs: ["Tratamos datos solo para las finalidades siguientes:"],
         bullets: [
           "Mostrar el calendario de carreras y ciclismo en Asturias (interés legítimo en informar sobre eventos públicos).",
-          "Garantizar la seguridad y el correcto funcionamiento del sitio (interés legítimo).",
+          "Garantizar la seguridad, limitar abusos del alta y el correcto funcionamiento del sitio (interés legítimo).",
+          "Crear la cuenta y enviarte los avisos que pides (ejecución de la solicitud; el consentimiento que marcas en el alta).",
+          "Confirmar que el correo es tuyo (ejecución de la solicitud).",
+          "Avisar al administrador cuando hay un alta nueva, por correo, Telegram y notificación (interés legítimo en operar el servicio).",
+          "Enviarte el aviso por Telegram a @AvilesIA_bot y por OneSignal si lo activas (consentimiento).",
           "Calcular carreras cercanas cuando activas la geolocalización (consentimiento).",
-          "Cookies o almacenamientos no esenciales, solo con consentimiento (ver política de cookies).",
-          "Medir el interés en el canal VIP a partir de clics en el botón (interés legítimo).",
-          "Enviarte el enlace de alta y guardar tu correo para los avisos de inscripciones (ejecución de la solicitud; el enlace confirma que el correo es tuyo).",
-          "Avisar al administrador de Carreras Asturias cuando hay un alta nueva, por correo, Telegram y notificación push (interés legítimo en operar el servicio).",
-          "Gestionar la suscripción VIP, el cobro y los avisos contratados (ejecución del contrato cuando te suscribes; consentimiento para el permiso de notificaciones push del navegador).",
-          "Atender consultas y el ejercicio de derechos a través del buzón de contacto (interés legítimo y, cuando aplique, obligación legal).",
-          "Difundir información pública de eventos en X (interés legítimo en comunicar el calendario).",
+          "Cookies y publicidad de Google AdSense, solo si pulsas Aceptar (consentimiento).",
+          "Medir clics del enlace de afiliación a Decathlon (interés legítimo).",
+          "Atender consultas y el ejercicio de derechos en el buzón de contacto (interés legítimo y, cuando aplique, obligación legal).",
         ],
       },
       {
@@ -111,15 +102,12 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         ],
         bullets: [
           "Vercel: alojamiento y entrega del sitio.",
-          "Supabase: base de datos de eventos, altas de avisos por correo y registro de clics del CTA VIP.",
-          "Google AdSense: script de publicidad en la página. El bloque entre tarjetas solo se muestra si hay un espacio publicitario configurado.",
-          "Stripe: pagos de la suscripción VIP. No almacenamos el PAN.",
-          "OneSignal: notificaciones push del canal VIP.",
-          "Telegram: canal VIP privado de avisos.",
-          "GitHub: alojamiento del código y de la integración continua. No es una base de datos de usuarios del calendario.",
+          "Supabase: autenticación de la cuenta, base de datos de eventos y filas de avisos.",
+          "Google AdSense: publicidad, solo después de Aceptar en el banner. Cliente ca-pub-5660728155340779.",
+          "OneSignal: notificaciones en el navegador o el móvil, solo si las activas con la sesión iniciada.",
+          "Telegram (@AvilesIA_bot): chat privado de avisos si pulsas Conectar Telegram.",
+          "Decathlon y su red de afiliación Awin: solo si abres el enlace patrocinado. No les enviamos tu correo.",
           `Gmail (Google): buzón de contacto ${email} para consultas y derechos.`,
-          "X: publicación de contenidos informativos públicos sobre eventos. No se publica el correo de los suscriptores VIP.",
-          "Meta (Facebook e Instagram): actualmente desactivado y no se usa para publicar.",
         ],
       },
       {
@@ -139,17 +127,18 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "8. Conservación",
         paragraphs: [
           "Como política interna, los registros técnicos de hosting se conservan como máximo 90 días, salvo que un incidente de seguridad o una obligación legal exija un plazo distinto.",
-          "El correo de los avisos se conserva mientras la suscripción siga de alta. Puedes pedir la baja en el mismo buzón de contacto.",
-          "Los datos de la suscripción VIP se conservan mientras la suscripción esté activa y, tras la baja, el tiempo alineado con las obligaciones de facturación y con las conservaciones que impongan Stripe o la normativa mercantil y fiscal aplicable.",
+          "La cuenta y el correo de avisos se conservan mientras no te des de baja. Tras la baja, se borran o se anonimizan en un plazo de 30 días, salvo que una obligación legal exija guardarlos más.",
+          "El identificador de Telegram y la suscripción de OneSignal se borran al desconectar el canal o al darte de baja.",
           "La preferencia de cookies se guarda en localStorage del navegador hasta que la borres o la cambies. La geolocalización no se almacena como histórico de posición.",
+          "Los clics de afiliación, si la tabla existe, se conservan como máximo 12 meses.",
         ],
       },
       {
         heading: "9. Derechos y reclamaciones",
         paragraphs: [
-          `Puedes ejercer los derechos de acceso, rectificación, cancelación/supresión, oposición, limitación y portabilidad (ARCO+) escribiendo a ${email}.`,
-          "Si tienes una suscripción VIP activa, también puedes cancelarla o gestionar el cobro a través del Customer Portal de Stripe, desde el enlace de baja del sitio cuando la suscripción esté activa.",
-          "También puedes reclamar ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa.",
+          `Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a ${email}. También puedes darte de baja de los avisos en Mis avisos.`,
+          "Responderemos en el plazo de un mes. Si la solicitud es compleja, el plazo puede ampliarse otros dos meses y te lo diremos.",
+          "También puedes reclamar ante la Agencia Española de Protección de Datos (AEPD), C/ Jorge Juan 6, 28001 Madrid, si consideras que el tratamiento no se ajusta a la normativa.",
         ],
       },
       {
@@ -165,13 +154,13 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Política de cookies",
     description:
       "Cookies y almacenamientos de Carreras Asturias: técnicas, preferencias, Google AdSense y analítica no activa.",
-    updatedLabel: "Actualizado 12 de octubre de 2026",
+    updatedLabel: "Actualizado 13 de octubre de 2026",
     badge: null,
     sections: [
       {
         heading: "1. Qué usamos hoy",
         paragraphs: [
-          "Carreras Asturias usa almacenamientos del navegador de forma mínima. No hay analítica activa. El sitio carga en la cabecera el script de Google AdSense (cliente ca-pub-5660728155340779). El anuncio entre tarjetas de carreras solo se pinta si hay un espacio (`data-ad-slot`) configurado; si no lo hay, no se inserta el bloque.",
+          "Carreras Asturias no descarga publicidad hasta que pulsas Aceptar. El modo de consentimiento de Google queda denegado por defecto. El script de AdSense (cliente ca-pub-5660728155340779) solo se pide entonces, y no en las páginas de cuenta (/registro, /avisos). El anuncio entre tarjetas solo se pinta si además hay un espacio configurado.",
           "Los avisos de aperturas y clasificaciones son aparte: el código de OneSignal solo se descarga si pulsas «Activar avisos». Puedes desactivarlos después en la configuración del navegador.",
         ],
       },
@@ -182,7 +171,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Necesarias / técnicas: imprescindibles para mostrar el sitio, recordar la decisión del banner (`ca-cookie-consent` en localStorage) y el funcionamiento básico.",
           "Preferencias: concejo o modalidad si se persisten en el navegador para no preguntar en cada visita.",
           "Analítica: no activa hoy.",
-          "Publicidad: script de Google AdSense en la cabecera. Puede guardar cookies de Google para mostrar y medir anuncios. El hueco entre tarjetas permanece vacío mientras no haya un slot configurado.",
+          "Publicidad: Google AdSense, solo si pulsas Aceptar. Puede guardar cookies de Google para mostrar y medir anuncios. En /registro y /avisos no se carga.",
         ],
       },
       {
@@ -204,13 +193,13 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Aviso legal",
     description:
       "Titularidad, carácter informativo y limitación de responsabilidad del portal Carreras Asturias.",
-    updatedLabel: "Actualizado 8 de septiembre de 2026 · NIF y domicilio pendientes",
-    badge: LEGAL_IDENTITY_PENDING_NOTE,
+    updatedLabel: "Actualizado 13 de octubre de 2026",
+    badge: null,
     sections: [
       {
         heading: "1. Titular del portal",
         paragraphs: [
-          `Titular del portal: contacto ${email}. NIF ${nif}, domicilio ${domicilio}, pendientes hasta completar los datos identificativos del titular.`,
+          `Titular: ${titular}. NIF ${nif}. Domicilio: ${domicilio}. Contacto: ${email}.`,
         ],
       },
       {
@@ -244,7 +233,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Términos de uso",
     description:
       "Condiciones de uso del calendario Carreras Asturias: uso personal, atribución y límites de scraping.",
-    updatedLabel: "Borrador · contacto pendiente",
+    updatedLabel: "Actualizado 13 de octubre de 2026",
     badge: null,
     sections: [
       {

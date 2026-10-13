@@ -1,7 +1,11 @@
 import { getSupabase } from "./supabase";
 
+/**
+ * La ruta antigua `/es/all-sports/running-trail.html` responde 404.
+ * Esta guía de trail está publicada; el `mc` de AvilesIA se conserva.
+ */
 export const DECATHLON_RUNNING_HREF =
-  "https://www.decathlon.es/es/all-sports/running-trail.html?mc=AVILESIANETWORK";
+  "https://www.decathlon.es/es/c/htc/las-mejores-zapatillas-de-trail-running_daac61c5-1687-4240-addd-60825b6f8354?mc=AVILESIANETWORK";
 
 export const AFILIADO_APP_SLUG = "carreras";
 export const AFILIADO_TIPO_EVENTO = "clic_afiliado";
@@ -27,6 +31,7 @@ export type ClicAfiliadoInput = {
 export type ClicAfiliadoResultado = {
   recorded: boolean;
   prepared: true;
+  absent?: boolean;
 };
 
 export function filaClicAfiliado(): { app_slug: string; tipo_evento: string } {
@@ -71,7 +76,7 @@ export async function registrarClicAfiliado(
     if (!error) return { recorded: true, prepared: true };
     if (esTablaMetricasAusente(error)) {
       console.warn("control_flota_metricas no está en este proyecto", { path, destino: AFILIADO_DESTINO });
-      return { recorded: false, prepared: true };
+      return { recorded: false, prepared: true, absent: true };
     }
     console.error("No se pudo registrar el clic de afiliado", error.message);
     return { recorded: false, prepared: true };

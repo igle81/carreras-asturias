@@ -8,12 +8,12 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-display text-2xl font-bold">Carreras Asturias</p>
-          <p className="mt-2 max-w-md text-sm text-fog/75">
+          <p className="mt-2 max-w-md text-sm text-fog">
             Dos calendarios: a pie y ciclismo. Inscripciones, concejos y la
             próxima dorsal que no se te puede escapar.
           </p>
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-fog/80">
+        <div className="flex flex-wrap gap-4 text-sm text-fog">
           <Link href={SECTIONS.pie.home} className="hover:text-gold">
             Correr
           </Link>
@@ -30,7 +30,7 @@ export function SiteFooter() {
       </div>
       <nav
         aria-label="Información legal"
-        className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-fog/10 px-4 py-4 text-xs text-fog/70"
+        className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-fog/10 px-4 py-4 text-xs text-fog"
       >
         {LEGAL_NAV.map((item) => (
           <Link key={item.href} href={item.href} className="hover:text-gold">

@@ -12,7 +12,7 @@ import {
 test("el enlace de Decathlon es el de running y trail", () => {
   assert.equal(
     DECATHLON_RUNNING_HREF,
-    "https://www.decathlon.es/es/all-sports/running-trail.html?mc=AVILESIANETWORK",
+    "https://www.decathlon.es/es/c/htc/las-mejores-zapatillas-de-trail-running_daac61c5-1687-4240-addd-60825b6f8354?mc=AVILESIANETWORK",
   );
 });
 

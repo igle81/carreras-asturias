@@ -1,4 +1,5 @@
 import { fetchEventos } from "@/lib/events";
+import { isRaceFinished } from "@/lib/fin-estimado";
 import { absoluteUrl, eventPath, parseEventDate } from "@/lib/seo";
 import type { Evento } from "@/lib/types";
 
@@ -50,6 +51,15 @@ function staticRows(today: string): SitemapRow[] {
   return STATIC_ROUTES.map((route) => ({ ...route, lastmod: today }));
 }
 
+/**
+ * Fichas celebradas siguen indexables (no noindex): responden búsquedas de
+ * resultados y de la prueba. En el sitemap bajan a 0.3 para que el rastreo
+ * priorice las que aún no han acabado (0.6).
+ */
+export function prioridadFicha(event: Evento, now: Date): "0.3" | "0.6" {
+  return isRaceFinished(event, now) ? "0.3" : "0.6";
+}
+
 function eventRows(events: Evento[], today: string, now: Date): SitemapRow[] {
   const rows: SitemapRow[] = [];
   const seen = new Set<string>();
@@ -71,7 +81,7 @@ function eventRows(events: Evento[], today: string, now: Date): SitemapRow[] {
     rows.push({
       path: eventPath(id),
       changeFrequency: "weekly",
-      priority: "0.6",
+      priority: prioridadFicha(event, now),
       lastmod: lastmodDay(parseEventDate(event.fecha_inicio), now) || today,
     });
   }

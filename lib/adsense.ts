@@ -2,6 +2,17 @@ export const ADSENSE_CLIENT = "ca-pub-5660728155340779";
 
 export const ADSENSE_SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
 
+export const CONSENT_DEFAULT_SCRIPT =
+  "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});";
+
+const RUTAS_SIN_ANUNCIO = ["/avisos", "/registro", "/acceso", "/interno", "/alertas", "/vip"];
+
+/** Anuncios solo en páginas públicas. Cuenta, avisos e interno quedan fuera. */
+export function paginaPublicaParaAnuncios(pathname: string): boolean {
+  const ruta = pathname.split("?")[0] || "/";
+  return !RUTAS_SIN_ANUNCIO.some((prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`));
+}
+
 type EnvLike = Record<string, string | undefined>;
 
 /**
