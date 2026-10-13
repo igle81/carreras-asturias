@@ -58,13 +58,36 @@ test("la cuenta pide correo, contraseña y consentimiento, y el aviso puede ser 
     false,
   );
   assert.equal(
-    cuentaRegistroValida({ correo: "ana@ejemplo.es", password: "secreto88", consentimiento: false }).ok,
+    cuentaRegistroValida({
+      correo: "ana@ejemplo.es",
+      password: "secreto88",
+      passwordRepetir: "secreto88",
+      consentimiento: false,
+    }).ok,
     false,
+  );
+  assert.deepEqual(
+    cuentaRegistroValida({
+      correo: "ana@ejemplo.es",
+      password: "secreto88",
+      passwordRepetir: "otra8888",
+      consentimiento: true,
+    }),
+    { ok: false, error: "Las contraseñas no coinciden." },
+  );
+  assert.deepEqual(
+    cuentaRegistroValida({
+      correo: "ana@ejemplo.es",
+      password: "secreto88",
+      consentimiento: true,
+    }),
+    { ok: false, error: "Las contraseñas no coinciden." },
   );
   assert.deepEqual(
     cuentaRegistroValida({
       correo: " Ana@Ejemplo.es ",
       password: "secreto88",
+      passwordRepetir: "secreto88",
       correoAvisos: "",
       consentimiento: true,
     }),
@@ -73,6 +96,7 @@ test("la cuenta pide correo, contraseña y consentimiento, y el aviso puede ser 
   const otro = cuentaRegistroValida({
     correo: "ana@ejemplo.es",
     password: "secreto88",
+    passwordRepetir: "secreto88",
     correoAvisos: "Avisos@Ejemplo.es",
     consentimiento: true,
   });

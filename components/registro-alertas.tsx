@@ -13,6 +13,7 @@ const CAMPO =
 export function RegistroAlertas() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepetir, setPasswordRepetir] = useState("");
   const [correoAvisos, setCorreoAvisos] = useState("");
   const [consentimiento, setConsentimiento] = useState(false);
   const [estado, setEstado] = useState<Estado>("listo");
@@ -22,7 +23,7 @@ export function RegistroAlertas() {
   async function alEnviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (bloqueado) return;
-    const validada = cuentaRegistroValida({ correo, password, correoAvisos, consentimiento });
+    const validada = cuentaRegistroValida({ correo, password, passwordRepetir, correoAvisos, consentimiento });
     if (!validada.ok) {
       setEstado("error");
       setMensaje(validada.error);
@@ -37,6 +38,7 @@ export function RegistroAlertas() {
       body: JSON.stringify({
         correo,
         password,
+        passwordRepetir,
         correoAvisos,
         consentimiento,
         origen: window.location.origin,
@@ -114,6 +116,20 @@ export function RegistroAlertas() {
           value={password}
           disabled={bloqueado}
           onChange={(event) => setPassword(event.target.value)}
+          className={CAMPO}
+        />
+      </label>
+      <label className="block text-sm font-medium text-ink">
+        Repetir contraseña
+        <input
+          type="password"
+          name="passwordRepetir"
+          autoComplete="new-password"
+          minLength={8}
+          required
+          value={passwordRepetir}
+          disabled={bloqueado}
+          onChange={(event) => setPasswordRepetir(event.target.value)}
           className={CAMPO}
         />
       </label>

@@ -184,6 +184,9 @@ export function cuentaRegistroValida(
     return { ok: false, error: "La contraseña tiene que tener al menos 8 caracteres." };
   }
   if (raw.password.length > 72) return { ok: false, error: "La contraseña es demasiado larga." };
+  if (raw.passwordRepetir !== raw.password) {
+    return { ok: false, error: "Las contraseñas no coinciden." };
+  }
   const avisosEnBlanco = typeof raw.correoAvisos !== "string" || raw.correoAvisos.trim() === "";
   const correoAvisos = avisosEnBlanco ? correo : emailRegistroValido(raw.correoAvisos);
   if (!correoAvisos) return { ok: false, error: "El correo para los avisos no es válido." };
