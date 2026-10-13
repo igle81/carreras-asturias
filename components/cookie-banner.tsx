@@ -53,9 +53,10 @@ export function CookieBanner() {
             Cookies y privacidad
           </p>
           <p id="cookie-banner-desc" className="mt-1 text-sm text-fog/80">
-            Usamos almacenamientos técnicos necesarios. La analítica y el
-            marketing no están activos. Puedes aceptar o rechazar los no
-            esenciales. Más detalle en la{" "}
+            Usamos almacenamientos técnicos necesarios. La página carga el
+            script de Google AdSense. La analítica no está activa. Puedes
+            aceptar o rechazar el resto de almacenamientos no esenciales. Más
+            detalle en la{" "}
             <Link href="/cookies" className="font-semibold text-gold underline underline-offset-2">
               política de cookies
             </Link>

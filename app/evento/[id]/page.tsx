@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivarAvisos } from "@/components/activar-avisos";
+import { DecathlonAfiliado } from "@/components/decathlon-afiliado";
 import { AvilesiaEscapada } from "@/components/avilesia-escapada";
 import { AperturaBadge } from "@/components/apertura-badge";
 import { ClasificacionBlock } from "@/components/clasificacion-block";
@@ -149,6 +150,8 @@ export default async function EventoPage({ params }: EventPageProps) {
       </div>
 
       <ActivarAvisos apariencia="ficha" />
+
+      {resolveModalidad(event) === "pie" ? <DecathlonAfiliado className="mt-6" /> : null}
 
       <ClasificacionBlock event={event} />
 

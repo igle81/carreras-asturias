@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { AnuncioInfeed } from "./anuncio-infeed";
+import { DecathlonAfiliado } from "./decathlon-afiliado";
 import { DisciplineChips } from "./discipline-chips";
 import { EventCard } from "./event-card";
 import { MapaCarreras } from "./mapa-carreras";
 import { GeoButton } from "./geo-button";
 import { useGeo } from "./geo-provider";
+import { indiceAnuncioEntreTarjetas, slotAnuncioInfeed } from "@/lib/adsense";
 import { entraEnStripRecienAbiertas } from "@/lib/apertura-badge";
 import { isWithinDays } from "@/lib/dates";
 import { disciplineMatches } from "@/lib/disciplines";
@@ -67,6 +70,11 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       return compareListedEvents(a, b);
     });
   }, [cerradas, concejo, conClasificacion, coords, disciplina, recien, scoped, sort, ventana]);
+
+  const adSlot = slotAnuncioInfeed({
+    NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
+  });
+  const adAt = adSlot ? indiceAnuncioEntreTarjetas(filtered.length) : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -171,14 +179,17 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((event) => (
-          <EventCard
-            key={event.id_canonico}
-            event={event}
-            distanceKm={coords ? distanceToEvent(coords, event) : null}
-          />
+        {filtered.map((event, index) => (
+          <Fragment key={event.id_canonico}>
+            {adAt === index ? <AnuncioInfeed slot={adSlot} /> : null}
+            <EventCard
+              event={event}
+              distanceKm={coords ? distanceToEvent(coords, event) : null}
+            />
+          </Fragment>
         ))}
       </div>
+      {section.id === "pie" ? <DecathlonAfiliado className="mt-8" /> : null}
       {!filtered.length ? (
         <p className="rounded-3xl border border-dashed border-forest/20 bg-white px-4 py-12 text-center text-ink/60">
           {mensajeCalendarioVacio({ recien, cerradas, conClasificacion })}

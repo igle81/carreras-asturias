@@ -65,6 +65,14 @@ jobs:
             echo "Skipping test:filtros — lib/filtros-calendario.test.ts is not on this branch yet."
           fi
 
+      - name: Registro de alertas, AdSense y afiliado
+        run: |
+          if [ -f lib/registro-alertas.test.ts ]; then
+            npm run test:registro-alertas
+          else
+            echo "Skipping test:registro-alertas — lib/registro-alertas.test.ts is not on this branch yet."
+          fi
+
       - name: Mapa de banderillas tests
         run: |
           if [ -f lib/mapa-carreras.test.ts ]; then

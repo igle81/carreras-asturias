@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { AvilesiaApps } from "./avilesia-apps";
+import { DecathlonAfiliado } from "./decathlon-afiliado";
 import { AvilesiaEscapada } from "./avilesia-escapada";
 import { DisciplineLinkChips } from "./discipline-chips";
 import { EstaQuincena } from "./esta-quincena";
@@ -69,6 +70,11 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
           <AvilesiaEscapada modalidad={section.id} comarca />
         </div>
         <EstaQuincena events={quincena} />
+        {section.id === "pie" ? (
+          <div className="mx-auto max-w-6xl px-4">
+            <DecathlonAfiliado />
+          </div>
+        ) : null}
         <NearbySection events={listedEvents(scoped)} title={section.mapTitle} />
         <VipPromo
           checkoutUrl={getVipCheckoutUrl()}
