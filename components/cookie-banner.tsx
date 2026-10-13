@@ -42,6 +42,7 @@ export function CookieBanner() {
     }
 
     function reabrir() {
+      (window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies = false;
       cerrado.current = false;
       reabierto.current = true;
       sync();
@@ -56,6 +57,7 @@ export function CookieBanner() {
     }, ESPERA_CMP_MS);
     const fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
     window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
+    if ((window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies) reabrir();
     return () => {
       window.clearTimeout(espera);
       window.clearInterval(pulso);

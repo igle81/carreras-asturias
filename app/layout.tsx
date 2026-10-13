@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
-import { AdsenseConsent } from "@/components/adsense-consent";
-import { AvilesiaBarra } from "@/components/avilesia-barra";
-import { CookieBanner } from "@/components/cookie-banner";
+import { Diferidos } from "@/components/diferidos";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -83,9 +81,7 @@ export default async function RootLayout({
           </div>
           <main>{children}</main>
           <SiteFooter />
-          <AvilesiaBarra />
-          <CookieBanner />
-          <AdsenseConsent />
+          <Diferidos />
         </GeoProvider>
       </body>
     </html>

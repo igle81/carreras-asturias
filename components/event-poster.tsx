@@ -46,6 +46,7 @@ export function EventPoster({
       className={className}
       sizes={sizes ?? "400px"}
       priority={priority}
+      fetchPriority={priority ? "high" : undefined}
       quality={60}
       loader={cartelOptimizable(src) ? loaderWebp400 : undefined}
       unoptimized={!cartelOptimizable(src)}

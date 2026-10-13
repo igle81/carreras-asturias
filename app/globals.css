@@ -51,3 +51,9 @@ body {
 html[data-avilesia-barra="on"] body {
   padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
 }
+
+/* Secciones bajo el pliegue: el navegador no las pinta hasta acercarse. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}

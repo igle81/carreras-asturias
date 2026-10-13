@@ -19,7 +19,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
   const { coords, concejo, status, showConcejoFallback } = useGeo();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [verMapa, setVerMapa] = useState(false);
-  const [visibles, setVisibles] = useState(20);
+  const [visibles, setVisibles] = useState(12);
   const concejos = uniqueConcejos(events);
 
   const listed = useMemo(() => {
