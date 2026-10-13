@@ -6,11 +6,11 @@ import {
   debeMostrarBannerPropio,
   EVENTO_CONFIGURAR_COOKIES,
   fundingChoices,
+  guardarDecisionCookies,
 } from "@/lib/consentimiento-cookies";
 import {
   COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_KEY,
-  buildCookieConsent,
   parseCookieConsent,
 } from "@/lib/legal";
 
@@ -50,16 +50,28 @@ export function CookieBanner() {
 
     // El mensaje de Google es el único aviso. Este banner es solo respaldo:
     // se muestra si tras unos segundos googlefc no ha aparecido.
+    // La espera cuenta desde que se inyecta Funding Choices (que va diferido).
     let pulso = 0;
-    const espera = window.setTimeout(() => {
-      sync();
-      pulso = window.setInterval(sync, 1000);
-    }, ESPERA_CMP_MS);
-    const fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
+    let espera = 0;
+    let fin = 0;
+    const arrancar = () => {
+      if (espera) return;
+      espera = window.setTimeout(() => {
+        sync();
+        pulso = window.setInterval(sync, 1000);
+      }, ESPERA_CMP_MS);
+      fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
+    };
+    if ((window as Window & { __caFcInyectado?: number }).__caFcInyectado) arrancar();
+    else window.addEventListener("ca-fc-inyectado", arrancar, { once: true });
+    // Páginas sin CMP (cuenta, avisos): arranca igualmente.
+    const seguro = window.setTimeout(arrancar, 6000);
     window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
     if ((window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies) reabrir();
     return () => {
+      window.removeEventListener("ca-fc-inyectado", arrancar);
       window.clearTimeout(espera);
+      window.clearTimeout(seguro);
       window.clearInterval(pulso);
       window.clearTimeout(fin);
       window.removeEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
@@ -67,7 +79,7 @@ export function CookieBanner() {
   }, []);
 
   function aceptar() {
-    window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(buildCookieConsent(true)));
+    guardarDecisionCookies(window.localStorage, COOKIE_CONSENT_KEY, true);
     window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
     reabierto.current = false;
     cerrado.current = true;
@@ -75,7 +87,7 @@ export function CookieBanner() {
   }
 
   function rechazar() {
-    window.localStorage.removeItem(COOKIE_CONSENT_KEY);
+    guardarDecisionCookies(window.localStorage, COOKIE_CONSENT_KEY, false);
     window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
     reabierto.current = false;
     cerrado.current = true;

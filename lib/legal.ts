@@ -185,7 +185,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
       {
         heading: "4. Cómo gestionar el consentimiento",
         paragraphs: [
-          "En la primera visita aparece un banner con «Aceptar» y «Rechazar no esenciales», salvo que Google ya muestre su propio mensaje de consentimiento: en ese caso usamos ese y no duplicamos el aviso. «Aceptar» guarda la elección en localStorage (`ca-cookie-consent`) y solo entonces se pide el script de AdSense. «Rechazar no esenciales» borra esa clave y no carga publicidad.",
+          "En la primera visita aparece un banner con «Aceptar» y «Rechazar no esenciales», salvo que Google ya muestre su propio mensaje de consentimiento: en ese caso usamos ese y no duplicamos el aviso. «Aceptar» guarda la elección en localStorage (`ca-cookie-consent`) y solo entonces se pide el script de AdSense. «Rechazar no esenciales» guarda también la elección (sin publicidad) para no volver a preguntar, y no carga publicidad. Puedes cambiarla cuando quieras desde «Configurar cookies».",
           "Puedes cambiar de idea con «Configurar cookies», en el pie y en esta página. Si está el mensaje de Google, ese enlace abre su panel. Si no, reabre nuestro banner. Al rechazar se retira el consentimiento y dejan de cargarse los anuncios.",
         ],
       },

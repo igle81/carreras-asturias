@@ -8,7 +8,6 @@ const onesignalWorkerHeaders = [
 
 const nextConfig: NextConfig = {
   transpilePackages: ["leaflet"],
-  experimental: { inlineCss: true },
   async rewrites() {
     return [{ source: "/favicon.ico", destination: "/icon" }];
   },

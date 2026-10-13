@@ -32,15 +32,47 @@ function inyectar(src: string, dataset: string) {
   document.head.appendChild(script);
 }
 
+export const EVENTO_FC_INYECTADO = "ca-fc-inyectado";
+const IDLE_LARGO_MS = 3500;
+
 /** CMP certificada de Google, independiente de AdSense. */
 function cargarFundingChoices() {
+  if (document.querySelector("script[data-fc='1']")) return;
   inyectar(FUNDING_CHOICES_SRC, "fc");
+  (window as Window & { __caFcInyectado?: number }).__caFcInyectado = Date.now();
+  window.dispatchEvent(new Event(EVENTO_FC_INYECTADO));
   if (!document.querySelector("script[data-fcpresent='1']")) {
     const s = document.createElement("script");
     s.setAttribute("data-fcpresent", "1");
     s.text = GOOGLEFC_PRESENT_SCRIPT;
     document.head.appendChild(s);
   }
+}
+
+/**
+ * Funding Choices diferido: primera interacción (toque, scroll, tecla) o
+ * reposo largo. El consentimiento sigue denegado por defecto desde el <head>.
+ */
+function programarFundingChoices(): () => void {
+  const eventos = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
+  let hecho = false;
+  const ir = () => {
+    if (hecho) return;
+    hecho = true;
+    limpiar();
+    cargarFundingChoices();
+  };
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+  const t = window.setTimeout(() => {
+    if (w.requestIdleCallback) w.requestIdleCallback(ir, { timeout: 2000 });
+    else ir();
+  }, IDLE_LARGO_MS);
+  function limpiar() {
+    window.clearTimeout(t);
+    for (const e of eventos) window.removeEventListener(e, ir);
+  }
+  for (const e of eventos) window.addEventListener(e, ir, { once: true, passive: true });
+  return limpiar;
 }
 
 /** adsbygoogle.js solo con consentimiento, y en diferido (tras load / en idle). */
@@ -96,7 +128,7 @@ function escucharTcf(): () => void {
     if (parado) return;
     const api = (window as W).__tcfapi;
     if (typeof api !== "function") {
-      if (intentos++ < 40) window.setTimeout(intento, 500);
+      if (intentos++ < 60) window.setTimeout(intento, 500);
       return;
     }
     api("addEventListener", 2, (tc, ok) => {
@@ -145,7 +177,7 @@ export function AdsenseConsent() {
       if (adsenseCargado()) window.location.reload();
       return;
     }
-    cargarFundingChoices();
+    const pararFc = programarFundingChoices();
     const pararTcf = escucharTcf();
     if (!fundingChoices()) {
       try {
@@ -158,6 +190,7 @@ export function AdsenseConsent() {
     }
     window.addEventListener(COOKIE_CONSENT_EVENT, aplicarRespaldo);
     return () => {
+      pararFc();
       pararTcf();
       window.removeEventListener(COOKIE_CONSENT_EVENT, aplicarRespaldo);
     };
