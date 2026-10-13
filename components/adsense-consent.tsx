@@ -8,33 +8,11 @@ import { COOKIE_CONSENT_EVENT, parseCookieConsent, COOKIE_CONSENT_KEY } from "@/
 
 type Gtag = (...args: unknown[]) => void;
 
-function consentimientoMarketing(): boolean {
-  try {
-    return parseCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY))?.marketing === true;
-  } catch {
-    return false;
-  }
-}
-
 function gtagConsent(): Gtag | undefined {
   return (window as Window & { gtag?: Gtag }).gtag;
 }
 
-function retirarAnuncios() {
-  gtagConsent()?.("consent", "update", {
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-  });
-  document.querySelectorAll("script[data-adsense='1']").forEach((nodo) => nodo.remove());
-}
-
-function concederAnuncios() {
-  gtagConsent()?.("consent", "update", {
-    ad_storage: "granted",
-    ad_user_data: "granted",
-    ad_personalization: "granted",
-  });
+function cargarAdsense() {
   if (document.querySelector("script[data-adsense='1']")) return;
   const script = document.createElement("script");
   script.async = true;
@@ -44,22 +22,36 @@ function concederAnuncios() {
   document.head.appendChild(script);
 }
 
-/** Carga AdSense solo tras Aceptar y solo en páginas públicas. */
+/** Solo para el banner de respaldo (cuando la CMP de Google no aparece). */
+function aplicarRespaldo() {
+  if (fundingChoices()) return;
+  let marketing = false;
+  try {
+    marketing = parseCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY))?.marketing === true;
+  } catch {
+    marketing = false;
+  }
+  const valor = marketing ? "granted" : "denied";
+  gtagConsent()?.("consent", "update", {
+    ad_storage: valor,
+    ad_user_data: valor,
+    ad_personalization: valor,
+  });
+}
+
+/**
+ * En páginas públicas carga adsbygoogle.js con Consent Mode v2 denegado por
+ * defecto. El mensaje certificado de Google (TCF) es el único aviso: él pide
+ * y actualiza el consentimiento. Cuenta, avisos e interno no cargan AdSense.
+ */
 export function AdsenseConsent() {
   const pathname = usePathname() || "/";
 
   useEffect(() => {
-    function aplicar() {
-      if (fundingChoices()) return;
-      if (!paginaPublicaParaAnuncios(pathname) || !consentimientoMarketing()) {
-        retirarAnuncios();
-        return;
-      }
-      concederAnuncios();
-    }
-    aplicar();
-    window.addEventListener(COOKIE_CONSENT_EVENT, aplicar);
-    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, aplicar);
+    if (!paginaPublicaParaAnuncios(pathname)) return;
+    cargarAdsense();
+    window.addEventListener(COOKIE_CONSENT_EVENT, aplicarRespaldo);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, aplicarRespaldo);
   }, [pathname]);
 
   return null;

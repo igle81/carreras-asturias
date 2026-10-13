@@ -14,6 +14,8 @@ import {
   parseCookieConsent,
 } from "@/lib/legal";
 
+const ESPERA_CMP_MS = 5000;
+
 /** Banner fijo: no empuja el contenido (evita un salto de layout). */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -45,11 +47,17 @@ export function CookieBanner() {
       sync();
     }
 
-    sync();
-    const pulso = window.setInterval(sync, 400);
-    const fin = window.setTimeout(() => window.clearInterval(pulso), 8000);
+    // El mensaje de Google es el único aviso. Este banner es solo respaldo:
+    // se muestra si tras unos segundos googlefc no ha aparecido.
+    let pulso = 0;
+    const espera = window.setTimeout(() => {
+      sync();
+      pulso = window.setInterval(sync, 1000);
+    }, ESPERA_CMP_MS);
+    const fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
     window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
     return () => {
+      window.clearTimeout(espera);
       window.clearInterval(pulso);
       window.clearTimeout(fin);
       window.removeEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
@@ -88,8 +96,8 @@ export function CookieBanner() {
             Cookies y privacidad
           </p>
           <p id="cookie-banner-desc" className="mt-1 text-sm text-white">
-            Usamos almacenamientos técnicos necesarios. La publicidad de Google
-            no se carga hasta que pulsas Aceptar. Puedes rechazar el resto.
+            Usamos almacenamientos técnicos necesarios. Los anuncios de Google
+            no usan cookies hasta que pulsas Aceptar. Puedes rechazar el resto.
             Más detalle en la{" "}
             <Link href="/cookies" className="font-semibold text-white underline underline-offset-2">
               política de cookies

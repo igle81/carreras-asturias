@@ -13,7 +13,7 @@ const UTM = "utm_source=carrerasasturias.es&utm_medium=web";
 
 export const AVILESIA_URL = `https://www.avilesia.es/?${UTM}&utm_campaign=ecosistema`;
 export const AVILESIA_GUIA_URL = `https://asturguia.avilesia.es/?${UTM}&utm_campaign=guia`;
-export const AVILESIA_PLANES_URL = `https://asturplania.avilesia.es/?${UTM}&utm_campaign=planes`;
+export const AVILESIA_PLANES_URL = `https://planes.avilesia.es/?${UTM}&utm_campaign=planes`;
 
 /** Concejos de Avilés y comarca (sin tildes, en minúscula). */
 const COMARCA_AVILES = [

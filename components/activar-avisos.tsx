@@ -81,7 +81,7 @@ export function ActivarAvisos({
       </button>
       <p
         id={descripcionId}
-        className={`leading-snug text-ink/55 ${enFicha ? "mt-2 text-sm" : "max-w-xs text-[11px]"}`}
+        className={`leading-snug text-ink/75 ${enFicha ? "mt-2 text-sm" : "max-w-xs text-[11px]"}`}
       >
         {TEXTO_AVISOS}
       </p>

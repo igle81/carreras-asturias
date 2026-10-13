@@ -65,10 +65,16 @@ export async function recordVipCtaClick(input: {
   try {
     const path = rutaVipValida(input.path);
     if (!path) return { recorded: false };
+    const token = process.env.VIP_CTA_TOKEN;
+    if (!token) {
+      console.error("Falta VIP_CTA_TOKEN: el clic VIP no se registra");
+      return { recorded: false };
+    }
 
     const { data, error } = await getSupabase().rpc(VIP_CTA_INSERT_RPC, {
       p_path: path,
       p_user_agent: familiaNavegador(input.userAgent),
+      p_token: token,
     });
 
     if (!error) return { recorded: data === true };
