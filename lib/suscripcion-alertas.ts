@@ -19,7 +19,7 @@ function clienteUsuario(accessToken: string, schema?: "carreras") {
   });
 }
 
-/** Crea la fila solo si este usuario aún no está. El aviso al administrador sale una vez. */
+/** Crea la fila solo si este usuario aún no está. El aviso al administrador sale aquí, al confirmar. */
 export async function confirmarSuscripcionAlertas(
   accessToken: string,
   entrada: unknown = {},

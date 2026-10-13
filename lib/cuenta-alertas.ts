@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { notificarAdminRegistro, type ResultadoCanal } from "./alertas-admin";
-import { cuentaRegistroValida, RUTA_ACCESO } from "./registro-alertas";
+import { avisarAdminAlCrearCuenta, cuentaRegistroValida, redirectConfirmacionCarreras } from "./registro-alertas";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./supabase";
 
 export type AltaCuenta =
@@ -15,12 +15,16 @@ function cliente(accessToken?: string, schema?: "carreras") {
   });
 }
 
-/** Alta con correo y contraseña, como asturRentIA. El aviso al administrador sale una vez. */
-export async function crearCuentaAlertas(entrada: unknown, origin: string): Promise<AltaCuenta> {
+/** Alta con correo y contraseña, como asturRentIA. El aviso al administrador sale al confirmar. */
+export async function crearCuentaAlertas(entrada: unknown): Promise<AltaCuenta> {
   const validada = cuentaRegistroValida(entrada);
   if (!validada.ok) return { ok: false, status: 400, error: validada.error };
+  const origen = entrada && typeof entrada === "object" ? (entrada as { origen?: unknown }).origen : null;
+  const redirect = redirectConfirmacionCarreras(origen);
+  if (!redirect) {
+    return { ok: false, status: 400, error: "Abre el registro desde la web de Carreras para confirmar el correo." };
+  }
   const { correo, password, correoAvisos } = validada.cuenta;
-  const redirect = `${origin.replace(/\/$/, "")}${RUTA_ACCESO}`;
 
   const { data, error } = await cliente().auth.signUp({
     email: correo,
@@ -49,6 +53,7 @@ export async function crearCuentaAlertas(entrada: unknown, origin: string): Prom
   }
 
   const token = data.session?.access_token;
+  let filaNueva = false;
   if (token) {
     const { error: insertError } = await cliente(token, "carreras").from("suscripciones_alertas").insert({
       user_id: user.id,
@@ -62,17 +67,21 @@ export async function crearCuentaAlertas(entrada: unknown, origin: string): Prom
     if (insertError && insertError.code !== "23505") {
       console.error("No se pudo guardar el perfil de avisos", insertError.message);
     }
+    filaNueva = !insertError;
   }
 
-  const avisos = await notificarAdminRegistro({
-    email: correo,
-    userId: user.id,
-    nombre: "",
-    instagram: null,
-    correoAvisos,
-    telegram: "pendiente",
-    pushActivado: false,
-  });
+  const avisos =
+    filaNueva && avisarAdminAlCrearCuenta(true)
+      ? await notificarAdminRegistro({
+          email: correo,
+          userId: user.id,
+          nombre: "",
+          instagram: null,
+          correoAvisos,
+          telegram: "pendiente",
+          pushActivado: false,
+        })
+      : [];
 
   return { ok: true, confirmarCorreo: !token, avisos };
 }

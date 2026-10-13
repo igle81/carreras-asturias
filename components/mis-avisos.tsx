@@ -33,22 +33,19 @@ export function MisAvisos() {
       }
       const db = getSupabaseCarreras();
       const userId = session.user.id;
-      const meta = session.user.user_metadata as { correo_avisos?: string } | undefined;
-      const correoAvisos = (meta?.correo_avisos || session.user.email || "").toLowerCase();
       const { data: fila } = await db
         .from("suscripciones_alertas")
         .select("correo_avisos,baja_en,push_activado")
         .eq("user_id", userId)
         .maybeSingle();
-      if (!fila && session.user.email) {
-        await db.from("suscripciones_alertas").insert({
-          user_id: userId,
-          email: session.user.email.toLowerCase(),
-          correo_avisos: correoAvisos || session.user.email.toLowerCase(),
-          consentimiento: true,
-          consentimiento_en: new Date().toISOString(),
-          push_activado: false,
-          origen: "web",
+      if (!fila && session.access_token) {
+        await fetch("/api/alertas/suscribir", {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${session.access_token}`,
+            "content-type": "application/json",
+          },
+          body: "{}",
         });
       }
       const { data: actual } = await db

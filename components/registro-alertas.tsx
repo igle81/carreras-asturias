@@ -34,7 +34,13 @@ export function RegistroAlertas() {
     const response = await fetch("/api/registro", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ correo, password, correoAvisos, consentimiento }),
+      body: JSON.stringify({
+        correo,
+        password,
+        correoAvisos,
+        consentimiento,
+        origen: window.location.origin,
+      }),
     });
     const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; confirmarCorreo?: boolean };
     if (!response.ok || !body.ok) {

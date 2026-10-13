@@ -48,6 +48,49 @@ export function urlConfirmarAlertas(origin: string): string {
   return `${base}${ALERTAS_CONFIRMAR_PATH}`;
 }
 
+/**
+ * Entradas a añadir en Auth > Redirect URLs, sin quitar las que ya haya
+ * y sin cambiar el Site URL (lo comparten otras apps y es localhost).
+ * El comodín `*` no cruza puntos; `**` sí cruza barras.
+ */
+export const AUTH_REDIRECT_URLS_CARRERAS = [
+  "https://carreras.avilesia.es/**",
+  "https://*-javiers-projects-32052beb.vercel.app/**",
+  "http://localhost:3000/**",
+  "http://127.0.0.1:3000/**",
+] as const;
+
+const HOST_PREVIEW = /^[a-z0-9-]+-javiers-projects-32052beb\.vercel\.app$/;
+
+/** Origen del navegador desde el que se puede confirmar el correo de Carreras. */
+export function origenConfirmacionPermitido(origen: unknown): origen is string {
+  if (typeof origen !== "string" || origen.length < 8 || origen.length > 200) return false;
+  let url: URL;
+  try {
+    url = new URL(origen);
+  } catch {
+    return false;
+  }
+  if (url.username || url.password || url.search || url.hash) return false;
+  if (url.pathname !== "/" && url.pathname !== "") return false;
+  const host = url.hostname;
+  if (url.protocol === "https:" && host === "carreras.avilesia.es") return true;
+  if (url.protocol === "https:" && HOST_PREVIEW.test(host)) return true;
+  if (url.protocol === "http:" && (host === "localhost" || host === "127.0.0.1")) return true;
+  return false;
+}
+
+/** `window.location.origin` + la página que guarda la fila y avisa al administrador. */
+export function redirectConfirmacionCarreras(origen: unknown): string | null {
+  if (!origenConfirmacionPermitido(origen)) return null;
+  return urlConfirmarAlertas(origen);
+}
+
+/** Con sesión el correo ya está confirmado. Si no, el aviso sale al abrir la confirmación. */
+export function avisarAdminAlCrearCuenta(haySesion: boolean): boolean {
+  return haySesion;
+}
+
 /** Nombre visible del alta. Null si está vacío o no cabe. */
 export function nombreRegistroValido(value: unknown): string | null {
   if (typeof value !== "string") return null;

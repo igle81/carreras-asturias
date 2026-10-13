@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ALERTAS_CONFIRMAR_PATH,
+  AUTH_REDIRECT_URLS_CARRERAS,
+  avisarAdminAlCrearCuenta,
   cuentaRegistroValida,
   codigoTelegramCarrerasValido,
   emailRegistroValido,
   instagramRegistro,
   nombreRegistroValido,
+  origenConfirmacionPermitido,
+  redirectConfirmacionCarreras,
   resolverDatosAlta,
   RUTA_ACCESO,
   RUTA_AVISOS,
@@ -96,4 +100,34 @@ test("la vuelta del magic link apunta a la confirmación", () => {
     urlConfirmarAlertas("https://carreras.avilesia.es/"),
     "https://carreras.avilesia.es/alertas/confirmar",
   );
+});
+
+test("el correo de confirmación usa el origen del navegador y la ruta de Carreras", () => {
+  assert.equal(
+    redirectConfirmacionCarreras("https://carreras.avilesia.es"),
+    "https://carreras.avilesia.es/alertas/confirmar",
+  );
+  assert.equal(
+    redirectConfirmacionCarreras("https://carreras-asturias-77mlfbc3h-javiers-projects-32052beb.vercel.app"),
+    "https://carreras-asturias-77mlfbc3h-javiers-projects-32052beb.vercel.app/alertas/confirmar",
+  );
+  assert.equal(redirectConfirmacionCarreras("http://localhost:3000"), "http://localhost:3000/alertas/confirmar");
+  assert.equal(redirectConfirmacionCarreras("http://127.0.0.1:3000"), "http://127.0.0.1:3000/alertas/confirmar");
+  assert.equal(redirectConfirmacionCarreras("http://localhost:3000"), redirectConfirmacionCarreras("http://localhost:3000/"));
+  assert.equal(origenConfirmacionPermitido("https://evil.example"), false);
+  assert.equal(origenConfirmacionPermitido("https://carreras.avilesia.es.evil.com"), false);
+  assert.equal(origenConfirmacionPermitido("http://carreras.avilesia.es"), false);
+  assert.equal(origenConfirmacionPermitido("https://otro-proyecto.vercel.app"), false);
+  assert.equal(redirectConfirmacionCarreras("http://localhost:3000/acceso"), null);
+  assert.deepEqual(AUTH_REDIRECT_URLS_CARRERAS, [
+    "https://carreras.avilesia.es/**",
+    "https://*-javiers-projects-32052beb.vercel.app/**",
+    "http://localhost:3000/**",
+    "http://127.0.0.1:3000/**",
+  ]);
+});
+
+test("el aviso al administrador espera a la confirmación si aún no hay sesión", () => {
+  assert.equal(avisarAdminAlCrearCuenta(false), false);
+  assert.equal(avisarAdminAlCrearCuenta(true), true);
 });
