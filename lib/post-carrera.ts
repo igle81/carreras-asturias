@@ -11,7 +11,8 @@ export type EventCta = {
 
 /**
  * Al persistir una prueba con fecha se estima el fin (ritmo lento + margen).
- * En ese instante arranca la rutina de clasificación. CTA Inscribirme → Clasificación.
+ * En ese instante arranca la rutina de clasificación.
+ * Con enlace: Ver clasificación. Sin enlace: Clasificación pendiente.
  * En calendario y mapa el botón sigue visible mientras la prueba está listada
  * (POST_RACE_RETENTION_DAYS tras el fin estimado).
  */
@@ -22,7 +23,7 @@ export function postCarreraCta(event: Evento, from = new Date()): EventCta | nul
     return { label: "Clasificación", href: url, external: true };
   }
   return {
-    label: "Clasificación",
+    label: "Clasificación pendiente",
     href: `/evento/${event.id_canonico}#clasificacion`,
     external: false,
   };

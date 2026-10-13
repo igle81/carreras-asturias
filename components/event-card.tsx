@@ -4,7 +4,7 @@ import { EventPoster } from "./event-poster";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
 import { daysUntil, formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent } from "@/lib/disciplines";
-import { clasificacionVista, enlaceClasificacionTarjeta } from "@/lib/clasificacion";
+import { clasificacionVista, enlaceClasificacionTarjeta, etiquetaCta } from "@/lib/clasificacion";
 import { eventCta, eventPosterUrl, formatDistancias } from "@/lib/events";
 import { formatKm } from "@/lib/geo";
 import { modalidadLabel } from "@/lib/modalidad";
@@ -29,8 +29,7 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
   const ctaEsClasificacion = Boolean(
     enlaceClasificacion && cta.external && cta.href === enlaceClasificacion.href,
   );
-  const ctaLabel =
-    ctaEsClasificacion && enlaceClasificacion ? enlaceClasificacion.label : cta.label;
+  const ctaLabel = etiquetaCta(event, cta);
 
   return (
     <article

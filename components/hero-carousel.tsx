@@ -7,6 +7,7 @@ import { resolveAperturaBadge } from "@/lib/apertura-badge";
 import { formatFechaHumana } from "@/lib/dates";
 import { disciplineLabelForEvent, disciplineTone } from "@/lib/disciplines";
 import { EventPoster, useBrokenPoster } from "./event-poster";
+import { etiquetaCta } from "@/lib/clasificacion";
 import { eventCta, eventPosterUrl } from "@/lib/events";
 import { modalidadLabel } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
@@ -140,6 +141,7 @@ export function HeroCarousel({
 
   const event = slides[index];
   const cta = eventCta(event);
+  const ctaLabel = etiquetaCta(event, cta);
   const showPoster = Boolean(poster) && backdrop.show;
 
   return (
@@ -227,14 +229,14 @@ export function HeroCarousel({
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-forest hover:bg-gold"
               >
-                Inscribirme
+                {ctaLabel}
               </a>
             ) : (
               <Link
                 href={cta.href}
                 className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-forest hover:bg-gold"
               >
-                {cta.label}
+                {ctaLabel}
               </Link>
             )}
             <Link
