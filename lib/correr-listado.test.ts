@@ -28,6 +28,7 @@ test("«Ver en el mapa» abre el mapa sin esperar al scroll y baja a #mapa", () 
   const mapa = readFileSync(new URL("../components/mapa-carreras.tsx", import.meta.url), "utf8");
   assert.match(nearby, /setIrAlMapa\(/);
   assert.match(nearby, /scrollIntoView\(/);
+  assert.match(nearby, /querySelector\("\.leaflet-container"\)/);
   assert.match(nearby, /inmediato=\{irAlMapa > 0\}/);
   assert.match(mapa, /useState\(inmediato\)/);
 });
@@ -44,4 +45,19 @@ test("aviso de respaldo con temporizador propio y Funding Choices tras load", ()
   assert.doesNotMatch(banner, /ca-fc-inyectado/);
   assert.match(ads, /addEventListener\("load", trasLoad/);
   assert.match(ads, /IDLE_TIMEOUT_MS = 4000/);
+});
+
+test("«Ver en el mapa» va dentro del pie de la tarjeta, junto a «Ficha»", () => {
+  const card = readFileSync(new URL("../components/event-card.tsx", import.meta.url), "utf8");
+  assert.match(nearby, /accion=\{/);
+  assert.match(card, /Ficha\s*<\/Link>\s*\{accion\}/);
+});
+
+test("el respaldo de cookies se monta con su propio temporizador, no tras load/idle", () => {
+  const dif = readFileSync(new URL("../components/diferidos.tsx", import.meta.url), "utf8");
+  assert.match(dif, /bannerListo \? <CookieBanner \/>/);
+});
+
+test("sin content-visibility en las secciones con tarjetas (solapes en axe)", () => {
+  assert.doesNotMatch(home, /className="cv-auto"/);
 });

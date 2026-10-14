@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { AperturaBadge } from "./apertura-badge";
 import { EventPoster } from "./event-poster";
 import { inscripcionPendienteLabel } from "@/lib/apertura-badge";
@@ -14,9 +15,11 @@ type EventCardProps = {
   event: Evento;
   distanceKm?: number | null;
   compact?: boolean;
+  /** Acción extra en el pie, junto a «Ficha» (p. ej. «Ver en el mapa»). */
+  accion?: ReactNode;
 };
 
-export function EventCard({ event, distanceKm, compact = false }: EventCardProps) {
+export function EventCard({ event, distanceKm, compact = false, accion }: EventCardProps) {
   const cta = eventCta(event);
   const distances = formatDistancias(event);
   const days = daysUntil(event.fecha_inicio);
@@ -87,7 +90,10 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
             {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
           </p>
           <h3 className="mt-1 font-display text-lg font-bold leading-snug text-ink">
-            <Link href={`/evento/${event.id_canonico}`} className="hover:text-forest">
+            <Link
+              href={`/evento/${event.id_canonico}`}
+              className="inline-flex min-h-6 items-center text-ink hover:text-forest"
+            >
               {event.nombre}
             </Link>
           </h3>
@@ -139,10 +145,11 @@ export function EventCard({ event, distanceKm, compact = false }: EventCardProps
         )}
         <Link
           href={`/evento/${event.id_canonico}`}
-          className="rounded-full px-3 py-2 text-sm text-muted hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+          className="inline-flex min-h-6 items-center rounded-full px-3 py-2 text-sm text-muted hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
         >
           Ficha
         </Link>
+        {accion}
       </div>
     </article>
   );
