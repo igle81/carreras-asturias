@@ -14,10 +14,8 @@ import {
   parseCookieConsent,
 } from "@/lib/legal";
 
-/** Margen para que Funding Choices pinte su mensaje tras inyectarse. */
-const ESPERA_CMP_MS = 2500;
-/** El respaldo sale como pronto a los 4,5 s de la carga (objetivo 4-5 s). */
-const MINIMO_DESDE_CARGA_MS = 4500;
+/** El respaldo sale a los ~4,75 s desde el inicio de la navegación (objetivo 4,5-5 s). */
+const RESPALDO_DESDE_CARGA_MS = 4750;
 
 /** Banner fijo: no empuja el contenido (evita un salto de layout). */
 export function CookieBanner() {
@@ -51,31 +49,21 @@ export function CookieBanner() {
       sync();
     }
 
-    // El mensaje de Google es el único aviso. Este banner es solo respaldo:
-    // se muestra si tras unos segundos googlefc no ha aparecido.
-    // La espera cuenta desde que se inyecta Funding Choices (que va diferido).
+    // El mensaje de Google es el único aviso. Este banner es solo respaldo,
+    // con su propio temporizador desde la carga (no espera a Funding Choices):
+    // a los ~4,75 s comprueba si googlefc existe; si no, se muestra. Si después
+    // llega la CMP de Google, el pulso lo oculta.
     let pulso = 0;
-    let espera = 0;
     let fin = 0;
-    const arrancar = () => {
-      if (espera) return;
-      const restante = Math.max(ESPERA_CMP_MS, MINIMO_DESDE_CARGA_MS - performance.now());
-      espera = window.setTimeout(() => {
-        sync();
-        pulso = window.setInterval(sync, 1000);
-      }, restante);
-      fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
-    };
-    if ((window as Window & { __caFcInyectado?: number }).__caFcInyectado) arrancar();
-    else window.addEventListener("ca-fc-inyectado", arrancar, { once: true });
-    // Páginas sin CMP (cuenta, avisos): arranca igualmente.
-    const seguro = window.setTimeout(arrancar, Math.max(0, 3000 - performance.now()));
+    const espera = window.setTimeout(() => {
+      sync();
+      pulso = window.setInterval(sync, 1000);
+      fin = window.setTimeout(() => window.clearInterval(pulso), 15000);
+    }, Math.max(0, RESPALDO_DESDE_CARGA_MS - performance.now()));
     window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
     if ((window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies) reabrir();
     return () => {
-      window.removeEventListener("ca-fc-inyectado", arrancar);
       window.clearTimeout(espera);
-      window.clearTimeout(seguro);
       window.clearInterval(pulso);
       window.clearTimeout(fin);
       window.removeEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);

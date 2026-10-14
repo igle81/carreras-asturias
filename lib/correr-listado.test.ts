@@ -23,3 +23,25 @@ test("Leaflet solo se carga al pulsar (dynamic ssr:false tras verMapa)", () => {
   assert.match(nearby, /ssr: false/);
   assert.match(nearby, /verMapa \?/);
 });
+
+test("«Ver en el mapa» abre el mapa sin esperar al scroll y baja a #mapa", () => {
+  const mapa = readFileSync(new URL("../components/mapa-carreras.tsx", import.meta.url), "utf8");
+  assert.match(nearby, /setIrAlMapa\(/);
+  assert.match(nearby, /scrollIntoView\(/);
+  assert.match(nearby, /inmediato=\{irAlMapa > 0\}/);
+  assert.match(mapa, /useState\(inmediato\)/);
+});
+
+test("«Ver en el mapa» con fondo sólido y texto oscuro (≥4,5:1)", () => {
+  assert.doesNotMatch(nearby, /text-atlantic hover:text-forest"/);
+  assert.match(nearby, /bg-white[^"]*text-\[#0b4f5c\]/);
+});
+
+test("aviso de respaldo con temporizador propio y Funding Choices tras load", () => {
+  const banner = readFileSync(new URL("../components/cookie-banner.tsx", import.meta.url), "utf8");
+  const ads = readFileSync(new URL("../components/adsense-consent.tsx", import.meta.url), "utf8");
+  assert.match(banner, /RESPALDO_DESDE_CARGA_MS = 4750/);
+  assert.doesNotMatch(banner, /ca-fc-inyectado/);
+  assert.match(ads, /addEventListener\("load", trasLoad/);
+  assert.match(ads, /IDLE_TIMEOUT_MS = 4000/);
+});
