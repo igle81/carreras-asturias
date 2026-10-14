@@ -25,6 +25,17 @@
 
 html {
   scroll-behavior: smooth;
+  /* Que la cabecera y la barra flotante no tapen títulos, inscripción ni «Ver en el mapa». */
+  scroll-padding-top: 5rem;
+  scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+section[id],
+h2,
+h3,
+[data-scroll-objetivo] {
+  scroll-margin-top: 5rem;
+  scroll-margin-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
 body {

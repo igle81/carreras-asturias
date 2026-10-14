@@ -33,7 +33,10 @@ function inyectar(src: string, dataset: string) {
 }
 
 export const EVENTO_FC_INYECTADO = "ca-fc-inyectado";
-const IDLE_LARGO_MS = 1500;
+/** Tras `load`, margen antes de pedir reposo: deja fuera de la medida inicial el script de Google. */
+const ESPERA_TRAS_LOAD_MS = 3000;
+/** Tope del requestIdleCallback (generoso). */
+const IDLE_TIMEOUT_MS = 4000;
 
 /** CMP certificada de Google, independiente de AdSense. */
 function cargarFundingChoices() {
@@ -63,12 +66,18 @@ function programarFundingChoices(): () => void {
     cargarFundingChoices();
   };
   const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
-  const t = window.setTimeout(() => {
-    if (w.requestIdleCallback) w.requestIdleCallback(ir, { timeout: 1000 });
-    else ir();
-  }, IDLE_LARGO_MS);
+  let t = 0;
+  const trasLoad = () => {
+    t = window.setTimeout(() => {
+      if (w.requestIdleCallback) w.requestIdleCallback(ir, { timeout: IDLE_TIMEOUT_MS });
+      else ir();
+    }, ESPERA_TRAS_LOAD_MS);
+  };
+  if (document.readyState === "complete") trasLoad();
+  else window.addEventListener("load", trasLoad, { once: true });
   function limpiar() {
     window.clearTimeout(t);
+    window.removeEventListener("load", trasLoad);
     for (const e of eventos) window.removeEventListener(e, ir);
   }
   for (const e of eventos) window.addEventListener(e, ir, { once: true, passive: true });

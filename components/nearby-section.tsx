@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EventCard } from "./event-card";
 import { ConcejoSelect } from "./concejo-select";
 import { GeoButton } from "./geo-button";
@@ -20,6 +20,18 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [verMapa, setVerMapa] = useState(false);
   const [visibles, setVisibles] = useState(12);
+  // «Ver en el mapa»: abre el mapa (carga Leaflet sin esperar), baja a #mapa y la ficha se abre por `foco`.
+  const [irAlMapa, setIrAlMapa] = useState(0);
+  const seccion = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!irAlMapa) return;
+    const id = window.requestAnimationFrame(() => {
+      seccion.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (window.location.hash !== "#mapa") window.history.replaceState(null, "", "#mapa");
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [irAlMapa]);
   const concejos = uniqueConcejos(events);
 
   const listed = useMemo(() => {
@@ -39,7 +51,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
   }, [concejo, coords, events]);
 
   return (
-    <section id="mapa" className="mx-auto max-w-6xl px-4">
+    <section ref={seccion} id="mapa" className="mx-auto max-w-6xl px-4">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-atlantic">Mapa</p>
@@ -62,7 +74,7 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
 
       {verMapa ? (
         <div className="mb-4">
-          <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" />
+          <MapaCarreras events={listed} selectedId={selectedId} alto="32rem" inmediato={irAlMapa > 0} />
         </div>
       ) : (
         <button
@@ -91,8 +103,10 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
               onClick={() => {
                 setSelectedId(event.id_canonico);
                 setVerMapa(true);
+                setIrAlMapa((n) => n + 1);
               }}
-              className="w-full px-4 pb-3 text-left text-xs font-semibold text-atlantic hover:text-forest"
+              data-scroll-objetivo
+              className="mx-4 mb-3 mt-1 inline-flex min-h-6 items-center rounded-full bg-white px-3 py-1 text-left text-xs font-semibold text-[#0b4f5c] ring-1 ring-[#0b4f5c]/25 hover:text-forest"
             >
               Ver en el mapa
             </button>

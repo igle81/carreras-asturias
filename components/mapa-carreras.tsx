@@ -19,10 +19,13 @@ export function MapaCarreras({
   events,
   selectedId,
   alto = "22rem",
+  inmediato = false,
 }: {
   events: Evento[];
   selectedId?: string | null;
   alto?: string;
+  /** Carga Leaflet ya, sin esperar a que el mapa entre en pantalla. */
+  inmediato?: boolean;
 }) {
   const puntos = useMemo(() => puntosDesdeEventos(events), [events]);
   const seleccionado = events.find((event) => event.id_canonico === selectedId);
@@ -31,9 +34,13 @@ export function MapaCarreras({
       ? { lat: seleccionado.lat, lon: seleccionado.lng }
       : undefined;
   const marco = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(inmediato);
 
   useEffect(() => {
+    if (inmediato) {
+      setVisible(true);
+      return;
+    }
     const nodo = marco.current;
     if (!nodo || typeof IntersectionObserver === "undefined") {
       setVisible(true);
@@ -50,7 +57,7 @@ export function MapaCarreras({
     );
     observer.observe(nodo);
     return () => observer.disconnect();
-  }, []);
+  }, [inmediato]);
 
   return (
     <div className="h-full" ref={marco} style={{ minHeight: alto }}>
