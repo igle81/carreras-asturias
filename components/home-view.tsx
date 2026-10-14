@@ -72,15 +72,15 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
         <div className="mx-auto max-w-6xl px-4">
           <AvilesiaEscapada modalidad={section.id} comarca />
         </div>
-        <div className="cv-auto">
-          <EstaQuincena events={quincena} />
-        </div>
+        {/* Sin content-visibility aquí: con tarjetas reales el alto reservado
+            (900 px) hacía que las secciones se solaparan al medirlas (axe). */}
+        <EstaQuincena events={quincena} />
         {section.id === "pie" ? (
           <div className="mx-auto max-w-6xl px-4">
             <DecathlonAfiliado />
           </div>
         ) : null}
-        <div className="cv-auto">
+        <div>
           {/* Listado, filtro de concejo y «Ver mapa» en el HTML del servidor; Leaflet solo al pulsar. */}
           <NearbySection events={listados} title={section.mapTitle} />
         </div>

@@ -93,7 +93,7 @@ export function SiteHeader({
       {acciones.includes("avisos") ? (
         <Link
           href={RUTA_AVISOS}
-          className="text-xs font-semibold text-forest underline-offset-2 hover:underline"
+          className="inline-flex min-h-6 items-center text-xs font-semibold text-forest underline-offset-2 hover:underline"
         >
           Mis avisos
         </Link>
@@ -102,7 +102,7 @@ export function SiteHeader({
         <button
           type="button"
           onClick={() => void alSalir()}
-          className="text-xs font-semibold text-forest underline-offset-2 hover:underline"
+          className="inline-flex min-h-6 items-center text-xs font-semibold text-forest underline-offset-2 hover:underline"
         >
           Salir
         </button>

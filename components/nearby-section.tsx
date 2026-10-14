@@ -26,11 +26,25 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
 
   useEffect(() => {
     if (!irAlMapa) return;
-    const id = window.requestAnimationFrame(() => {
-      seccion.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Espera a que Leaflet esté montado (o 5 s como mucho) y entonces baja a #mapa.
+    let intentos = 0;
+    let t = 0;
+    const bajar = () => {
+      seccion.current?.scrollIntoView({ behavior: "auto", block: "start" });
       if (window.location.hash !== "#mapa") window.history.replaceState(null, "", "#mapa");
-    });
-    return () => window.cancelAnimationFrame(id);
+    };
+    const comprobar = () => {
+      const montado = seccion.current?.querySelector(".leaflet-container");
+      if (montado || intentos++ > 50) {
+        bajar();
+        // Segundo ajuste por si el mapa o la ficha cambian la altura.
+        t = window.setTimeout(bajar, 350);
+        return;
+      }
+      t = window.setTimeout(comprobar, 100);
+    };
+    comprobar();
+    return () => window.clearTimeout(t);
   }, [irAlMapa]);
   const concejos = uniqueConcejos(events);
 
@@ -97,19 +111,22 @@ export function NearbySection({ events, title }: { events: Evento[]; title?: str
             <EventCard
               event={event}
               distanceKm={coords ? distanceToEvent(coords, event) : null}
+              accion={
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(event.id_canonico);
+                    setVerMapa(true);
+                    setIrAlMapa((n) => n + 1);
+                  }}
+                  data-scroll-objetivo
+                  className="inline-flex min-h-6 items-center rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#0b4f5c] ring-1 ring-[#0b4f5c]/25 hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                >
+                  Ver en el mapa
+                </button>
+              }
             />
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedId(event.id_canonico);
-                setVerMapa(true);
-                setIrAlMapa((n) => n + 1);
-              }}
-              data-scroll-objetivo
-              className="mx-4 mb-3 mt-1 inline-flex min-h-6 items-center rounded-full bg-white px-3 py-1 text-left text-xs font-semibold text-[#0b4f5c] ring-1 ring-[#0b4f5c]/25 hover:text-forest"
-            >
-              Ver en el mapa
-            </button>
+
           </div>
         ))}
         {!listed.length ? (
