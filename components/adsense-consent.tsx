@@ -33,7 +33,7 @@ function inyectar(src: string, dataset: string) {
 }
 
 export const EVENTO_FC_INYECTADO = "ca-fc-inyectado";
-const IDLE_LARGO_MS = 3500;
+const IDLE_LARGO_MS = 1500;
 
 /** CMP certificada de Google, independiente de AdSense. */
 function cargarFundingChoices() {
@@ -64,7 +64,7 @@ function programarFundingChoices(): () => void {
   };
   const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
   const t = window.setTimeout(() => {
-    if (w.requestIdleCallback) w.requestIdleCallback(ir, { timeout: 2000 });
+    if (w.requestIdleCallback) w.requestIdleCallback(ir, { timeout: 1000 });
     else ir();
   }, IDLE_LARGO_MS);
   function limpiar() {
