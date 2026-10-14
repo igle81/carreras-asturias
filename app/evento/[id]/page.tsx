@@ -101,10 +101,10 @@ export default async function EventoPage({ params }: EventPageProps) {
             {formatRangoFecha(event.fecha_inicio, event.fecha_fin)}
             {event.municipio ? ` · ${event.municipio}` : ""}
           </p>
-          {event.localidad ? <p className="text-ink/55">{event.localidad}</p> : null}
+          {event.localidad ? <p className="text-ink/70">{event.localidad}</p> : null}
           {distances ? <p className="mt-2 font-medium text-forest">{distances}</p> : null}
           {event.organizador ? (
-            <p className="mt-2 text-sm text-ink/55">Organiza: {event.organizador}</p>
+            <p className="mt-2 text-sm text-ink/70">Organiza: {event.organizador}</p>
           ) : null}
         </div>
 

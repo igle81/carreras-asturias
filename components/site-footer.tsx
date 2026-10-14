@@ -2,21 +2,35 @@ import Link from "next/link";
 import { ConfigurarCookies } from "./configurar-cookies";
 import { LEGAL_NAV } from "@/lib/legal";
 import { SECTIONS } from "@/lib/sections";
+import { leerAppsAvilesia } from "@/lib/avilesia-apps";
 
-/** Enlaces fijos en HTML a la red AvilesIA (plan SEO parte A). */
-const RED_AVILESIA = [
-  { href: "https://avilesia.es/", label: "AvilesIA" },
-  { href: "https://teletexto.avilesia.es/", label: "Teletexto IA" },
-  { href: "https://ideas.avilesia.es/", label: "¿Tienes una idea?" },
-  { href: "https://audioguias.avilesia.es/", label: "AudioGuías" },
-  { href: "https://planes.avilesia.es/", label: "asturPlanIA" },
-  { href: "https://pisos.avilesia.es/", label: "Pisos Avilés" },
-  { href: "https://opos.avilesia.es/", label: "oposAsturIA" },
-  { href: "https://chinches.avilesia.es/", label: "Mapeo Vecinal de Chinches Hediondas – Avilés y Comarca" },
-  { href: "https://escolar.avilesia.es/", label: "Deporte Escolar Asturias" },
+/**
+ * Enlaces a la red AvilesIA en el HTML del servidor (SEO). La lista sale de
+ * avilesia-apps.json al construir/revalidar (sin esta app); si falla, esta lista fija.
+ */
+const RED_AVILESIA_RESPALDO = [
+  { url: "https://teletexto.avilesia.es/", nombre: "Teletexto IA" },
+  { url: "https://ideas.avilesia.es/", nombre: "¿Tienes una idea?" },
+  { url: "https://audioguias.avilesia.es/", nombre: "AudioGuías" },
+  { url: "https://planes.avilesia.es/", nombre: "asturPlanIA" },
+  { url: "https://pisos.avilesia.es/", nombre: "Pisos Avilés" },
+  { url: "https://opos.avilesia.es/", nombre: "oposAsturIA" },
+  { url: "https://chinches.avilesia.es/", nombre: "Mapeo Vecinal de Chinches Hediondas – Avilés y Comarca" },
+  { url: "https://escolar.avilesia.es/", nombre: "Deporte Escolar Asturias" },
 ] as const;
 
-export function SiteFooter() {
+async function redAvilesia(): Promise<Array<{ url: string; nombre: string }>> {
+  try {
+    const apps = await leerAppsAvilesia();
+    if (apps.length) return apps.map((app) => ({ url: app.url, nombre: app.nombre }));
+  } catch {
+    /* respaldo */
+  }
+  return [...RED_AVILESIA_RESPALDO];
+}
+
+export async function SiteFooter() {
+  const red = await redAvilesia();
   return (
     <footer className="mt-16 border-t border-forest/10 bg-forest text-fog">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-end sm:justify-between">
@@ -53,21 +67,19 @@ export function SiteFooter() {
         ))}
         <ConfigurarCookies className="inline-flex min-h-6 items-center font-medium text-white underline-offset-2 hover:underline" />
       </nav>
-      <nav
-        aria-label="Otras apps de AvilesIA"
-        className="mx-auto max-w-6xl border-t border-white/15 px-4 py-4 text-sm text-white"
-      >
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {RED_AVILESIA.map((item, i) => (
-            <span key={item.href} className="inline-flex items-center gap-x-2">
-              {i > 0 ? <span aria-hidden="true">·</span> : null}
-              <a href={item.href} className="inline-flex min-h-6 items-center hover:underline">
-                {item.label}
-              </a>
-            </span>
-          ))}
-        </p>
-      </nav>
+      <p className="mx-auto max-w-6xl border-t border-white/15 px-4 py-3 text-xs leading-6 text-fog">
+        <a href="https://avilesia.es/" className="font-semibold text-white hover:underline">
+          AvilesIA
+        </a>
+        {red.map((app) => (
+          <span key={app.url}>
+            {" · "}
+            <a href={app.url} className="hover:underline">
+              {app.nombre}
+            </a>
+          </span>
+        ))}
+      </p>
     </footer>
   );
 }

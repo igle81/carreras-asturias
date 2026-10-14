@@ -30,10 +30,62 @@ export const DEFAULT_KEYWORDS = [
 /** og:image 1200×630 generada en app/opengraph-image.tsx (plan SEO parte A). */
 export const OG_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: "Carreras Asturias: calendario de trail, running y ciclismo" };
 
-/** Títulos de más de 60 caracteres no llevan « · Carreras Asturias». */
+const TITLE_MAX = 60;
+const PALABRAS_COLGANTES = new Set(["de", "del", "la", "las", "el", "los", "en", "y", "a", "al", "por", "para", "con", "e", "o", "u"]);
+
+/** Recorta por palabras completas a ≤60 caracteres, sin dejar preposiciones o signos colgando. */
+export function recortarTitulo(title: string, max = TITLE_MAX): string {
+  const limpio = title.replace(/\s+/g, " ").trim();
+  if (limpio.length <= max) return limpio;
+  const palabras = limpio.split(" ");
+  const out: string[] = [];
+  for (const palabra of palabras) {
+    if ([...out, palabra].join(" ").length + 1 > max) break; // +1 para «…»
+    out.push(palabra);
+  }
+  while (out.length > 1) {
+    const ultima = out[out.length - 1].replace(/[\s.,;:·–—-]+$/u, "");
+    if (!ultima || PALABRAS_COLGANTES.has(ultima.toLocaleLowerCase("es"))) {
+      out.pop();
+      continue;
+    }
+    out[out.length - 1] = ultima;
+    break;
+  }
+  if (!out.length) return limpio.slice(0, max - 1).trimEnd() + "…";
+  return `${out.join(" ")}…`;
+}
+
+/**
+ * Versión corta del nombre para el <title> (el H1 conserva el nombre completo):
+ * 1) sin paréntesis ni subtítulos entre comillas; 2) solo la parte antes de « — », « – », « / » o « - »;
+ * 3) sin «en favor de la…»/«a beneficio de…»; 4) si aún no cabe, recorte por palabras.
+ */
+export function nombreCorto(title: string, max = TITLE_MAX): string {
+  let t = title.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const pasos: Array<(s: string) => string> = [
+    (s) => s.replace(/\s*\([^)]*\)\s*/g, " ").replace(/\s+/g, " ").trim(),
+    (s) => s.replace(/\s*["«“][^"»”]*["»”]\s*/g, " ").replace(/\s+/g, " ").trim(),
+    (s) => s.split(/\s+[—–/-]\s+/)[0].trim(),
+    (s) => s.replace(/\s+(en favor|a beneficio) de( la| las| los| el)?\s+/i, " ").trim(),
+  ];
+  for (const paso of pasos) {
+    const r = paso(t);
+    if (r.length >= 12) t = r;
+    if (t.length <= max) return t;
+  }
+  return recortarTitulo(t, max);
+}
+
+/** ≤60 caracteres: con « · Carreras Asturias» si cabe; si no, el nombre (acortado si hace falta). */
 export function titleWithSite(title: string): string {
   const full = `${title} · ${SITE_NAME}`;
-  return full.length > 60 ? title : full;
+  if (full.length <= TITLE_MAX) return full;
+  if (title.length <= TITLE_MAX) return title.trim();
+  const corto = nombreCorto(title);
+  const conSitio = `${corto} · ${SITE_NAME}`;
+  return conSitio.length <= TITLE_MAX ? conSitio : corto;
 }
 
 export function absoluteUrl(path = "/"): string {
