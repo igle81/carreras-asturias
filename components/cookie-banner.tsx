@@ -14,7 +14,10 @@ import {
   parseCookieConsent,
 } from "@/lib/legal";
 
-const ESPERA_CMP_MS = 5000;
+/** Margen para que Funding Choices pinte su mensaje tras inyectarse. */
+const ESPERA_CMP_MS = 2500;
+/** El respaldo sale como pronto a los 4,5 s de la carga (objetivo 4-5 s). */
+const MINIMO_DESDE_CARGA_MS = 4500;
 
 /** Banner fijo: no empuja el contenido (evita un salto de layout). */
 export function CookieBanner() {
@@ -56,16 +59,17 @@ export function CookieBanner() {
     let fin = 0;
     const arrancar = () => {
       if (espera) return;
+      const restante = Math.max(ESPERA_CMP_MS, MINIMO_DESDE_CARGA_MS - performance.now());
       espera = window.setTimeout(() => {
         sync();
         pulso = window.setInterval(sync, 1000);
-      }, ESPERA_CMP_MS);
+      }, restante);
       fin = window.setTimeout(() => window.clearInterval(pulso), ESPERA_CMP_MS + 10000);
     };
     if ((window as Window & { __caFcInyectado?: number }).__caFcInyectado) arrancar();
     else window.addEventListener("ca-fc-inyectado", arrancar, { once: true });
     // Páginas sin CMP (cuenta, avisos): arranca igualmente.
-    const seguro = window.setTimeout(arrancar, 6000);
+    const seguro = window.setTimeout(arrancar, Math.max(0, 3000 - performance.now()));
     window.addEventListener(EVENTO_CONFIGURAR_COOKIES, reabrir);
     if ((window as Window & { __caReabrirCookies?: boolean }).__caReabrirCookies) reabrir();
     return () => {

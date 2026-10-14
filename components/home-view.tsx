@@ -6,8 +6,7 @@ import { DisciplineLinkChips } from "./discipline-chips";
 import { EstaQuincena } from "./esta-quincena";
 import { HeroCarousel } from "./hero-carousel";
 import { HomeBanner } from "./home-banner";
-import { AlVer } from "./al-ver";
-import { NearbySectionDiferida as NearbySection } from "./nearby-diferida";
+import { NearbySection } from "./nearby-section";
 import { RecienAbiertasStrip } from "./recien-abiertas-strip";
 import { VipPromo } from "./vip-promo";
 import { aligerarEventos, estaQuincena, listedEvents, pickHeroSlides, recienAbiertas, upcomingEvents } from "@/lib/events";
@@ -82,9 +81,8 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
           </div>
         ) : null}
         <div className="cv-auto">
-          <AlVer>
-            <NearbySection events={listados} title={section.mapTitle} />
-          </AlVer>
+          {/* Listado, filtro de concejo y «Ver mapa» en el HTML del servidor; Leaflet solo al pulsar. */}
+          <NearbySection events={listados} title={section.mapTitle} />
         </div>
         <VipPromo
           checkoutUrl={getVipCheckoutUrl()}
