@@ -127,8 +127,8 @@ test("el botón de registro no lleva campos y Telegram abre el bot", () => {
 
 test("la vuelta del magic link apunta a la confirmación", () => {
   assert.equal(
-    urlConfirmarAlertas("https://carreras.avilesia.es/"),
-    "https://carreras.avilesia.es/alertas/confirmar",
+    urlConfirmarAlertas("https://www.carrerasasturias.es/"),
+    "https://www.carrerasasturias.es/alertas/confirmar",
   );
 });
 
@@ -141,10 +141,8 @@ test("el correo de confirmación usa el origen del navegador y la ruta de Carrer
     redirectConfirmacionCarreras("https://carrerasasturias.es"),
     "https://carrerasasturias.es/alertas/confirmar",
   );
-  assert.equal(
-    redirectConfirmacionCarreras("https://carreras.avilesia.es"),
-    "https://carreras.avilesia.es/alertas/confirmar",
-  );
+  assert.equal(redirectConfirmacionCarreras("https://carreras.avilesia.es"), null);
+  assert.equal(redirectConfirmacionCarreras("https://carrerasasturias.avilesia.es"), null);
   assert.equal(
     redirectConfirmacionCarreras("https://carreras-asturias-77mlfbc3h-javiers-projects-32052beb.vercel.app"),
     "https://carreras-asturias-77mlfbc3h-javiers-projects-32052beb.vercel.app/alertas/confirmar",
@@ -162,7 +160,6 @@ test("el correo de confirmación usa el origen del navegador y la ruta de Carrer
   assert.deepEqual(AUTH_REDIRECT_URLS_CARRERAS, [
     "https://www.carrerasasturias.es/**",
     "https://carrerasasturias.es/**",
-    "https://carreras.avilesia.es/**",
     "https://*-javiers-projects-32052beb.vercel.app/**",
     "http://localhost:3000/**",
     "http://127.0.0.1:3000/**",

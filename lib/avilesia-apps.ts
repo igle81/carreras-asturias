@@ -3,7 +3,8 @@ export const AVILESIA_APPS_URL = "https://avilesia.es/avilesia-apps.json";
 const HOSTS_ESTA_APP = new Set([
   "www.carrerasasturias.es",
   "carrerasasturias.es",
-  "carreras.avilesia.es",
+  // Alias que redirige a www.carrerasasturias.es. carreras.avilesia.es es de Carreras España.
+  "carrerasasturias.avilesia.es",
 ]);
 
 export type AppAvilesia = {
