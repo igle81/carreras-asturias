@@ -161,7 +161,7 @@ export function HeroCarousel({
       {showPoster && poster ? (
         <EventPoster
           src={poster}
-          alt=""
+          alt={`Cartel de ${event.nombre}`}
           fill
           priority
           className="object-cover"

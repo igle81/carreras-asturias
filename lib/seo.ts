@@ -8,10 +8,10 @@ import type { Evento } from "./types";
 export const SITE_URL = "https://www.carrerasasturias.es";
 export const SITE_NAME = "Carreras Asturias";
 
-export const DEFAULT_TITLE = "Carreras Asturias · Calendario de trail, running y ciclismo";
+export const DEFAULT_TITLE = "Carreras Asturias: calendario de trail, running y ciclismo";
 
 export const DEFAULT_DESCRIPTION =
-  "Calendario vivo de carreras a pie y ciclismo en Asturias. Trail, asfalto, running, MTB, BTT, carretera, enduro e inscripciones recién abiertas por concejo.";
+  "Calendario de carreras en Asturias 2026: trail, running, ciclismo y montaña por concejo y fecha. Inscripciones, recorridos y próximas pruebas.";
 
 export const DEFAULT_KEYWORDS = [
   "carreras Asturias",
@@ -26,6 +26,15 @@ export const DEFAULT_KEYWORDS = [
   "enduro Asturias",
   "cicloturismo Asturias",
 ];
+
+/** og:image 1200×630 generada en app/opengraph-image.tsx (plan SEO parte A). */
+export const OG_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: "Carreras Asturias: calendario de trail, running y ciclismo" };
+
+/** Títulos de más de 60 caracteres no llevan « · Carreras Asturias». */
+export function titleWithSite(title: string): string {
+  const full = `${title} · ${SITE_NAME}`;
+  return full.length > 60 ? title : full;
+}
 
 export function absoluteUrl(path = "/"): string {
   if (!path || path === "/") return SITE_URL;
@@ -67,9 +76,9 @@ export function pageMetadata({
   absoluteTitle?: boolean;
 }): Metadata {
   const url = absoluteUrl(path);
-  const fullTitle = absoluteTitle ? title : `${title} · ${SITE_NAME}`;
+  const fullTitle = absoluteTitle ? title : titleWithSite(title);
   return {
-    title: absoluteTitle ? { absolute: title } : title,
+    title: { absolute: fullTitle },
     description,
     keywords,
     alternates: { canonical: url },
@@ -80,11 +89,13 @@ export function pageMetadata({
       siteName: SITE_NAME,
       title: fullTitle,
       description,
+      images: [OG_IMAGE],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: fullTitle,
       description,
+      images: [OG_IMAGE.url],
     },
   };
 }
@@ -107,9 +118,10 @@ export function eventMetadata(event: Evento): Metadata {
   ].filter((value): value is string => Boolean(value));
 
   const image = event.imagen_url ?? undefined;
+  const fullTitle = titleWithSite(event.nombre);
 
   return {
-    title: event.nombre,
+    title: { absolute: fullTitle },
     description,
     keywords,
     alternates: { canonical: url },
@@ -118,15 +130,15 @@ export function eventMetadata(event: Evento): Metadata {
       locale: "es_ES",
       url,
       siteName: SITE_NAME,
-      title: event.nombre,
+      title: fullTitle,
       description,
-      ...(image ? { images: [{ url: image }] } : {}),
+      images: image ? [{ url: image }] : [OG_IMAGE],
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
-      title: event.nombre,
+      card: "summary_large_image",
+      title: fullTitle,
       description,
-      ...(image ? { images: [image] } : {}),
+      images: [image ?? OG_IMAGE.url],
     },
   };
 }
@@ -280,6 +292,29 @@ export function sportsEventJsonLd(event: Evento): JsonLd {
   if (sport && sport !== "Carrera") data.sport = sport;
 
   return data;
+}
+
+/** Organizaciones (plan SEO parte A): AvilesIA + Carreras Asturias. */
+export function organizationsJsonLd(): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://avilesia.es/#org",
+        name: "AvilesIA",
+        url: "https://avilesia.es/",
+        logo: "https://avilesia.es/brand/avilesia-og.png",
+        areaServed: "Asturias",
+      },
+      {
+        "@type": "Organization",
+        name: "Carreras Asturias",
+        url: `${SITE_URL}/`,
+        areaServed: "Asturias",
+      },
+    ],
+  };
 }
 
 export function websiteJsonLd(): JsonLd {

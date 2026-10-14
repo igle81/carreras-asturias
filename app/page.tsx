@@ -3,12 +3,11 @@ import { JsonLd } from "@/components/json-ld";
 import { Landing } from "@/components/landing";
 import { getEventos } from "@/lib/events";
 import { filterByModalidad } from "@/lib/modalidad";
-import { DEFAULT_TITLE, pageMetadata, websiteJsonLd } from "@/lib/seo";
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, organizationsJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: DEFAULT_TITLE,
-  description:
-    "Elige tu terreno: carreras a pie o ciclismo en Asturias. Trail, asfalto, MTB, BTT, carretera y dorsales recién abiertos, sin mezclar calendarios.",
+  description: DEFAULT_DESCRIPTION,
   path: "/",
   absoluteTitle: true,
   keywords: [
@@ -25,6 +24,7 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={websiteJsonLd()} />
+      <JsonLd data={organizationsJsonLd()} />
       <Landing
         pieCount={filterByModalidad(events, "pie").length}
         biciCount={filterByModalidad(events, "ciclismo").length}

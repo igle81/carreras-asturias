@@ -3,6 +3,19 @@ import { ConfigurarCookies } from "./configurar-cookies";
 import { LEGAL_NAV } from "@/lib/legal";
 import { SECTIONS } from "@/lib/sections";
 
+/** Enlaces fijos en HTML a la red AvilesIA (plan SEO parte A). */
+const RED_AVILESIA = [
+  { href: "https://avilesia.es/", label: "AvilesIA" },
+  { href: "https://teletexto.avilesia.es/", label: "Teletexto IA" },
+  { href: "https://ideas.avilesia.es/", label: "¿Tienes una idea?" },
+  { href: "https://audioguias.avilesia.es/", label: "AudioGuías" },
+  { href: "https://planes.avilesia.es/", label: "asturPlanIA" },
+  { href: "https://pisos.avilesia.es/", label: "Pisos Avilés" },
+  { href: "https://opos.avilesia.es/", label: "oposAsturIA" },
+  { href: "https://chinches.avilesia.es/", label: "Mapeo Vecinal de Chinches Hediondas – Avilés y Comarca" },
+  { href: "https://escolar.avilesia.es/", label: "Deporte Escolar Asturias" },
+] as const;
+
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-forest/10 bg-forest text-fog">
@@ -39,6 +52,21 @@ export function SiteFooter() {
           </Link>
         ))}
         <ConfigurarCookies className="inline-flex min-h-6 items-center font-medium text-white underline-offset-2 hover:underline" />
+      </nav>
+      <nav
+        aria-label="Otras apps de AvilesIA"
+        className="mx-auto max-w-6xl border-t border-white/15 px-4 py-4 text-sm text-white"
+      >
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          {RED_AVILESIA.map((item, i) => (
+            <span key={item.href} className="inline-flex items-center gap-x-2">
+              {i > 0 ? <span aria-hidden="true">·</span> : null}
+              <a href={item.href} className="inline-flex min-h-6 items-center hover:underline">
+                {item.label}
+              </a>
+            </span>
+          ))}
+        </p>
       </nav>
     </footer>
   );
