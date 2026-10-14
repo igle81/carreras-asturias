@@ -15,16 +15,16 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-wrap gap-4 text-sm font-medium text-white">
-          <Link href={SECTIONS.pie.home} className="hover:underline">
+          <Link href={SECTIONS.pie.home} className="inline-flex min-h-6 items-center hover:underline">
             Correr
           </Link>
-          <Link href={SECTIONS.ciclismo.home} className="hover:underline">
+          <Link href={SECTIONS.ciclismo.home} className="inline-flex min-h-6 items-center hover:underline">
             Ciclismo
           </Link>
-          <Link href={SECTIONS.pie.calendar} className="hover:underline">
+          <Link href={SECTIONS.pie.calendar} className="inline-flex min-h-6 items-center hover:underline">
             Calendario a pie
           </Link>
-          <Link href={SECTIONS.ciclismo.calendar} className="hover:underline">
+          <Link href={SECTIONS.ciclismo.calendar} className="inline-flex min-h-6 items-center hover:underline">
             Calendario bici
           </Link>
         </div>
@@ -34,11 +34,11 @@ export function SiteFooter() {
         className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-white/15 px-4 py-4 text-sm font-medium text-white"
       >
         {LEGAL_NAV.map((item) => (
-          <Link key={item.href} href={item.href} className="hover:underline">
+          <Link key={item.href} href={item.href} className="inline-flex min-h-6 items-center hover:underline">
             {item.label}
           </Link>
         ))}
-        <ConfigurarCookies className="font-medium text-white underline-offset-2 hover:underline" />
+        <ConfigurarCookies className="inline-flex min-h-6 items-center font-medium text-white underline-offset-2 hover:underline" />
       </nav>
     </footer>
   );

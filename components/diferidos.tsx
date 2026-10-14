@@ -21,6 +21,15 @@ type W = Window & {
  */
 export function Diferidos() {
   const [listo, setListo] = useState(false);
+  // El aviso de respaldo va aparte: su propio temporizador desde la carga,
+  // sin depender de `load`, del reposo ni de Google. Se monta a los ~3,5 s
+  // para que su chunk esté listo y él mismo decide a los 4,75 s.
+  const [bannerListo, setBannerListo] = useState(false);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setBannerListo(true), Math.max(0, 3500 - performance.now()));
+    return () => window.clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const w = window as W;
@@ -39,12 +48,15 @@ export function Diferidos() {
     };
   }, []);
 
-  if (!listo) return null;
   return (
     <>
-      <AvilesiaBarra />
-      <CookieBanner />
-      <AdsenseConsent />
+      {bannerListo ? <CookieBanner /> : null}
+      {listo ? (
+        <>
+          <AvilesiaBarra />
+          <AdsenseConsent />
+        </>
+      ) : null}
     </>
   );
 }

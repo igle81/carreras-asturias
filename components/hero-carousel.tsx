@@ -258,7 +258,7 @@ export function HeroCarousel({
           >
             ‹
           </HeroArrow>
-          <div className="flex flex-1 items-center justify-center gap-2 sm:flex-none sm:justify-start">
+          <div className="flex flex-1 items-center justify-center gap-0.5 sm:flex-none sm:justify-start">
             {slides.map((slide, slideIndex) => (
               <button
                 key={slide.id_canonico}
@@ -266,10 +266,16 @@ export function HeroCarousel({
                 aria-label={`Ver ${slide.nombre}`}
                 aria-current={slideIndex === index ? "true" : undefined}
                 onClick={() => setIndex(slideIndex)}
-                className={`h-2.5 rounded-full transition-all ${
-                  slideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
-                }`}
-              />
+                className="group grid h-6 min-w-6 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
+              >
+                {/* Punto pequeño a la vista; zona de pulsación de 24×24 (WCAG 2.5.8). */}
+                <span
+                  aria-hidden="true"
+                  className={`block h-2.5 rounded-full transition-all ${
+                    slideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40 group-hover:bg-white/70"
+                  }`}
+                />
+              </button>
             ))}
           </div>
           <HeroArrow
