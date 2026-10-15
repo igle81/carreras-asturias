@@ -1,0 +1,10 @@
+# Carreras Asturias
+
+> Calendario gratuito de carreras en Asturias: trail, running, asfalto, cross, montaña y ciclismo (MTB, BTT, carretera, enduro), con fechas, concejo, estado de la inscripción y enlace para inscribirse.
+
+- Portada: https://www.carrerasasturias.es/
+- Carreras a pie: https://www.carrerasasturias.es/correr (calendario: https://www.carrerasasturias.es/correr/calendario)
+- Ciclismo: https://www.carrerasasturias.es/ciclismo (calendario: https://www.carrerasasturias.es/ciclismo/calendario)
+- Ficha de cada carrera: https://www.carrerasasturias.es/evento/<id>
+- Sitemap: https://www.carrerasasturias.es/sitemap.xml
+- Parte de AvilesIA: https://avilesia.es/
