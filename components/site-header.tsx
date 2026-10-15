@@ -150,7 +150,7 @@ export function SiteHeader({
             <span className="block font-display text-lg font-bold tracking-tight text-forest">
               Carreras Asturias
             </span>
-            <span className="hidden text-[11px] text-ink/55 sm:block">
+            <span className="hidden text-[11px] text-ink/70 sm:block">
               A pie o bici. Tú eliges el calendario.
             </span>
           </span>

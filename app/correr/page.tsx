@@ -1,7 +1,8 @@
 import { HomeView } from "@/components/home-view";
 import { getEventos } from "@/lib/events";
 import { SECTIONS } from "@/lib/sections";
-import { pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
+import { organizationsJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Carreras a pie en Asturias",
@@ -20,5 +21,10 @@ export const metadata = pageMetadata({
 
 export default async function CorrerPage() {
   const events = await getEventos();
-  return <HomeView events={events} section={SECTIONS.pie} />;
+  return (
+    <>
+      <JsonLd data={organizationsJsonLd()} />
+      <HomeView events={events} section={SECTIONS.pie} />
+    </>
+  );
 }
