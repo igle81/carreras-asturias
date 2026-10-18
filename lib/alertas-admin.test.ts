@@ -6,7 +6,7 @@ const ADMIN = "avilesia2026@gmail.com";
 
 const AVISO = {
   email: "corredor@ejemplo.es",
-  userId: "6e0f70d1-854d-4891-be17-b93484c6877c",
+  userId: "00000000-0000-4000-8000-000000000001",
   correoAvisos: "avisos@ejemplo.es",
   telegram: "pendiente" as const,
   pushActivado: false,
@@ -18,7 +18,7 @@ test("un alta real pide emitir y el correo lleva el texto en los campos de n8n",
   assert.equal(cuerpo.ok_emitir, true);
   assert.equal(cuerpo.confirmar, true);
   assert.equal(cuerpo.prueba, false);
-  assert.equal(cuerpo.id_dedup, "registro-6e0f70d1");
+  assert.equal(cuerpo.id_dedup, "registro-00000000");
   assert.equal(cuerpo.to, ADMIN);
   assert.equal(cuerpo.asunto, "Nuevo registro de avisos · Carreras Asturias");
   assert.equal(cuerpo.copy, cuerpo.mensaje);
@@ -26,7 +26,7 @@ test("un alta real pide emitir y el correo lleva el texto en los campos de n8n",
   assert.equal(cuerpo.body, cuerpo.mensaje);
   assert.match(cuerpo.mensaje, /Correo: corredor@ejemplo.es/);
   assert.match(cuerpo.mensaje, /Avisos: avisos@ejemplo.es/);
-  assert.match(cuerpo.mensaje, /Id: 6e0f70d1/);
+  assert.match(cuerpo.mensaje, /Id: 00000000/);
   assert.match(cuerpo.mensaje, /Telegram: pendiente/);
   assert.match(cuerpo.mensaje, /Push: no/);
 });
@@ -46,7 +46,7 @@ test("si el correo de avisos es el mismo no se repite y el texto va escapado", (
   assert.match(mismo.mensaje, /Avisos: el mismo\./);
   const raro = mensajeRegistro({ ...AVISO, email: "a<b>@x.es", correoAvisos: "a<b>@x.es" }, false);
   assert.equal(raro.mensaje.includes("<b>"), false);
-  assert.equal(idCorto(AVISO.userId), "6e0f70d1");
+  assert.equal(idCorto(AVISO.userId), "00000000");
 });
 
 test("la prueba no emite y el texto va marcado", () => {
