@@ -23,3 +23,7 @@ export const MENSAJE_CORREO_REACTIVADO =
 /** Bajo el botón de volver: qué aceptas y qué pasa con Telegram (migración 20261018222953). */
 export const TEXTO_ACEPTAS_REACTIVAR =
   "Al pulsarlo aceptas de nuevo recibir avisos de carreras en el correo de tu cuenta. Telegram queda desconectado; puedes volver a conectarlo después.";
+
+/** Estando de baja no se ofrecen Telegram ni el push (como Carreras España): primero hay que volver por correo. */
+export const TEXTO_CANALES_EN_BAJA =
+  "Telegram y las notificaciones en este móvil se pueden activar de nuevo cuando vuelvas a recibir avisos por correo.";

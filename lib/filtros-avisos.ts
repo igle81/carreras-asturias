@@ -10,13 +10,22 @@ import type { Evento } from "./types";
 
 export type FiltrosAvisos = {
   deporte?: string[];
-  modalidad?: string[];
+  /** Modalidades a pie (disciplina_normalizada). Vacía = todas las de a pie. */
+  modalidad_pie?: string[];
+  /** Modalidades de ciclismo. Vacía = todo el ciclismo (W1 de Calidad: se filtran por separado). */
+  modalidad_ciclismo?: string[];
   concejo?: string[];
   tipo?: string[];
   distancia?: string[];
 };
 
-export const CLAVES_FILTRO = ["deporte", "modalidad", "concejo", "tipo", "distancia"] as const;
+export const CLAVES_FILTRO = ["deporte", "modalidad_pie", "modalidad_ciclismo", "concejo", "tipo", "distancia"] as const;
+
+/** Clave de modalidad de cada deporte. */
+export function claveModalidad(deporte: string): "modalidad_pie" | "modalidad_ciclismo" | null {
+  return deporte === "pie" ? "modalidad_pie" : deporte === "ciclismo" ? "modalidad_ciclismo" : null;
+}
+const CLAVES_MODALIDAD: readonly string[] = ["modalidad_pie", "modalidad_ciclismo"];
 export type ClaveFiltro = (typeof CLAVES_FILTRO)[number];
 
 export const DEPORTES = [
@@ -100,7 +109,7 @@ export function normalizarFiltros(entrada: unknown): FiltrosAvisos {
           .filter((v): v is string => typeof v === "string")
           .map((v) => v.trim())
           .filter((v) => v.length >= 1 && v.length <= 80)
-          .filter((v) => (clave === "modalidad" ? /^[a-z_]{2,40}$/.test(v) : true))
+          .filter((v) => (CLAVES_MODALIDAD.includes(clave) ? /^[a-z_]{2,40}$/.test(v) : true))
           .filter((v) => !PERMITIDOS[clave] || PERMITIDOS[clave]!.includes(v)),
       ),
     ].slice(0, MAX_VALORES);
@@ -153,7 +162,10 @@ export function avisoPasaFiltros(
   if (f.tipo?.length && t && !f.tipo.includes(t)) return false;
   if (!evento) return true;
   if (f.deporte?.length && evento.modalidad && !f.deporte.includes(evento.modalidad)) return false;
-  if (f.modalidad?.length && evento.disciplina_normalizada && !f.modalidad.includes(evento.disciplina_normalizada)) return false;
+  // Modalidad: solo cuenta la lista del deporte de la carrera (si no hay ninguna de ese deporte, llega entero).
+  const claveMod = evento.modalidad ? claveModalidad(evento.modalidad) : null;
+  const mods = claveMod ? f[claveMod] : undefined;
+  if (mods?.length && evento.disciplina_normalizada && !mods.includes(evento.disciplina_normalizada)) return false;
   if (f.concejo?.length && (evento.municipio || evento.municipio_meta)) {
     const lista = f.concejo.map((c) => c.trim().toLocaleLowerCase("es"));
     const valores = [evento.municipio, evento.municipio_meta].map((v) => (v ?? "").trim().toLocaleLowerCase("es"));
@@ -178,7 +190,8 @@ export function resumenFiltros(f: FiltrosAvisos): string {
   if (sinFiltros(f)) return "Recibes todos los avisos.";
   const partes: string[] = [];
   if (f.deporte?.length) partes.push(f.deporte.map((d) => DEPORTES.find((x) => x.id === d)?.label ?? d).join(" y ").toLocaleLowerCase("es"));
-  if (f.modalidad?.length) partes.push(`${f.modalidad.length} ${f.modalidad.length === 1 ? "modalidad" : "modalidades"}`);
+  const nMods = (f.modalidad_pie?.length ?? 0) + (f.modalidad_ciclismo?.length ?? 0);
+  if (nMods) partes.push(`${nMods} ${nMods === 1 ? "modalidad" : "modalidades"}`);
   if (f.concejo?.length) partes.push(f.concejo.length === 1 ? `en ${f.concejo[0]}` : `en ${f.concejo.length} concejos`);
   if (f.tipo?.length === 1) partes.push(f.tipo[0] === "apertura" ? "solo aperturas" : "solo clasificaciones");
   if (f.distancia?.length) partes.push(f.distancia.map((d) => DISTANCIAS.find((x) => x.id === d)?.label.toLocaleLowerCase("es") ?? d).join(", "));

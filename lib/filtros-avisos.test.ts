@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  CLAVES_FILTRO,
+  DEPORTES,
+  DISTANCIAS,
+  TIPOS_AVISO,
   alternarValores,
   avisoPasaFiltros,
   kmsDeEvento,
@@ -34,14 +38,14 @@ test("tipo, deporte, modalidad y concejo", () => {
   assert.equal(avisoPasaFiltros({ tipo: ["clasificaciones"] }, "clasif", trailTineo), true);
   assert.equal(avisoPasaFiltros({ deporte: ["ciclismo"] }, "dia", trailTineo), false);
   assert.equal(avisoPasaFiltros({ deporte: ["ciclismo"] }, "dia", mtbGrado), true);
-  assert.equal(avisoPasaFiltros({ modalidad: ["asfalto"] }, "dia", trailTineo), false);
+  assert.equal(avisoPasaFiltros({ modalidad_pie: ["asfalto"] }, "dia", trailTineo), false);
   assert.equal(avisoPasaFiltros({ concejo: ["tineo"] }, "dia", trailTineo), true);
   assert.equal(avisoPasaFiltros({ concejo: ["Gijón"] }, "dia", trailTineo), false);
 });
 
 test("si a la carrera le falta el dato, el aviso llega igual; la prueba nunca se filtra", () => {
   const sinDatos = { modalidad: null, disciplina_normalizada: null, municipio: null, municipio_meta: null, distancias: null };
-  assert.equal(avisoPasaFiltros({ deporte: ["pie"], modalidad: ["trail"], concejo: ["Avilés"], distancia: ["corta"] }, "dia", sinDatos), true);
+  assert.equal(avisoPasaFiltros({ deporte: ["pie"], modalidad_pie: ["trail"], concejo: ["Avilés"], distancia: ["corta"] }, "dia", sinDatos), true);
   assert.equal(avisoPasaFiltros({ tipo: ["apertura"] }, "prueba", null), true);
 });
 
@@ -58,8 +62,8 @@ test("distancia: rangos a pie y ciclismo sin filtrar por km", () => {
 
 test("normalizar descarta claves y valores no válidos (como el CHECK de Supabase)", () => {
   assert.deepEqual(
-    normalizarFiltros({ deporte: ["pie", "natacion"], tipo: [], otra: ["x"], modalidad: ["Trail!", "trail"], distancia: ["larga", 3] }),
-    { deporte: ["pie"], modalidad: ["trail"], distancia: ["larga"] },
+    normalizarFiltros({ deporte: ["pie", "natacion"], tipo: [], otra: ["x"], modalidad_pie: ["Trail!", "trail"], modalidad: ["trail"], distancia: ["larga", 3] }),
+    { deporte: ["pie"], modalidad_pie: ["trail"], distancia: ["larga"] },
   );
   assert.deepEqual(normalizarFiltros([]), {});
 });
@@ -75,9 +79,9 @@ test("opciones solo con valores reales y modalidades agrupadas por etiqueta", ()
   const bici = o.modalidad.find((m) => m.deporte === "ciclismo")!;
   assert.deepEqual(bici.opciones, [{ id: "btt+mtb", label: "MTB/BTT", valores: ["btt", "mtb"] }]);
   assert.deepEqual(o.concejo.map((c) => c.id), ["Grado", "Tineo"]);
-  const f = alternarValores({}, "modalidad", ["btt", "mtb"], true);
-  assert.deepEqual(f, { modalidad: ["btt", "mtb"] });
-  assert.deepEqual(alternarValores(f, "modalidad", ["btt", "mtb"], false), {});
+  const f = alternarValores({}, "modalidad_ciclismo", ["btt", "mtb"], true);
+  assert.deepEqual(f, { modalidad_ciclismo: ["btt", "mtb"] });
+  assert.deepEqual(alternarValores(f, "modalidad_ciclismo", ["btt", "mtb"], false), {});
 });
 
 test("resumen de la tarjeta", () => {
@@ -120,4 +124,54 @@ test("F1: los filtros no pasan de 4096 bytes (como el CHECK)", () => {
   assert.ok(new TextEncoder().encode(JSON.stringify(f)).length <= 4096);
   assert.ok(f.concejo!.length < 60);
   assert.deepEqual(f.tipo, ["apertura"]);
+});
+
+test("W1: marcar «Trail» y nada de ciclismo no corta el ciclismo", () => {
+  const f = normalizarFiltros({ modalidad_pie: ["trail"] });
+  assert.equal(avisoPasaFiltros(f, "dia", trailTineo), true);
+  assert.equal(avisoPasaFiltros(f, "dia", { ...trailTineo, disciplina_normalizada: "asfalto" }), false);
+  assert.equal(avisoPasaFiltros(f, "dia", mtbGrado), true);
+  // salvo que el filtro a pie/ciclismo lo excluya
+  assert.equal(avisoPasaFiltros({ ...f, deporte: ["pie"] }, "dia", mtbGrado), false);
+  // y las modalidades de ciclismo solo cuentan para el ciclismo
+  assert.equal(avisoPasaFiltros({ modalidad_ciclismo: ["btt"] }, "dia", mtbGrado), false);
+  assert.equal(avisoPasaFiltros({ modalidad_ciclismo: ["btt"] }, "dia", trailTineo), true);
+  const W1 = readFileSync(new URL("../supabase/migrations/20261018225338_carreras_filtros_modalidad_por_deporte.sql", import.meta.url), "utf8");
+  assert.match(W1, /coalesce\(f -> \('modalidad_' \|\| e\.modalidad\), '\[\]'\)/);
+});
+
+test("el CHECK de Supabase admite exactamente las claves y valores del código", () => {
+  const W1 = readFileSync(new URL("../supabase/migrations/20261018225338_carreras_filtros_modalidad_por_deporte.sql", import.meta.url), "utf8");
+  const def = W1.slice(W1.indexOf("create or replace function carreras.filtros_avisos_validos"), W1.indexOf("revoke all on function carreras.filtros_avisos_validos"));
+  const lista = (re: RegExp) => {
+    const m = def.match(re);
+    assert.ok(m, String(re));
+    return [...m[1].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]).sort();
+  };
+  const ordenar = (a: readonly string[]) => [...a].sort();
+  assert.deepEqual(lista(/where k not in \(([^)]*)\)/), ordenar(CLAVES_FILTRO));
+  assert.deepEqual(lista(/e\.key = 'deporte' and \(v #>> '\{\}'\) not in \(([^)]*)\)/), ordenar(DEPORTES.map((d) => d.id)));
+  assert.deepEqual(lista(/e\.key = 'tipo' and \(v #>> '\{\}'\) not in \(([^)]*)\)/), ordenar(TIPOS_AVISO.map((d) => d.id)));
+  assert.deepEqual(lista(/e\.key = 'distancia' and \(v #>> '\{\}'\) not in \(([^)]*)\)/), ordenar(DISTANCIAS.map((d) => d.id)));
+  assert.deepEqual(lista(/e\.key in \(([^)]*)\) and \(v #>> '\{\}'\) !~/), ["modalidad_ciclismo", "modalidad_pie"]);
+  assert.match(def, /char_length\(v #>> '\{\}'\) not between 1 and 80/);
+  assert.match(def, /jsonb_array_length\(e\.value\) > 60/);
+});
+
+test("estando de baja no se ofrecen Telegram ni el push", () => {
+  const src = readFileSync(new URL("../components/mis-avisos.tsx", import.meta.url), "utf8");
+  const i = src.indexOf("{perfil?.baja_en ? (\n        <p className=\"text-xs text-ink/70\">{TEXTO_CANALES_EN_BAJA}</p>");
+  assert.ok(i > 0, "bloque de baja antes de Telegram");
+  const despues = src.slice(i);
+  assert.ok(despues.indexOf("TEXTO_CANALES_EN_BAJA") < despues.indexOf("Telegram</h2>"));
+  assert.ok(despues.indexOf("Activar avisos en este móvil") < despues.indexOf("</>"));
+});
+
+test("W2: zonas táctiles de al menos 24 px", () => {
+  const f = readFileSync(new URL("../components/filtros-avisos.tsx", import.meta.url), "utf8");
+  assert.match(f, /<label key=\{o\.id\} className="inline-flex min-h-6/);
+  assert.match(f, /<summary className="flex min-h-6/);
+  assert.match(f, /className="inline-flex min-h-6 items-center text-xs font-semibold text-forest[^"]*"\>\s*Quitar filtros/);
+  const m = readFileSync(new URL("../components/mis-avisos.tsx", import.meta.url), "utf8");
+  assert.match(m, /className="inline-flex min-h-6 items-center text-sm font-semibold text-ink[^"]*"\s*>\s*Salir/);
 });
