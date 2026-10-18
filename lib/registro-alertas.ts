@@ -67,7 +67,6 @@ export function urlConfirmarAlertas(origin: string): string {
 export const AUTH_REDIRECT_URLS_CARRERAS = [
   "https://www.carrerasasturias.es/**",
   "https://carrerasasturias.es/**",
-  "https://carreras.avilesia.es/**",
   "https://*-javiers-projects-32052beb.vercel.app/**",
   "http://localhost:3000/**",
   "http://127.0.0.1:3000/**",
@@ -76,7 +75,6 @@ export const AUTH_REDIRECT_URLS_CARRERAS = [
 const HOSTS_PRODUCCION = new Set([
   "www.carrerasasturias.es",
   "carrerasasturias.es",
-  "carreras.avilesia.es",
 ]);
 
 const HOST_PREVIEW = /^[a-z0-9-]+-javiers-projects-32052beb\.vercel\.app$/;
