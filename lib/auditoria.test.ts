@@ -80,7 +80,7 @@ test("el bloque de AvilesIA no se incluye a sí mismo", () => {
     url: "https://www.carrerasasturias.es/",
     categoria: "Carreras",
     descripcion: "Carreras",
-    hosts: ["carreras.avilesia.es"],
+    hosts: ["carrerasasturias.avilesia.es"],
   };
   const otra = {
     id: "opos",
@@ -137,4 +137,17 @@ test("con la CMP de Google no se duplica el banner", () => {
   assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: false, reabierto: false }), true);
   assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: true, reabierto: false }), false);
   assert.equal(debeMostrarBannerPropio({ googleFc: false, tieneDecision: true, reabierto: true }), true);
+});
+
+test("Carreras España (carreras.avilesia.es) sí sale en el bloque de AvilesIA", () => {
+  const espana = {
+    id: "carreras-espana",
+    nombre: "Carreras España",
+    url: "https://carreras.avilesia.es/",
+    categoria: "Carreras",
+    descripcion: "Carreras en España",
+    hosts: ["carreras.avilesia.es"],
+  };
+  assert.equal(esEstaApp(espana), false);
+  assert.deepEqual(appsVisibles([espana]), [espana]);
 });
