@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FiltrosAvisosCard } from "@/components/filtros-avisos";
+import type { OpcionesFiltros } from "@/lib/filtros-avisos";
 import { desvincularPush, mensajeErrorAvisos, prepararPushRegistro, vincularPushAUsuario } from "@/lib/onesignal-web";
 import {
   MENSAJE_CORREO_REACTIVADO,
@@ -23,7 +25,7 @@ type Perfil = {
 
 type Telegram = { chat_id: number | null } | null;
 
-export function MisAvisos() {
+export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
   const [listo, setListo] = useState(false);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [telegram, setTelegram] = useState<Telegram>(null);
@@ -220,6 +222,7 @@ export function MisAvisos() {
           </>
         ) : null}
       </section>
+      {perfil && !perfil.baja_en && opciones ? <FiltrosAvisosCard opciones={opciones} /> : null}
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm">
         <h2 className="font-display text-lg font-bold text-ink">Telegram</h2>
         <p className="mt-1 text-ink/70">

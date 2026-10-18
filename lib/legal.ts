@@ -76,6 +76,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Si conectas Telegram, el identificador del chat privado con el bot @AvilesIA_bot. El aviso te llega a ese chat, que solo ves tú.",
           "Si activas los avisos en el móvil o el navegador con la sesión iniciada, OneSignal vincula ese dispositivo a tu user_id. Sin sesión no se asocia el navegador a un identificador de otra persona.",
           "Registro de envíos de avisos: identificador de usuario, canal (correo, notificación o Telegram), aviso, resultado (un código corto) y fecha. No guardamos el contenido del mensaje ni la dirección de destino. Sirve para no repetir un aviso y comprobar que llega.",
+          "Si los eliges en Mis avisos, tus filtros de avisos (a pie o ciclismo, modalidad, concejo, tipo de aviso y distancia). Solo sirven para decidir qué avisos te enviamos.",
           "Registro de consentimientos: cuándo te das de alta, de baja o vuelves a recibir avisos, con la versión de este texto que aceptaste y desde dónde (web, Mis avisos o enlace del correo). Es la prueba de tu consentimiento; solo se añaden líneas, no se modifican.",
           "Cada correo de aviso lleva un enlace de baja de un solo uso. Solo guardamos su huella (hash), no el enlace, junto a tu user_id y su fecha de caducidad.",
           "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
