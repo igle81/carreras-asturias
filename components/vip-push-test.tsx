@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { RUTA_ACCESO } from "@/lib/registro-alertas";
+import { getSupabase } from "@/lib/supabase";
 import {
-  VIP_TEST_EXTERNAL_ID,
   initOneSignal,
   permissionDeniedMessage,
   pushUnsupportedMessage,
@@ -14,6 +15,23 @@ type Status =
   | { kind: "working" }
   | { kind: "success" }
   | { kind: "error"; message: string };
+
+/** Pide al servidor el external_id del administrador. Solo lo da a la sesión del administrador. */
+async function externalIdAdmin(): Promise<string> {
+  const { data } = await getSupabase().auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error(`Inicia sesión con la cuenta de administrador (${RUTA_ACCESO}) y vuelve a esta página.`);
+  const respuesta = await fetch("/api/interno/vip-push", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  const cuerpo = (await respuesta.json().catch(() => null)) as { ok?: boolean; externalId?: unknown } | null;
+  if (respuesta.ok && cuerpo?.ok && typeof cuerpo.externalId === "string") return cuerpo.externalId;
+  if (respuesta.status === 403) throw new Error("Esta cuenta no es la del administrador.");
+  if (respuesta.status === 503) throw new Error("Falta configurar el perfil VIP de prueba en el servidor.");
+  throw new Error("No se pudo comprobar la sesión. Vuelve a iniciarla.");
+}
 
 async function permissionGranted(
   onesignal: Awaited<ReturnType<typeof initOneSignal>>,
@@ -34,6 +52,7 @@ export function VipPushTest() {
     setStatus({ kind: "working" });
 
     try {
+      const externalId = await externalIdAdmin();
       const onesignal = await initOneSignal();
 
       if (!onesignal.Notifications.isPushSupported()) {
@@ -49,7 +68,7 @@ export function VipPushTest() {
         throw new Error(permissionDeniedMessage());
       }
 
-      await onesignal.login(VIP_TEST_EXTERNAL_ID);
+      await onesignal.login(externalId);
       await onesignal.User.addTag("vip", "true");
 
       setStatus({ kind: "success" });
@@ -64,7 +83,8 @@ export function VipPushTest() {
       <h2 className="mt-2 font-display text-2xl font-black">Push VIP de prueba</h2>
       <p className="mt-3 max-w-xl text-white">
         Este botón no es un enlace: activa las notificaciones en este mismo
-        navegador y las asocia al perfil VIP de prueba. Usa HTTPS en el dominio
+        navegador y las asocia al perfil VIP de prueba. Hace falta haber
+        iniciado sesión con la cuenta de administrador. Usa HTTPS en el dominio
         de producción (www.carrerasasturias.es o carrerasasturias.es, según la
         Site URL de OneSignal), no localhost ni modo privado. No hay enlace
         público ni canal Telegram.
