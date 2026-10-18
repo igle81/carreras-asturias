@@ -33,7 +33,7 @@ const TEXTOS: Record<EstadoBaja, { titulo: string; parrafo: string }> = {
   confirmar: {
     titulo: "Darte de baja de los avisos",
     parrafo:
-      "Si confirmas, dejarás de recibir todos los avisos de Carreras Asturias: correo, notificaciones y Telegram. La baja es definitiva; para volver tendrías que crear otra cuenta.",
+      "Si confirmas, dejarás de recibir todos los avisos de Carreras Asturias: correo, notificaciones y Telegram. Si cambias de idea, puedes volver a recibir avisos por correo desde Mis avisos, con la sesión iniciada.",
   },
   hecho: {
     titulo: "Baja registrada",

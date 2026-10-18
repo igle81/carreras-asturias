@@ -80,7 +80,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         paragraphs: [
           "Los avisos de inscripciones salen por el correo que indicas, por un chat privado con @AvilesIA_bot si lo conectas en Mis avisos, y por notificación de OneSignal si activas el permiso en ese mismo sitio con la sesión iniciada.",
           "El código de OneSignal no se descarga hasta que pulsas el botón. Puedes darte de baja de los avisos en Mis avisos y revocar el permiso en el navegador.",
-          "Cada correo de aviso lleva un enlace para darte de baja sin iniciar sesión: primero te pide confirmar y la baja corta todos los canales. En Mis avisos también puedes desactivar las notificaciones o desconectar Telegram por separado, sin perder los demás avisos.",
+          "Cada correo de aviso lleva un enlace para darte de baja sin iniciar sesión: primero te pide confirmar y la baja corta todos los canales. En Mis avisos también puedes desactivar las notificaciones o desconectar Telegram por separado, sin perder los demás avisos. Si te das de baja y cambias de idea, en Mis avisos puedes volver a recibir avisos por correo: cuenta como un nuevo consentimiento y las notificaciones y Telegram se vuelven a activar aparte.",
         ],
       },
       {
