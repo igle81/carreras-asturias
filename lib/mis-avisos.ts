@@ -18,4 +18,8 @@ export function textoEstadoCorreo(bajaEn: string | null | undefined, correo: str
 }
 
 export const MENSAJE_CORREO_REACTIVADO =
-  "Vuelves a recibir avisos por correo. Las notificaciones de este móvil y Telegram se activan aparte, aquí mismo.";
+  "Vuelves a recibir avisos por correo. Telegram queda desconectado y las notificaciones de este móvil siguen apagadas: si los quieres, actívalos aquí mismo.";
+
+/** Bajo el botón de volver: qué aceptas y qué pasa con Telegram (migración 20261018222953). */
+export const TEXTO_ACEPTAS_REACTIVAR =
+  "Al pulsarlo aceptas de nuevo recibir avisos de carreras en el correo de tu cuenta. Telegram queda desconectado; puedes volver a conectarlo después.";

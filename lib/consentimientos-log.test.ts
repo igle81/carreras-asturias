@@ -79,3 +79,30 @@ test("Privacidad explica el registro y qué se recupera tras la purga", () => {
   assert.match(texto, /Registro de consentimientos/);
   assert.match(texto, /Si vuelves tras la purga, solo recuperamos el correo de tu cuenta\./);
 });
+
+const W1 = readFileSync(
+  new URL("../supabase/migrations/20261018222953_carreras_reactivar_sin_telegram.sql", import.meta.url),
+  "utf8",
+);
+
+test("W1: reactivar y la baja desconectan Telegram y lo apuntan en el log", () => {
+  assert.match(W1, /delete from carreras\.alertas_telegram where user_id = v_uid;/);
+  assert.equal((W1.match(/delete from carreras\.alertas_telegram t where t\.user_id = new\.user_id;/g) ?? []).length, 2);
+  assert.match(W1, /'telegram_desconectado'/);
+  assert.match(W1, /create or replace function carreras\.avisos_reactivar_correo\(\)\s+returns boolean/);
+  assert.match(W1, /revoke all on function carreras\.avisos_reactivar_correo\(\) from public, anon;/);
+});
+
+test("W1/W2: la tarjeta avisa de Telegram y el texto pequeño usa text-ink/70", () => {
+  const src = readFileSync(new URL("../components/mis-avisos.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /text-ink\/60/);
+  assert.match(src, /\{TEXTO_ACEPTAS_REACTIVAR\}/);
+  const textos = readFileSync(new URL("./mis-avisos.ts", import.meta.url), "utf8");
+  assert.match(textos, /Telegram queda desconectado/);
+});
+
+test("W3: Privacidad ya no dice que Telegram espere a la pasada diaria tras la baja", () => {
+  const texto = JSON.stringify(LEGAL_DOCUMENTS.privacidad);
+  assert.doesNotMatch(texto, /en la pasada diaria, como máximo en 24 horas, si lo haces en Mis avisos/);
+  assert.match(texto, /al volver a recibir avisos por correo tras una baja \(Telegram queda desconectado/);
+});
