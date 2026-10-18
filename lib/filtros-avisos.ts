@@ -47,6 +47,8 @@ export type OpcionesFiltros = {
 };
 
 const MAX_VALORES = 60;
+/** Igual que el CHECK de Supabase (migración 20261018224933). */
+export const MAX_BYTES_FILTROS = 4096;
 
 /** Opciones que se enseñan: solo deportes, modalidades y concejos que existen en los eventos. */
 export function opcionesFiltros(eventos: Pick<Evento, "modalidad" | "disciplina_normalizada" | "municipio">[]): OpcionesFiltros {
@@ -104,6 +106,11 @@ export function normalizarFiltros(entrada: unknown): FiltrosAvisos {
     ].slice(0, MAX_VALORES);
     if (valores.length) out[clave] = valores;
   }
+  // Mismo tope que el CHECK de Supabase (octet_length(filtros_avisos::text) <= 4096): si se pasa, se recortan concejos.
+  while (out.concejo?.length && new TextEncoder().encode(JSON.stringify(out)).length > MAX_BYTES_FILTROS) {
+    out.concejo = out.concejo.slice(0, -1);
+    if (!out.concejo.length) delete out.concejo;
+  }
   return out;
 }
 
@@ -111,6 +118,11 @@ export function sinFiltros(f: FiltrosAvisos): boolean {
   return CLAVES_FILTRO.every((c) => !f[c]?.length);
 }
 
+/**
+ * Tipo de aviso que se puede elegir. Un tipo nuevo que no sea apertura ni clasificaciones devuelve null y
+ * ese aviso se RECIBE aunque haya filtro de tipo: la persona no ha podido elegirlo (decisión de Javier,
+ * 19-10-2026; igual que «dato que falta = llega»). Lo mismo hace carreras.avisos_evento_pasa_filtros.
+ */
 export function tipoDeAviso(tipo: string): "apertura" | "clasificaciones" | null {
   if (tipo === "vispera" || tipo === "dia") return "apertura";
   if (tipo.startsWith("clasif")) return "clasificaciones";

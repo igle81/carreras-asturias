@@ -106,3 +106,46 @@ test("W3: Privacidad ya no dice que Telegram espere a la pasada diaria tras la b
   assert.doesNotMatch(texto, /en la pasada diaria, como máximo en 24 horas, si lo haces en Mis avisos/);
   assert.match(texto, /al volver a recibir avisos por correo tras una baja \(Telegram queda desconectado/);
 });
+
+const C1 = readFileSync(
+  new URL("../supabase/migrations/20261018224933_carreras_consentimientos_reconstruidos.sql", import.meta.url),
+  "utf8",
+);
+
+test("C2: las migraciones desde 20261018224933 llevan lock_timeout", async () => {
+  const { readdirSync } = await import("node:fs");
+  const dir = new URL("../supabase/migrations/", import.meta.url);
+  const nuevas = readdirSync(dir).filter((f) => f.endsWith(".sql") && f >= "20261018224933");
+  assert.ok(nuevas.length >= 1);
+  for (const f of nuevas) {
+    assert.match(readFileSync(new URL(f, dir), "utf8"), /^set local lock_timeout = '5s';$/m, f);
+  }
+});
+
+test("C1: las 4 filas rellenadas se marcan reconstruidas con el disparador desactivado solo en la transacción", () => {
+  assert.match(C1, /add column if not exists reconstruido boolean not null default false/);
+  const off = C1.indexOf("disable trigger consentimientos_log_solo_insercion");
+  const on = C1.indexOf("enable trigger consentimientos_log_solo_insercion");
+  assert.ok(off > 0 && on > off, "desactivar y volver a activar, en ese orden");
+  assert.equal((C1.match(/disable trigger/g) ?? []).length, 1);
+  assert.match(C1, /if t <> 4 then\s+raise exception/);
+  assert.match(C1, /'2026-10-18 22:03:10\.482\+00'/);
+  assert.match(C1, /hora aprox\. = actualizado_en \(lo puede escribir el cliente\)/);
+});
+
+test("C3: el origen es una lista cerrada y el alta del cliente es siempre 'web'", () => {
+  assert.match(C1, /constraint consentimientos_log_origen_lista/);
+  assert.match(C1, /new\.origen := 'web';/);
+  assert.match(C1, /values \(new\.user_id, 'alta', new\.consentimiento_version, coalesce\(v_origen, 'web'\)\)/);
+  assert.doesNotMatch(C1.split("C3)")[1] ?? "", /new\.origen, 'web'/);
+});
+
+test("F1 e Info: tope de 4096 bytes en los filtros y la purga los vacía", () => {
+  assert.match(C1, /check \(octet_length\(filtros_avisos::text\) <= 4096 and carreras\.filtros_avisos_validos\(filtros_avisos\)\)/);
+  assert.match(C1, /filtros_avisos = '\{\}'::jsonb,/);
+});
+
+test("el relleno inicial queda en docs y avisa de que no se repite", () => {
+  const doc = readFileSync(new URL("../docs/consentimientos-relleno-2026-10-19.sql", import.meta.url), "utf8");
+  assert.match(doc, /NO volver a ejecutar/);
+});

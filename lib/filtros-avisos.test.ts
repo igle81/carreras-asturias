@@ -106,3 +106,18 @@ test("Supabase: columna con {} por defecto, CHECK, grant solo de esa columna y R
 test("Privacidad menciona los filtros", () => {
   assert.match(JSON.stringify(LEGAL_DOCUMENTS.privacidad), /tus filtros de avisos/);
 });
+
+test("un tipo de aviso nuevo (no elegible) se recibe aunque haya filtro de tipo", () => {
+  assert.equal(avisoPasaFiltros({ tipo: ["apertura"] }, "cancelacion", trailTineo), true);
+  assert.equal(avisoPasaFiltros({ tipo: ["apertura"] }, "clasif", trailTineo), false);
+  const C1 = readFileSync(new URL("../supabase/migrations/20261018224933_carreras_consentimientos_reconstruidos.sql", import.meta.url), "utf8");
+  assert.match(C1, /Tipo de aviso que no es apertura \(vispera\/dia\) ni clasificaciones \(clasif\*\) = pasa/);
+});
+
+test("F1: los filtros no pasan de 4096 bytes (como el CHECK)", () => {
+  const muchos = Array.from({ length: 60 }, (_, i) => `Concejo de prueba número ${i} ${"x".repeat(40)}`);
+  const f = normalizarFiltros({ concejo: muchos, tipo: ["apertura"] });
+  assert.ok(new TextEncoder().encode(JSON.stringify(f)).length <= 4096);
+  assert.ok(f.concejo!.length < 60);
+  assert.deepEqual(f.tipo, ["apertura"]);
+});
