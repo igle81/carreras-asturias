@@ -9,6 +9,7 @@ export const WEBHOOKS_N8N = {
   telegram: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram",
   /** Ruta protegida con la cabecera X-N8N-Generico-Token (18-oct). Se usa si hay ALERTAS_TELEGRAM_WEBHOOK_TOKEN. */
   telegramCabecera: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram-v2",
+  /** Exigen la cabecera X-N8N-Generico-Token desde el 18-oct (ver tokenWebhookGenerico). */
   email: "https://vps-faf1945e.vps.ovh.net/webhook/generico-email",
   push: "https://vps-faf1945e.vps.ovh.net/webhook/generico-web-push",
 } as const;
@@ -99,9 +100,18 @@ export function tokenWebhookTelegram(env: EnvLike = process.env): string | null 
   return leer(env, "ALERTAS_TELEGRAM_WEBHOOK_TOKEN");
 }
 
+/**
+ * Secreto de la cabecera X-N8N-Generico-Token para los genéricos de push y correo (18-oct, Seguridad:
+ * generico-web-push y generico-email ya exigen la cabecera). Hoy es la misma credencial n8n que Telegram,
+ * así que si no hay ALERTAS_N8N_WEBHOOK_TOKEN se usa ALERTAS_TELEGRAM_WEBHOOK_TOKEN.
+ */
+export function tokenWebhookGenerico(env: EnvLike = process.env): string | null {
+  return leer(env, "ALERTAS_N8N_WEBHOOK_TOKEN", "ALERTAS_TELEGRAM_WEBHOOK_TOKEN");
+}
+
 /** Cabeceras extra para el webhook de un canal. */
 export function cabecerasWebhook(canal: CanalAviso, env: EnvLike): Record<string, string> | undefined {
-  const token = canal === "telegram" ? tokenWebhookTelegram(env) : null;
+  const token = canal === "telegram" ? tokenWebhookTelegram(env) : tokenWebhookGenerico(env);
   return token ? { "x-n8n-generico-token": token } : undefined;
 }
 

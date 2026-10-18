@@ -184,6 +184,26 @@ test("con ALERTAS_TELEGRAM_WEBHOOK_TOKEN el Telegram va a la ruta con cabecera",
     },
   });
   assert.deepEqual(llamadas[0], { url: WEBHOOKS_N8N.telegramCabecera, cabecera: "secreto-de-prueba" });
-  assert.equal(llamadas[1].cabecera, null);
-  assert.equal(llamadas[2].cabecera, null);
+  // Push y correo también llevan la cabecera (misma credencial n8n).
+  assert.equal(llamadas[1].cabecera, "secreto-de-prueba");
+  assert.equal(llamadas[2].cabecera, "secreto-de-prueba");
+});
+
+test("ALERTAS_N8N_WEBHOOK_TOKEN tiene prioridad para push y correo; sin token no se manda cabecera", async () => {
+  const llamadas: { url: string; cabecera: string | null }[] = [];
+  const fetchImpl = async (url: string, init?: RequestInit) => {
+    llamadas.push({ url: String(url), cabecera: new Headers(init?.headers).get("x-n8n-generico-token") });
+    return new Response("{}", { status: 200 });
+  };
+  await notificarAdminRegistro(AVISO, {
+    env: { ALERTAS_TELEGRAM_WEBHOOK_TOKEN: "tg", ALERTAS_N8N_WEBHOOK_TOKEN: "gen" },
+    fetchImpl,
+  });
+  const porUrl = Object.fromEntries(llamadas.map((l) => [l.url, l.cabecera]));
+  assert.equal(porUrl[WEBHOOKS_N8N.telegramCabecera], "tg");
+  assert.equal(porUrl[WEBHOOKS_N8N.push], "gen");
+  assert.equal(porUrl[WEBHOOKS_N8N.email], "gen");
+  llamadas.length = 0;
+  await notificarAdminRegistro(AVISO, { env: {}, fetchImpl });
+  assert.ok(llamadas.every((l) => l.cabecera === null));
 });
