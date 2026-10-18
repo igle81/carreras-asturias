@@ -9,6 +9,13 @@ export const COOKIE_CONSENT_KEY = "ca-cookie-consent";
 export const COOKIE_CONSENT_EVENT = "ca-consent";
 export const COOKIE_CONSENT_VERSION = 1 as const;
 
+/**
+ * Versión del texto de Privacidad que acepta quien se da de alta o vuelve a recibir avisos.
+ * Es la fecha de «Actualizado» de la Política de privacidad. Si cambias ese texto, súbela aquí
+ * y en carreras.consentimiento_version_vigente() (Supabase); un test comprueba que coinciden.
+ */
+export const PRIVACIDAD_VERSION = "2026-10-19" as const;
+
 export type CookieConsentDecision = {
   version: typeof COOKIE_CONSENT_VERSION;
   necessary: true;
@@ -48,7 +55,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Política de privacidad",
     description:
       "Cómo trata Carreras Asturias los datos personales: cuenta, avisos, encargados y derechos.",
-    updatedLabel: "Actualizado 18 de octubre de 2026",
+    updatedLabel: "Actualizado 19 de octubre de 2026",
     badge: null,
     sections: [
       {
@@ -69,6 +76,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Si conectas Telegram, el identificador del chat privado con el bot @AvilesIA_bot. El aviso te llega a ese chat, que solo ves tú.",
           "Si activas los avisos en el móvil o el navegador con la sesión iniciada, OneSignal vincula ese dispositivo a tu user_id. Sin sesión no se asocia el navegador a un identificador de otra persona.",
           "Registro de envíos de avisos: identificador de usuario, canal (correo, notificación o Telegram), aviso, resultado (un código corto) y fecha. No guardamos el contenido del mensaje ni la dirección de destino. Sirve para no repetir un aviso y comprobar que llega.",
+          "Registro de consentimientos: cuándo te das de alta, de baja o vuelves a recibir avisos, con la versión de este texto que aceptaste y desde dónde (web, Mis avisos o enlace del correo). Es la prueba de tu consentimiento; solo se añaden líneas, no se modifican.",
           "Cada correo de aviso lleva un enlace de baja de un solo uso. Solo guardamos su huella (hash), no el enlace, junto a tu user_id y su fecha de caducidad.",
           "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
           "Si pulsas el aviso VIP, la ruta de la página y la familia del navegador (Chrome, Firefox, Safari u otra). No guardamos el user-agent completo.",
@@ -133,7 +141,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "8. Conservación",
         paragraphs: [
           "Como política interna, los registros técnicos de hosting se conservan como máximo 90 días, salvo que un incidente de seguridad o una obligación legal exija un plazo distinto.",
-          "El correo de avisos y los datos de la suscripción se conservan mientras no te des de baja. Tras la baja, en un plazo de 30 días se vacían (correo, nombre e Instagram) y se borran el registro de envíos y los enlaces de baja de esa cuenta, salvo que una obligación legal exija guardarlos más. Solo se conservan el identificador de usuario y la fecha de la baja, para no volver a enviarte avisos.",
+          "El correo de avisos y los datos de la suscripción se conservan mientras no te des de baja. Tras la baja, en un plazo de 30 días se vacían (correo, nombre e Instagram) y se borran el registro de envíos y los enlaces de baja de esa cuenta, salvo que una obligación legal exija guardarlos más. Solo se conservan el identificador de usuario y la fecha de la baja, para no volver a enviarte avisos. El registro de consentimientos de esa cuenta se borra en la misma pasada. Si vuelves tras la purga, solo recuperamos el correo de tu cuenta.",
           `La baja de los avisos no borra la cuenta de acceso (correo y contraseña en Supabase Auth). Si quieres borrarla también, escríbenos a ${email}.`,
           "El identificador de Telegram se borra al pulsar Desconectar Telegram en Mis avisos, al darte de baja (en el momento si usas el enlace del correo; en la pasada diaria, como máximo en 24 horas, si lo haces en Mis avisos) y si bloqueas el bot.",
           "Al pulsar Desactivar notificaciones en Mis avisos, o al darte de baja, dejamos de enviarte notificaciones. En el navegador donde pulses Desactivar notificaciones también se quita su vínculo con tu user_id en OneSignal. Si el navegador avisa de que ya no tiene la suscripción, dejamos de enviarle notificaciones.",
