@@ -110,7 +110,7 @@ export default async function VipCancelarPage({
         </p>
       ) : null}
 
-      <p className="mt-8 text-sm text-ink/55">
+      <p className="mt-8 text-sm text-ink/70">
         <Link href="/correr" className="font-semibold text-atlantic hover:underline">
           Volver a correr
         </Link>

@@ -182,7 +182,7 @@ export function MisAvisos() {
       >
         Salir
       </button>
-      <p className="text-sm text-ink/55">
+      <p className="text-sm text-ink/70">
         ¿Primera vez?{" "}
         <Link href={RUTA_REGISTRO} className="font-semibold text-forest underline-offset-2 hover:underline">
           Crear una cuenta

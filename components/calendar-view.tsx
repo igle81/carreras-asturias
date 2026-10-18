@@ -170,7 +170,7 @@ export function CalendarView({ events, section }: { events: Evento[]; section: S
         </div>
       </div>
 
-      <p className="mb-4 text-sm text-ink/55" aria-live="polite">
+      <p className="mb-4 text-sm text-ink/70" aria-live="polite">
         {textoRecuento(filtered.length, { cerradas, conClasificacion })}
       </p>
 
