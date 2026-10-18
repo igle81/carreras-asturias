@@ -27,6 +27,7 @@ export const ONESIGNAL_SDK_SRC =
 export type OneSignalWebSDK = {
   init: (options: Record<string, unknown>) => Promise<void>;
   login: (externalId: string) => Promise<void>;
+  logout?: () => Promise<void>;
   Notifications: {
     requestPermission: () => boolean | Promise<boolean | void>;
     isPushSupported: () => boolean;
@@ -37,6 +38,7 @@ export type OneSignalWebSDK = {
     PushSubscription?: {
       optedIn?: boolean;
       optIn?: () => Promise<void>;
+      optOut?: () => Promise<void>;
     };
   };
 };
@@ -238,6 +240,20 @@ export async function vincularPushAUsuario(userId: string): Promise<void> {
   if (!id) throw new Error("Falta el usuario para vincular el aviso.");
   const onesignal = await initOneSignal();
   await onesignal.login(id);
+}
+
+/**
+ * Quita el aviso de este navegador: baja la suscripción push y desvincula el user_id
+ * (external_id) en OneSignal. Si el SDK no carga, no falla: el envío ya se corta con push_activado=false.
+ */
+export async function desvincularPush(): Promise<void> {
+  try {
+    const onesignal = await initOneSignal();
+    await onesignal.User.PushSubscription?.optOut?.();
+    await onesignal.logout?.();
+  } catch {
+    // sin SDK o sin permiso: no hay nada que desvincular en este navegador
+  }
 }
 
 /**
