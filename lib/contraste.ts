@@ -4,6 +4,10 @@ export const COLOR_GOLD = "#e0b44a";
 export const COLOR_GOLD_TEXT = "#7a5c10";
 export const COLOR_FOG = "#f4f1ea";
 export const COLOR_INK = "#12231c";
+/** Rojo de error sobre fondos claros (fog/blanco). */
+export const COLOR_FIRE = "#c62828";
+/** Rojo de error sobre fondos oscuros (ink). */
+export const COLOR_FIRE_CLARO = "#ff8a80";
 
 function canalLineal(valor: number): number {
   const c = valor / 255;
