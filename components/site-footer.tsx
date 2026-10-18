@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ConfigurarCookies } from "./configurar-cookies";
 import { LEGAL_NAV } from "@/lib/legal";
 import { SECTIONS } from "@/lib/sections";
-import { leerAppsAvilesia } from "@/lib/avilesia-apps";
+import { leerAppsAvilesia, urlLimpia } from "@/lib/avilesia-apps";
 import { ENLACES_SEO_FIJOS } from "@/lib/paginas-seo-enlaces";
 
 /**
@@ -86,7 +86,7 @@ export async function SiteFooter() {
         {red.map((app) => (
           <span key={app.url}>
             {" · "}
-            <a href={app.url} className="hover:underline">
+            <a href={urlLimpia(app.url)} className="hover:underline">
               {app.nombre}
             </a>
           </span>
