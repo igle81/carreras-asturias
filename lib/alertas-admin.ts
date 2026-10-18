@@ -7,6 +7,8 @@ export const TELEGRAM_CHAT_ID_POR_DEFECTO = "-1004437925569";
 /** Flujos n8n ya existentes. Una variable de entorno https los sustituye. */
 export const WEBHOOKS_N8N = {
   telegram: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram",
+  /** Ruta protegida con la cabecera X-N8N-Generico-Token (18-oct). Se usa si hay ALERTAS_TELEGRAM_WEBHOOK_TOKEN. */
+  telegramCabecera: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram-v2",
   email: "https://vps-faf1945e.vps.ovh.net/webhook/generico-email",
   push: "https://vps-faf1945e.vps.ovh.net/webhook/generico-web-push",
 } as const;
@@ -92,6 +94,17 @@ function leer(env: EnvLike, ...claves: string[]): string | null {
   return null;
 }
 
+/** Secreto de la cabecera X-N8N-Generico-Token del genérico de Telegram (solo servidor). */
+export function tokenWebhookTelegram(env: EnvLike = process.env): string | null {
+  return leer(env, "ALERTAS_TELEGRAM_WEBHOOK_TOKEN");
+}
+
+/** Cabeceras extra para el webhook de un canal. */
+export function cabecerasWebhook(canal: CanalAviso, env: EnvLike): Record<string, string> | undefined {
+  const token = canal === "telegram" ? tokenWebhookTelegram(env) : null;
+  return token ? { "x-n8n-generico-token": token } : undefined;
+}
+
 export function chatTelegramAdmin(env: EnvLike = process.env): string {
   return leer(env, "ALERTAS_TELEGRAM_CHAT_ID") || TELEGRAM_CHAT_ID_POR_DEFECTO;
 }
@@ -117,6 +130,7 @@ export function webhookCanal(canal: CanalAviso, env: EnvLike): string | null {
   if (especifico) return urlHttps(especifico);
   const generico = leer(env, "N8N_WEBHOOK_ALERTAS", "N8N_WEBHOOK_URL");
   if (generico) return urlHttps(generico);
+  if (canal === "telegram" && tokenWebhookTelegram(env)) return WEBHOOKS_N8N.telegramCabecera;
   return WEBHOOKS_N8N[canal];
 }
 
@@ -218,7 +232,7 @@ async function enviarCanal(
 
   try {
     if (webhook) {
-      const resultado = await postJson(opciones.fetchImpl, webhook, cuerpo);
+      const resultado = await postJson(opciones.fetchImpl, webhook, cuerpo, cabecerasWebhook(canal, opciones.env));
       return resultado.ok
         ? { canal, estado: "enviado" }
         : { canal, estado: "error", motivo: `http_${resultado.status}` };
