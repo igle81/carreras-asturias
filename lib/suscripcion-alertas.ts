@@ -71,8 +71,6 @@ export async function confirmarSuscripcionAlertas(
   const avisos = await notificarAdminRegistro({
     email,
     userId: data.user.id,
-    nombre: datos?.nombre ?? "",
-    instagram: datos?.instagram ?? null,
     correoAvisos,
     telegram: "pendiente",
     pushActivado: datos?.pushActivado ?? false,

@@ -91,7 +91,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Garantizar la seguridad, limitar abusos del alta y el correcto funcionamiento del sitio (interés legítimo).",
           "Crear la cuenta y enviarte los avisos que pides (ejecución de la solicitud; el consentimiento que marcas en el alta).",
           "Confirmar que el correo es tuyo (ejecución de la solicitud).",
-          "Avisar al administrador cuando hay un alta nueva, por correo, Telegram y notificación (interés legítimo en operar el servicio).",
+          "Avisar al administrador por correo cuando hay un alta nueva (interés legítimo en operar el servicio).",
           "Enviarte el aviso por Telegram a @AvilesIA_bot y por OneSignal si lo activas (consentimiento).",
           "Calcular carreras cercanas cuando activas la geolocalización (consentimiento).",
           "Cookies y publicidad de Google AdSense, solo si pulsas Aceptar (consentimiento).",

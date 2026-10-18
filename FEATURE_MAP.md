@@ -35,7 +35,7 @@ There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is ren
 | `GET /api/vip-cta` | `{ "count": number \| null }` — recuento de clics VIP |
 | `POST /api/vip-cta` | Registra un clic VIP por RPC (`ruta` validada y familia del navegador). Límite 30/min por IP. 400 si la ruta no vale, 429 si se pasa |
 | `/api/vip/portal` | PRE: crea Billing Portal Session de Stripe test y redirige. Needs `STRIPE_SECRET_KEY` (test). Do not call in smoke against PRO as a success path. |
-| `POST /api/alertas/suscribir` | Con el access token del magic link, inserta `carreras.suscripciones_alertas` si es un alta nueva y avisa al administrador |
+| `POST /api/alertas/suscribir` | Con el access token del magic link, inserta `carreras.suscripciones_alertas` si es un alta nueva y avisa al administrador solo por correo (sin Telegram ni push desde el 18-oct) |
 | `POST /api/afiliado/clic` | Hook de clic Decathlon. Inserta en `control_flota_metricas` solo si esa tabla ya existe |
 
 ## Global chrome
