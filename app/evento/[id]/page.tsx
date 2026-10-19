@@ -153,7 +153,7 @@ export default async function EventoPage({ params }: EventPageProps) {
 
       <ActivarAvisos apariencia="ficha" />
 
-      {resolveModalidad(event) === "pie" ? <DecathlonAfiliado className="mt-6" /> : null}
+      <DecathlonAfiliado className="mt-6" modalidad={resolveModalidad(event)} />
 
       <ClasificacionBlock event={event} />
 
