@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   CLAVES_FILTRO,
@@ -90,6 +90,22 @@ test("resumen de la tarjeta", () => {
 });
 
 const SQL = readFileSync(new URL("../supabase/migrations/20261018223301_carreras_filtros_avisos.sql", import.meta.url), "utf8");
+
+/**
+ * I2 de Calidad (#125): la última migración que redefine una función manda.
+ * Así, una migración posterior que cambie el CHECK o la lógica no se escapa del test.
+ */
+const DIR_MIGRACIONES = new URL("../supabase/migrations/", import.meta.url);
+export function ultimaMigracionQueDefine(funcion: string, ficheros?: string[], leer?: (f: string) => string): { fichero: string; sql: string } {
+  const lista = (ficheros ?? readdirSync(DIR_MIGRACIONES).filter((f) => f.endsWith(".sql"))).slice().sort();
+  const leerFichero = leer ?? ((f: string) => readFileSync(new URL(f, DIR_MIGRACIONES), "utf8"));
+  const marca = `create or replace function ${funcion}`;
+  for (let i = lista.length - 1; i >= 0; i--) {
+    const sql = leerFichero(lista[i]);
+    if (sql.includes(marca)) return { fichero: lista[i], sql };
+  }
+  throw new Error(`Ninguna migración define ${funcion}`);
+}
 const KMS = readFileSync(new URL("../supabase/migrations/20261018223346_carreras_filtros_avisos_kms.sql", import.meta.url), "utf8");
 
 test("Supabase: columna con {} por defecto, CHECK, grant solo de esa columna y RPC solo service_role", () => {
@@ -136,12 +152,12 @@ test("W1: marcar «Trail» y nada de ciclismo no corta el ciclismo", () => {
   // y las modalidades de ciclismo solo cuentan para el ciclismo
   assert.equal(avisoPasaFiltros({ modalidad_ciclismo: ["btt"] }, "dia", mtbGrado), false);
   assert.equal(avisoPasaFiltros({ modalidad_ciclismo: ["btt"] }, "dia", trailTineo), true);
-  const W1 = readFileSync(new URL("../supabase/migrations/20261018225338_carreras_filtros_modalidad_por_deporte.sql", import.meta.url), "utf8");
+  const W1 = ultimaMigracionQueDefine("carreras.avisos_evento_pasa_filtros").sql;
   assert.match(W1, /coalesce\(f -> \('modalidad_' \|\| e\.modalidad\), '\[\]'\)/);
 });
 
 test("el CHECK de Supabase admite exactamente las claves y valores del código", () => {
-  const W1 = readFileSync(new URL("../supabase/migrations/20261018225338_carreras_filtros_modalidad_por_deporte.sql", import.meta.url), "utf8");
+  const W1 = ultimaMigracionQueDefine("carreras.filtros_avisos_validos").sql;
   const def = W1.slice(W1.indexOf("create or replace function carreras.filtros_avisos_validos"), W1.indexOf("revoke all on function carreras.filtros_avisos_validos"));
   const lista = (re: RegExp) => {
     const m = def.match(re);
@@ -174,4 +190,18 @@ test("W2: zonas táctiles de al menos 24 px", () => {
   assert.match(f, /className="inline-flex min-h-6 items-center text-xs font-semibold text-forest[^"]*"\>\s*Quitar filtros/);
   const m = readFileSync(new URL("../components/mis-avisos.tsx", import.meta.url), "utf8");
   assert.match(m, /className="inline-flex min-h-6 items-center text-sm font-semibold text-ink[^"]*"\s*>\s*Salir/);
+});
+
+test("I2: el test del CHECK lee la última migración que define la función", () => {
+  const ficheros = ["20261018225338_a.sql", "20991231000000_b.sql", "20991231000001_c.sql"];
+  const contenido: Record<string, string> = {
+    "20261018225338_a.sql": "create or replace function carreras.filtros_avisos_validos(f jsonb) -- vieja",
+    "20991231000000_b.sql": "create or replace function carreras.filtros_avisos_validos(f jsonb) -- nueva",
+    "20991231000001_c.sql": "select 1; -- no la toca",
+  };
+  const r = ultimaMigracionQueDefine("carreras.filtros_avisos_validos", ficheros, (f) => contenido[f]);
+  assert.equal(r.fichero, "20991231000000_b.sql");
+  assert.throws(() => ultimaMigracionQueDefine("carreras.no_existe", ficheros, (f) => contenido[f]));
+  // Hoy, en el repo real, es la 225338.
+  assert.equal(ultimaMigracionQueDefine("carreras.filtros_avisos_validos").fichero, "20261018225338_carreras_filtros_modalidad_por_deporte.sql");
 });
