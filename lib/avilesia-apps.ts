@@ -87,12 +87,21 @@ export async function leerAppsAvilesia(): Promise<AppAvilesia[]> {
   }
 }
 
-export function urlConUtm(url: string, campaign: string): string {
+/** Dominios antiguos que redirigen: se enlaza directo al definitivo. */
+const DOMINIO_FINAL: Record<string, string> = {
+  "www.avilesia.es": "avilesia.es",
+  "asturguia.avilesia.es": "audioguias.avilesia.es",
+  "alquileres.avilesia.es": "pisos.avilesia.es",
+};
+
+/** URL limpia y definitiva: sin utm_ ni dominios que redirigen. */
+export function urlLimpia(url: string): string {
   try {
     const destino = new URL(url);
-    destino.searchParams.set("utm_source", "carrerasasturias.es");
-    destino.searchParams.set("utm_medium", "bloque_avilesia");
-    destino.searchParams.set("utm_campaign", campaign);
+    destino.hostname = DOMINIO_FINAL[destino.hostname] ?? destino.hostname;
+    for (const clave of [...destino.searchParams.keys()]) {
+      if (clave.toLowerCase().startsWith("utm_")) destino.searchParams.delete(clave);
+    }
     return destino.toString();
   } catch {
     return url;
