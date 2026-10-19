@@ -75,11 +75,9 @@ export function HomeView({ events, section }: { events: Evento[]; section: Secti
         {/* Sin content-visibility aquí: con tarjetas reales el alto reservado
             (900 px) hacía que las secciones se solaparan al medirlas (axe). */}
         <EstaQuincena events={quincena} />
-        {section.id === "pie" ? (
-          <div className="mx-auto max-w-6xl px-4">
-            <DecathlonAfiliado />
-          </div>
-        ) : null}
+        <div className="mx-auto max-w-6xl px-4">
+          <DecathlonAfiliado modalidad={section.id} />
+        </div>
         <div>
           {/* Listado, filtro de concejo y «Ver mapa» en el HTML del servidor; Leaflet solo al pulsar. */}
           <NearbySection events={listados} title={section.mapTitle} />
