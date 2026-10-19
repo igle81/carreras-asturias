@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ConfigurarCookies } from "./configurar-cookies";
 import { LEGAL_NAV } from "@/lib/legal";
 import { SECTIONS } from "@/lib/sections";
-import { leerAppsAvilesia } from "@/lib/avilesia-apps";
+import { leerAppsAvilesia, urlLimpia } from "@/lib/avilesia-apps";
+import { ENLACES_SEO_FIJOS } from "@/lib/paginas-seo-enlaces";
 
 /**
  * Enlaces a la red AvilesIA en el HTML del servidor (SEO). La lista sale de
@@ -31,6 +32,7 @@ async function redAvilesia(): Promise<Array<{ url: string; nombre: string }>> {
 
 export async function SiteFooter() {
   const red = await redAvilesia();
+  const explorar = ENLACES_SEO_FIJOS;
   return (
     <footer className="mt-16 border-t border-forest/10 bg-forest text-fog">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-end sm:justify-between">
@@ -57,6 +59,16 @@ export async function SiteFooter() {
         </div>
       </div>
       <nav
+        aria-label="Explorar carreras"
+        className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-white/15 px-4 py-4 text-sm font-medium text-white"
+      >
+        {explorar.map((item) => (
+          <Link key={item.href} href={item.href} className="inline-flex min-h-6 items-center hover:underline">
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <nav
         aria-label="Información legal"
         className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 border-t border-white/15 px-4 py-4 text-sm font-medium text-white"
       >
@@ -74,7 +86,7 @@ export async function SiteFooter() {
         {red.map((app) => (
           <span key={app.url}>
             {" · "}
-            <a href={app.url} className="hover:underline">
+            <a href={urlLimpia(app.url)} className="hover:underline">
               {app.nombre}
             </a>
           </span>

@@ -1,5 +1,6 @@
 import { fetchEventos } from "@/lib/events";
 import { isRaceFinished } from "@/lib/fin-estimado";
+import { concejoPath, concejosDe, mesActualOSiguiente, mesesConPruebas, mesPath, numeroMes } from "@/lib/paginas-seo";
 import { absoluteUrl, eventPath, parseEventDate } from "@/lib/seo";
 import type { Evento } from "@/lib/types";
 
@@ -20,7 +21,26 @@ const STATIC_ROUTES: Omit<SitemapRow, "lastmod">[] = [
   { path: "/ciclismo", changeFrequency: "daily", priority: "0.9" },
   { path: "/correr/calendario", changeFrequency: "daily", priority: "0.8" },
   { path: "/ciclismo/calendario", changeFrequency: "daily", priority: "0.8" },
+  { path: "/este-fin-de-semana", changeFrequency: "daily", priority: "0.8" },
+  { path: "/trail", changeFrequency: "daily", priority: "0.7" },
+  { path: "/concejo", changeFrequency: "weekly", priority: "0.6" },
+  { path: "/calendario/meses", changeFrequency: "weekly", priority: "0.6" },
 ];
+
+/** Páginas SEO que dependen de los datos: meses desde el actual y concejos con pruebas. */
+export function seoRows(events: Evento[], today: string, now: Date): SitemapRow[] {
+  const rows: SitemapRow[] = [];
+  const actual = mesActualOSiguiente(events, now);
+  const clave = (m: { anio: string; mes: string }) => `${m.anio}-${String(numeroMes(m.mes)).padStart(2, "0")}`;
+  for (const m of mesesConPruebas(events)) {
+    if (actual && clave(m) < clave(actual)) continue;
+    rows.push({ path: mesPath(m), changeFrequency: "daily", priority: "0.7", lastmod: today });
+  }
+  for (const slug of concejosDe(events).keys()) {
+    rows.push({ path: concejoPath(slug), changeFrequency: "weekly", priority: "0.5", lastmod: today });
+  }
+  return rows;
+}
 
 function escapeXml(value: string): string {
   return value
@@ -129,7 +149,7 @@ export async function buildSitemapXml(): Promise<string> {
     const now = new Date();
     const today = lastmodDay(now, now);
     const events = await loadEventsForSitemap();
-    return renderXml([...staticRows(today), ...eventRows(events, today, now)]);
+    return renderXml([...staticRows(today), ...seoRows(events, today, now), ...eventRows(events, today, now)]);
   } catch (error) {
     console.error("sitemap: generación falló; se sirven rutas estáticas", error);
     return fallback;
