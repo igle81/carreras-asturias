@@ -79,8 +79,6 @@ export async function crearCuentaAlertas(entrada: unknown, origenCabecera: unkno
       ? await notificarAdminRegistro({
           email: correo,
           userId: user.id,
-          nombre: "",
-          instagram: null,
           correoAvisos,
           telegram: "pendiente",
           pushActivado: false,
