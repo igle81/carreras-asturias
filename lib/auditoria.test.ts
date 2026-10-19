@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { paginaPublicaParaAnuncios } from "./adsense";
-import { appsVisibles, esEstaApp, parseAppsAvilesia } from "./avilesia-apps";
+import { appsVisibles, esEstaApp, parseAppsAvilesia, urlLimpia } from "./avilesia-apps";
+import { hidePortalDuplicates } from "./portal-dedupe";
 import { CABECERAS_SEGURIDAD, HSTS } from "./cabeceras";
 import { DECATHLON_RUNNING_HREF } from "./afiliado";
 import { LEGAL_DOCUMENTS, LEGAL_PLACEHOLDERS } from "./legal";
@@ -150,4 +151,22 @@ test("Carreras España (carreras.avilesia.es) sí sale en el bloque de AvilesIA"
   };
   assert.equal(esEstaApp(espana), false);
   assert.deepEqual(appsVisibles([espana]), [espana]);
+});
+
+test("el enlace a Carreras España sale sin utm_", () => {
+  assert.equal(
+    urlLimpia("https://carreras.avilesia.es/?utm_source=carrerasasturias.es&utm_medium=bloque_avilesia"),
+    "https://carreras.avilesia.es/",
+  );
+});
+
+test("la Media Maratón de Gijón del 10-10 sale una sola vez", () => {
+  const filas = [
+    { id_canonico: "mba-media-maraton-gijon-villa-de-jovellanos-2026", duplicado_de: null },
+    { id_canonico: "15-mba-media-maraton-gijon-villa-de-jovellanos-2026-2026-10-10-pie", duplicado_de: null },
+  ];
+  assert.deepEqual(
+    hidePortalDuplicates(filas).map((f) => f.id_canonico),
+    ["mba-media-maraton-gijon-villa-de-jovellanos-2026"],
+  );
 });

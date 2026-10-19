@@ -1,4 +1,4 @@
-import { leerAppsAvilesia, urlConUtm } from "@/lib/avilesia-apps";
+import { leerAppsAvilesia, urlLimpia } from "@/lib/avilesia-apps";
 
 /**
  * Bloque «Parte de AvilesIA». La lista sale de avilesia-apps.json
@@ -6,7 +6,7 @@ import { leerAppsAvilesia, urlConUtm } from "@/lib/avilesia-apps";
  */
 export async function AvilesiaApps({ className = "" }: { className?: string }) {
   const apps = await leerAppsAvilesia();
-  const portal = urlConUtm("https://avilesia.es/", "portal");
+  const portal = urlLimpia("https://avilesia.es/");
 
   return (
     <section aria-labelledby="avilesia-apps-title" className={`mx-auto max-w-6xl px-4 ${className}`}>
@@ -32,7 +32,7 @@ export async function AvilesiaApps({ className = "" }: { className?: string }) {
             {apps.map((app) => (
               <li key={app.id || app.url}>
                 <a
-                  href={urlConUtm(app.url, app.id || "app")}
+                  href={urlLimpia(app.url)}
                   target="_blank"
                   rel="noopener"
                   className="flex h-full flex-col rounded-2xl bg-white p-4 text-ink transition hover:-translate-y-0.5 hover:bg-gold"
