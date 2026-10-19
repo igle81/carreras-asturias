@@ -4,7 +4,7 @@ import { Diferidos } from "@/components/diferidos";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { CONSENT_DEFAULT_SCRIPT } from "@/lib/adsense";
+import { ADSENSE_ACCOUNT_META, CONSENT_DEFAULT_SCRIPT } from "@/lib/adsense";
 import { getEventos } from "@/lib/events";
 import { uniqueConcejos } from "@/lib/geo";
 import { filterByModalidad } from "@/lib/modalidad";
@@ -59,6 +59,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon", type: "image/png", sizes: "192x192" }],
   },
   category: "sports",
+  other: { ...ADSENSE_ACCOUNT_META },
 };
 
 export const revalidate = 60;

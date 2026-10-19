@@ -1,5 +1,8 @@
 export const ADSENSE_CLIENT = "ca-pub-5660728155340779";
 
+/** Meta de verificación de cuenta de AdSense (metadata.other en app/layout.tsx). */
+export const ADSENSE_ACCOUNT_META = { "google-adsense-account": ADSENSE_CLIENT } as const;
+
 export const ADSENSE_SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
 
 export const FUNDING_CHOICES_SRC = "https://fundingchoicesmessages.google.com/i/pub-5660728155340779?ers=1";
