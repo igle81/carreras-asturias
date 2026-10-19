@@ -11,9 +11,10 @@ import { test } from "node:test";
  */
 const UUID_PERMITIDOS = new Map<string, string>([
   ["12796c96-a5cd-4db3-af58-584c429ce188", "app_id público de OneSignal (lib/onesignal-web.ts)"],
-  ["60040074-3197-4584-855c-82f40ee8770e", "external_id de OneSignal del administrador (no es user_id de Auth)"],
   ["daac61c5-1687-4240-addd-60825b6f8354", "id de categoría de Decathlon en el enlace de afiliado"],
   ["00000000-0000-4000-8000-000000000001", "usuario ficticio de los tests"],
+  ["00000000-0000-4000-8000-000000000002", "external_id ficticio de los tests"],
+  ["00000000-0000-4000-8000-000000000003", "otro usuario ficticio de los tests"],
 ]);
 
 /** SHA-256 de user_id reales conocidos (no en claro), por si alguien los añade a la lista blanca por error. */

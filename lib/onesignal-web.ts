@@ -1,17 +1,6 @@
 export const ONESIGNAL_APP_ID = "12796c96-a5cd-4db3-af58-584c429ce188";
 
-/**
- * Identificador del administrador para los avisos internos de un alta.
- * No se usa para vincular navegadores anónimos. Con sesión, el external_id
- * es el user_id (ver `vincularPushAUsuario`).
- */
-const IDENTIFICADOR_EXTERNO_POR_DEFECTO = "60040074-3197-4584-855c-82f40ee8770e";
-
-export const ONESIGNAL_EXTERNAL_ID =
-  process.env.NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID?.trim() || IDENTIFICADOR_EXTERNO_POR_DEFECTO;
-
-/** Misma persona que el aviso público. La página interna de prueba reutiliza este valor. */
-export const VIP_TEST_EXTERNAL_ID = ONESIGNAL_EXTERNAL_ID;
+/** El external_id del administrador ya no está aquí: solo servidor (lib/onesignal-admin.ts, POST /api/interno/vip-push). */
 
 const AVISOS_CLAVE = "ca-avisos-activados";
 export const AVISOS_EVENTO = "ca-avisos";
