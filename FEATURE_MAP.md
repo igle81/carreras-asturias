@@ -23,7 +23,7 @@ When you add a route, update this file in the same PR. Pair checks with agent sk
 | `/interno/vip-push` | Internal OneSignal test (noindex, not in nav/footer) | Direct URL only |
 | `/registro` | Crear una cuenta (correo, contraseña, correo de avisos, consentimiento). Sin campos en la portada | Cabecera: botón **Registro** |
 | `/acceso` | Entrar a Mis avisos | Enlace desde el alta y desde **Mis avisos** si no hay sesión |
-| `/avisos` | Mis avisos: correo, Conectar Telegram (@AvilesIA_bot) y Activar avisos en este móvil | Cabecera: **Mis avisos** |
+| `/avisos` | Mis avisos: correo (con **Volver a recibir avisos por correo** tras una baja, RPC `carreras.avisos_reactivar_correo`, solo la propia fila), Telegram (**Conectar** / **Volver a conectar** y **Desconectar**), Activar o desactivar avisos en este móvil, baja de todos los avisos y **Salir** separados | Cabecera: **Mis avisos** |
 | `/alertas/confirmar` | Vuelta del magic link de avisos por correo (noindex) | Enlace del correo; no está en la navegación |
 
 There is **no** `app/vip/page.tsx`. `/vip` is 404. The `#vip` promo block is rendered on `/correr` and `/ciclismo` (copy humano vendible). Price and «Cancelar suscripción» stay hidden (`SHOW_VIP_PRICE_AND_CANCEL = false`). Production checkout stays off (`getVipCheckoutUrl()` is null).
