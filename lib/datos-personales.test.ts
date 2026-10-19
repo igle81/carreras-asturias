@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 /**
@@ -40,27 +42,46 @@ const conGuiones = (h: string) =>
   `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`.toLowerCase();
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
+type Listar = (...args: string[]) => string[];
+const listarConGit = (cwd?: string): Listar => (...args) =>
+  execFileSync("git", ["ls-files", ...args], { encoding: "utf8", cwd }).split("\n");
+
 /** Ficheros versionados y también los nuevos aún no añadidos a git (no ignorados). */
-function ficherosDelRepo(): string[] {
-  const listar = (...args: string[]) => execFileSync("git", ["ls-files", ...args], { encoding: "utf8" }).split("\n");
+export function ficherosDelRepo(listar: Listar = listarConGit()): string[] {
   return [...new Set([...listar(), ...listar("--others", "--exclude-standard")])]
     .filter(Boolean)
     .filter((f) => f !== "package-lock.json" && !/\.(png|jpe?g|webp|gif|ico|woff2?|ttf|pdf)$/i.test(f));
 }
 
-export function hallazgos(nombre: string, texto: string): string[] {
+/** Línea (1-based) de una posición del texto. */
+const linea = (texto: string, i: number) => texto.slice(0, i).split("\n").length;
+/**
+ * I-c de Calidad (#128): la salida nunca muestra caracteres del identificador hallado,
+ * solo el fichero, la línea y una huella corta (SHA-256) para poder compararlo sin verlo.
+ */
+const ref = (nombre: string, texto: string, i: number, valor: string) =>
+  `${nombre}:${linea(texto, i)} (sha256 ${sha(valor).slice(0, 8)})`;
+
+export function hallazgos(
+  nombre: string,
+  texto: string,
+  hashes: { reales?: Set<string>; trozos?: Set<string> } = {},
+): string[] {
+  const reales = hashes.reales ?? HASH_USER_ID_REALES;
+  const trozos = hashes.trozos ?? HASH_TROZOS_REALES;
   const fuera: string[] = [];
   for (const m of texto.matchAll(UUID)) {
     const u = m[0].toLowerCase();
-    if (HASH_USER_ID_REALES.has(sha(u))) fuera.push(`${nombre}: user_id real ${u.slice(0, 4)}…`);
-    else if (!UUID_PERMITIDOS.has(u)) fuera.push(`${nombre}: ${u.slice(0, 8)}…`);
+    if (reales.has(sha(u))) fuera.push(`user_id real en ${ref(nombre, texto, m.index ?? 0, u)}`);
+    else if (!UUID_PERMITIDOS.has(u)) fuera.push(`UUID fuera de la lista en ${ref(nombre, texto, m.index ?? 0, u)}`);
   }
   for (const m of texto.matchAll(UUID_SIN_GUIONES)) {
     const u = conGuiones(m[0]);
-    if (!UUID_PERMITIDOS.has(u)) fuera.push(`${nombre}: sin guiones ${u.slice(0, 4)}…`);
+    if (!UUID_PERMITIDOS.has(u)) fuera.push(`UUID sin guiones en ${ref(nombre, texto, m.index ?? 0, u)}`);
   }
   for (const m of texto.matchAll(TROZO_HEX)) {
-    if (HASH_TROZOS_REALES.has(sha(m[0].toLowerCase()))) fuera.push(`${nombre}: trozo de user_id real ${m[0].slice(0, 4)}…`);
+    const t = m[0].toLowerCase();
+    if (trozos.has(sha(t))) fuera.push(`trozo de user_id real en ${ref(nombre, texto, m.index ?? 0, t)}`);
   }
   return fuera;
 }
@@ -96,4 +117,51 @@ test("la lista blanca no contiene user_id reales conocidos", () => {
     assert.equal(HASH_TROZOS_REALES.has(sha(u.slice(0, 8))), false);
     assert.equal(HASH_TROZOS_REALES.has(sha(u.slice(-12))), false);
   }
+});
+
+test("I-b: el escaneo incluye los ficheros sin añadir a git (--others --exclude-standard)", () => {
+  const llamadas: string[][] = [];
+  const falso: Listar = (...args) => {
+    llamadas.push(args);
+    return args.includes("--others") ? ["nuevo.md", ""] : ["a.ts", "package-lock.json", "logo.png", ""];
+  };
+  assert.deepEqual(ficherosDelRepo(falso).sort(), ["a.ts", "nuevo.md"]);
+  assert.deepEqual(llamadas, [[], ["--others", "--exclude-standard"]]);
+
+  // Con git de verdad, en un repo temporal: el fichero sin añadir aparece y el ignorado no.
+  const dir = mkdtempSync(join(tmpdir(), "datos-personales-"));
+  try {
+    execFileSync("git", ["init", "-q"], { cwd: dir });
+    writeFileSync(join(dir, ".gitignore"), "ignorado.txt\n");
+    writeFileSync(join(dir, "sin-anadir.md"), "x");
+    writeFileSync(join(dir, "ignorado.txt"), "x");
+    const lista = ficherosDelRepo(listarConGit(dir));
+    assert.ok(lista.includes("sin-anadir.md"), "el fichero sin añadir se escanea");
+    assert.equal(lista.includes("ignorado.txt"), false, "lo ignorado por git no se escanea");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("I-b: la detección de trozos (8 y 12 hex) funciona con un hash inyectado", () => {
+  // Trozos ficticios montados en ejecución (no son de nadie).
+  const t8 = ["ab", "cd", "ef", "01"].join("");
+  const t12 = ["fe", "dc", "ba", "98", "76", "54"].join("");
+  const trozos = new Set([sha(t8), sha(t12)]);
+  assert.equal(hallazgos("x", `prefijo ${t8}… y sufijo …${t12}`, { reales: new Set(), trozos }).length, 2);
+  assert.equal(hallazgos("x", `prefijo ${t8.toUpperCase()}`, { reales: new Set(), trozos }).length, 1, "también en mayúsculas");
+  assert.equal(hallazgos("x", `pegado x${t8}y`, { reales: new Set(), trozos }).length, 0, "solo trozos aislados");
+  assert.equal(hallazgos("x", `prefijo ${t8}`, { reales: new Set(), trozos: new Set() }).length, 0);
+});
+
+test("I-c: la salida no muestra ningún carácter del identificador hallado", () => {
+  const real = ["9", "a", "b", "c", "d", "e", "f", "7"].join("") + "-1234-4abc-8def-" + "0123456789ab";
+  const t8 = real.slice(0, 8);
+  const salida = hallazgos("f.md", `l1\nid ${real}\nprefijo ${t8}`, { reales: new Set([sha(real)]), trozos: new Set([sha(t8)]) });
+  assert.equal(salida.length, 3); // UUID real, su trozo de 8 dentro del UUID y el prefijo suelto
+  const texto = salida.join(" | ");
+  for (const trozo of [real.slice(0, 4), real.slice(0, 8), real.slice(-4), real.slice(-12)]) {
+    assert.equal(texto.includes(trozo), false, "no se imprime parte del user_id");
+  }
+  assert.match(salida[0], /^user_id real en f\.md:2 \(sha256 [0-9a-f]{8}\)$/);
 });
