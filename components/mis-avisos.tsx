@@ -10,6 +10,7 @@ import {
   RPC_REACTIVAR_CORREO,
   TEXTO_VOLVER_CORREO,
   TEXTO_ACEPTAS_REACTIVAR,
+  TEXTO_CANALES_EN_BAJA,
   textoBotonTelegram,
   textoEstadoCorreo,
 } from "@/lib/mis-avisos";
@@ -223,6 +224,10 @@ export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
         ) : null}
       </section>
       {perfil && !perfil.baja_en && opciones ? <FiltrosAvisosCard opciones={opciones} /> : null}
+      {perfil?.baja_en ? (
+        <p className="text-xs text-ink/70">{TEXTO_CANALES_EN_BAJA}</p>
+      ) : (
+        <>
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm">
         <h2 className="font-display text-lg font-bold text-ink">Telegram</h2>
         <p className="mt-1 text-ink/70">
@@ -274,6 +279,8 @@ export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
           </button>
         )}
       </section>
+        </>
+      )}
       {mensaje ? <p className="text-sm text-ink/70">{mensaje}</p> : null}
       {error ? (
         <p className="text-sm text-fire" role="alert">
@@ -283,7 +290,7 @@ export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
       <div className="flex flex-col items-start gap-4">
       {perfil?.baja_en ? null : (
         <div className="space-y-1">
-          <button type="button" onClick={() => void darseDeBaja()} className="text-sm font-semibold text-forest underline-offset-2 hover:underline">
+          <button type="button" onClick={() => void darseDeBaja()} className="inline-flex min-h-6 items-center text-sm font-semibold text-forest underline-offset-2 hover:underline">
             Darme de baja de todos los avisos
           </button>
           <p className="text-xs text-ink/70">
@@ -294,7 +301,7 @@ export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
       <button
         type="button"
         onClick={() => void cerrarSesion().catch(() => setError("No se ha podido cerrar la sesión."))}
-        className="text-sm font-semibold text-ink underline-offset-2 hover:underline"
+        className="inline-flex min-h-6 items-center text-sm font-semibold text-ink underline-offset-2 hover:underline"
       >
         Salir
       </button>

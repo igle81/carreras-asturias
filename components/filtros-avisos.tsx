@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   alternarValores,
+  claveModalidad,
   normalizarFiltros,
   resumenFiltros,
   sinFiltros,
@@ -61,14 +62,15 @@ export function FiltrosAvisosCard({ opciones }: Props) {
   function grupo(clave: ClaveFiltro, titulo: string, lista: OpcionFiltro[], nota?: string) {
     if (!lista.length) return null;
     return (
-      <fieldset className="mt-3">
+      <fieldset key={`${clave}-${titulo}`} className="mt-3">
         <legend className="text-xs font-semibold text-ink">{titulo}</legend>
         {nota ? <p className="text-xs text-ink/70">{nota}</p> : null}
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
           {lista.map((o) => (
-            <label key={o.id} className="inline-flex items-center gap-1.5 text-sm text-ink/80">
+            <label key={o.id} className="inline-flex min-h-6 items-center gap-1.5 py-0.5 text-sm text-ink/80">
               <input
                 type="checkbox"
+                className="h-4 w-4"
                 checked={marcado(clave, o)}
                 onChange={(e) => setFiltros((f) => alternarValores(f, clave, o.valores, e.target.checked))}
               />
@@ -113,7 +115,7 @@ export function FiltrosAvisosCard({ opciones }: Props) {
       {grupo("deporte", "A pie o ciclismo", opciones.deporte)}
       {opciones.modalidad.map((m) =>
         grupo(
-          "modalidad",
+          claveModalidad(m.deporte) ?? "modalidad_pie",
           `Modalidad (${opciones.deporte.find((d) => d.id === m.deporte)?.label.toLocaleLowerCase("es") ?? m.deporte})`,
           m.opciones,
         ),
@@ -121,7 +123,7 @@ export function FiltrosAvisosCard({ opciones }: Props) {
       {grupo("distancia", "Distancia", opciones.distancia, "Solo carreras a pie.")}
       {opciones.concejo.length ? (
         <details className="mt-3">
-          <summary className="cursor-pointer text-xs font-semibold text-ink">
+          <summary className="flex min-h-6 cursor-pointer items-center text-xs font-semibold text-ink">
             Concejo{filtros.concejo?.length ? ` (${filtros.concejo.length})` : ""}
           </summary>
           {grupo("concejo", "Concejos con carreras en el calendario", opciones.concejo)}
@@ -137,7 +139,7 @@ export function FiltrosAvisosCard({ opciones }: Props) {
           Guardar filtros
         </button>
         {!sinFiltros(filtros) ? (
-          <button type="button" onClick={() => setFiltros({})} className="text-xs font-semibold text-forest underline-offset-2 hover:underline">
+          <button type="button" onClick={() => setFiltros({})} className="inline-flex min-h-6 items-center text-xs font-semibold text-forest underline-offset-2 hover:underline">
             Quitar filtros (recibir todo)
           </button>
         ) : null}
