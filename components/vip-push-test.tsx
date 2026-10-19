@@ -106,7 +106,7 @@ export function VipPushTest() {
       ) : null}
 
       {status.kind === "error" ? (
-        <p role="alert" className="mt-4 text-sm font-semibold text-fire">
+        <p role="alert" className="mt-4 text-sm font-semibold text-fire-claro">
           {status.message}
         </p>
       ) : null}

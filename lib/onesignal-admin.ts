@@ -19,6 +19,15 @@ function uuidDe(env: EnvLike, clave: string): string | null {
   return valor && UUID.test(valor) ? valor : null;
 }
 
+/** Máximo de bytes del token antes de consultar Auth. Un access_token de Supabase ocupa ~1 KB. */
+export const MAX_BYTES_TOKEN = 4096;
+const JWT = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+
+/** Forma de JWT (tres partes base64url) y tamaño acotado. No valida la firma: eso lo hace Supabase Auth. */
+export function tokenConFormaJwt(token: string): boolean {
+  return Buffer.byteLength(token, "utf8") <= MAX_BYTES_TOKEN && JWT.test(token);
+}
+
 export type ExternalIdAdmin =
   | { ok: true; externalId: string }
   | { ok: false; status: 401 | 403 | 503; error: "falta_sesion" | "sesion_invalida" | "no_autorizado" | "sin_configurar" };
@@ -44,12 +53,15 @@ export async function externalIdAdminParaSesion(token: string, opciones: Opcione
   const limpio = token.trim();
   if (!limpio) return { ok: false, status: 401, error: "falta_sesion" };
 
+  if (!tokenConFormaJwt(limpio)) return { ok: false, status: 401, error: "sesion_invalida" };
+
+  // I1: primero la sesión. Sin sesión válida no se revela si el servidor está configurado.
+  const userId = (await (opciones.userIdDeSesion ?? userIdSupabase)(limpio))?.toLowerCase() ?? null;
+  if (!userId) return { ok: false, status: 401, error: "sesion_invalida" };
+
   const externalId = uuidDe(env, VARIABLE_EXTERNAL_ID_ADMIN);
   const adminUserId = uuidDe(env, VARIABLE_USER_ID_ADMIN);
   if (!externalId || !adminUserId) return { ok: false, status: 503, error: "sin_configurar" };
-
-  const userId = (await (opciones.userIdDeSesion ?? userIdSupabase)(limpio))?.toLowerCase() ?? null;
-  if (!userId) return { ok: false, status: 401, error: "sesion_invalida" };
   if (userId !== adminUserId) return { ok: false, status: 403, error: "no_autorizado" };
   return { ok: true, externalId };
 }
