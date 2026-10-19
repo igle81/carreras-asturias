@@ -173,3 +173,17 @@ test("sin webhook, el token de Telegram usa el chat admin y no se inventa un bot
   assert.equal(cuerpo.chat_id, TELEGRAM_CHAT_ID_POR_DEFECTO);
   assert.match(cuerpo.text ?? "", /^\[PRUEBA\]/);
 });
+
+test("con ALERTAS_TELEGRAM_WEBHOOK_TOKEN el Telegram va a la ruta con cabecera", async () => {
+  const llamadas: { url: string; cabecera: string | null }[] = [];
+  await notificarAdminRegistro(AVISO, {
+    env: { ALERTAS_TELEGRAM_WEBHOOK_TOKEN: "secreto-de-prueba" },
+    fetchImpl: async (url, init) => {
+      llamadas.push({ url: String(url), cabecera: new Headers(init?.headers).get("x-n8n-generico-token") });
+      return new Response("ok", { status: 200 });
+    },
+  });
+  assert.deepEqual(llamadas[0], { url: WEBHOOKS_N8N.telegramCabecera, cabecera: "secreto-de-prueba" });
+  assert.equal(llamadas[1].cabecera, null);
+  assert.equal(llamadas[2].cabecera, null);
+});

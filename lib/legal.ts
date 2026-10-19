@@ -48,7 +48,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Política de privacidad",
     description:
       "Cómo trata Carreras Asturias los datos personales: cuenta, avisos, encargados y derechos.",
-    updatedLabel: "Actualizado 13 de octubre de 2026",
+    updatedLabel: "Actualizado 18 de octubre de 2026",
     badge: null,
     sections: [
       {
@@ -68,6 +68,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Preferencia de cookies en el navegador (localStorage, clave `ca-cookie-consent`).",
           "Si conectas Telegram, el identificador del chat privado con el bot @AvilesIA_bot. El aviso te llega a ese chat, que solo ves tú.",
           "Si activas los avisos en el móvil o el navegador con la sesión iniciada, OneSignal vincula ese dispositivo a tu user_id. Sin sesión no se asocia el navegador a un identificador de otra persona.",
+          "Registro de envíos de avisos: identificador de usuario, canal (correo, notificación o Telegram), aviso, resultado (un código corto) y fecha. No guardamos el contenido del mensaje ni la dirección de destino. Sirve para no repetir un aviso y comprobar que llega.",
+          "Cada correo de aviso lleva un enlace de baja de un solo uso. Solo guardamos su huella (hash), no el enlace, junto a tu user_id y su fecha de caducidad.",
           "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
           "Si pulsas el aviso VIP, la ruta de la página y la familia del navegador (Chrome, Firefox, Safari u otra). No guardamos el user-agent completo.",
           "Si aceptas las cookies no esenciales, Google AdSense puede guardar identificadores para mostrar y medir anuncios. Hasta que pulsas Aceptar, el script no se descarga.",
@@ -78,6 +80,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         paragraphs: [
           "Los avisos de inscripciones salen por el correo que indicas, por un chat privado con @AvilesIA_bot si lo conectas en Mis avisos, y por notificación de OneSignal si activas el permiso en ese mismo sitio con la sesión iniciada.",
           "El código de OneSignal no se descarga hasta que pulsas el botón. Puedes darte de baja de los avisos en Mis avisos y revocar el permiso en el navegador.",
+          "Cada correo de aviso lleva un enlace para darte de baja sin iniciar sesión: primero te pide confirmar y la baja corta todos los canales. En Mis avisos también puedes desactivar las notificaciones o desconectar Telegram por separado, sin perder los demás avisos.",
         ],
       },
       {
@@ -109,6 +112,8 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Telegram (@AvilesIA_bot): chat privado de avisos si pulsas Conectar Telegram.",
           "Decathlon y su red de afiliación Awin: solo si abres el enlace patrocinado. No les enviamos tu correo.",
           `Gmail (Google): buzón de contacto ${email} para consultas y derechos.`,
+          "Gmail (Google), cuenta SMTP de AvilesIA: envío de los avisos por correo.",
+          "n8n (automatización propia de AvilesIA en un servidor de OVHcloud): prepara y envía los avisos por correo, notificación y Telegram, y guarda el registro de envíos.",
         ],
       },
       {
@@ -121,15 +126,18 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         heading: "7. Automatización, inteligencia artificial y decisiones",
         paragraphs: [
           "Utilizamos automatización y agentes de inteligencia artificial para descubrir eventos públicos y para redactar o actualizar textos informativos del calendario. Ese uso no equivale a una decisión automatizada con efectos jurídicos o de impacto similar sobre ti.",
-          "No adoptamos decisiones basadas únicamente en un tratamiento automatizado que produzcan efectos jurídicos o te afecten significativamente de forma similar (artículo 22 del RGPD). La autorización de gasto, las mejoras o cambios de plan y el envío masivo de notificaciones push requieren validación humana.",
+          "No adoptamos decisiones basadas únicamente en un tratamiento automatizado que produzcan efectos jurídicos o te afecten significativamente de forma similar (artículo 22 del RGPD). La autorización de gasto y las mejoras o cambios de plan requieren validación humana. Los avisos que pides (aperturas de inscripción y clasificaciones) salen de forma automática a quien los tiene activados; las campañas masivas de notificaciones push requieren validación humana.",
         ],
       },
       {
         heading: "8. Conservación",
         paragraphs: [
           "Como política interna, los registros técnicos de hosting se conservan como máximo 90 días, salvo que un incidente de seguridad o una obligación legal exija un plazo distinto.",
-          "La cuenta y el correo de avisos se conservan mientras no te des de baja. Tras la baja, se borran o se anonimizan en un plazo de 30 días, salvo que una obligación legal exija guardarlos más.",
-          "El identificador de Telegram y la suscripción de OneSignal se borran al desconectar el canal o al darte de baja.",
+          "El correo de avisos y los datos de la suscripción se conservan mientras no te des de baja. Tras la baja, en un plazo de 30 días se vacían (correo, nombre e Instagram) y se borran el registro de envíos y los enlaces de baja de esa cuenta, salvo que una obligación legal exija guardarlos más. Solo se conservan el identificador de usuario y la fecha de la baja, para no volver a enviarte avisos.",
+          `La baja de los avisos no borra la cuenta de acceso (correo y contraseña en Supabase Auth). Si quieres borrarla también, escríbenos a ${email}.`,
+          "El identificador de Telegram se borra al pulsar Desconectar Telegram en Mis avisos, al darte de baja (en el momento si usas el enlace del correo; en la pasada diaria, como máximo en 24 horas, si lo haces en Mis avisos) y si bloqueas el bot.",
+          "Al pulsar Desactivar notificaciones en Mis avisos, o al darte de baja, dejamos de enviarte notificaciones. En el navegador donde pulses Desactivar notificaciones también se quita su vínculo con tu user_id en OneSignal. Si el navegador avisa de que ya no tiene la suscripción, dejamos de enviarle notificaciones.",
+          "El registro de envíos de avisos se conserva 90 días y después se borra automáticamente. Los enlaces de baja caducan a los 60 días y se borran 30 días después.",
           "La preferencia de cookies se guarda en localStorage del navegador hasta que la borres o la cambies. La geolocalización no se almacena como histórico de posición.",
           "Los clics de afiliación, si la tabla existe, se conservan como máximo 12 meses.",
           "Los clics del aviso VIP (ruta y familia del navegador) se conservan como máximo 12 meses. Al registrar un clic nuevo se borran los que ya han cumplido ese plazo.",
