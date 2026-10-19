@@ -1,17 +1,21 @@
-import { ONESIGNAL_APP_ID, ONESIGNAL_EXTERNAL_ID } from "./onesignal-web";
+/**
+ * Aviso al administrador cuando alguien se da de alta en los avisos.
+ *
+ * 18-oct (Seguridad N1 + decisión de Javier): solo queda el email al buzón del
+ * administrador. Se han eliminado el aviso por Telegram (grupo VIP, ya borrado)
+ * y el push al administrador. Lo que va a n8n no lleva nombre ni Instagram, ni
+ * campos sueltos con el correo del usuario: el correo completo va solo dentro
+ * del texto del email.
+ */
 
 export const ADMIN_EMAIL_POR_DEFECTO = "avilesia2026@gmail.com";
-/** Grupo VIP privado ya usado. Se puede sustituir con ALERTAS_TELEGRAM_CHAT_ID. */
-export const TELEGRAM_CHAT_ID_POR_DEFECTO = "-1004437925569";
 
-/** Flujos n8n ya existentes. Una variable de entorno https los sustituye. */
+/** Flujo n8n ya existente. Una variable de entorno https lo sustituye. */
 export const WEBHOOKS_N8N = {
-  telegram: "https://vps-faf1945e.vps.ovh.net/webhook/generico-telegram",
   email: "https://vps-faf1945e.vps.ovh.net/webhook/generico-email",
-  push: "https://vps-faf1945e.vps.ovh.net/webhook/generico-web-push",
 } as const;
 
-export type CanalAviso = "telegram" | "push" | "email";
+export type CanalAviso = "email";
 
 export type ResultadoCanal = {
   canal: CanalAviso;
@@ -22,8 +26,6 @@ export type ResultadoCanal = {
 export type AvisoRegistro = {
   email: string;
   userId: string;
-  nombre: string;
-  instagram: string | null;
   correoAvisos: string;
   telegram: "pendiente" | "conectado";
   pushActivado: boolean;
@@ -39,50 +41,22 @@ export type NotificarOpciones = {
   fetchImpl?: FetchLike;
 };
 
-type CuerpoBase = {
+/** Lo que recibe el flujo generico-email de n8n: lo mínimo para mandar el email al administrador. */
+export type CuerpoWebhook = {
   app: "carreras";
   tipo: "registro_alertas";
-  canal: CanalAviso;
+  canal: "email";
   prueba: boolean;
   ok_emitir: boolean;
   confirmar: boolean;
-  correo_usuario: string;
-  user_id: string;
-  correo_destino: string;
-  chat_id: string;
-  external_id: string;
-  asunto: string;
-  mensaje: string;
-  nombre: string;
-  instagram: string | null;
-  correo_avisos: string;
-  telegram: "pendiente" | "conectado";
-  push_activado: boolean;
-};
-
-type CuerpoTelegram = CuerpoBase & {
-  canal: "telegram";
-  id_dedup: string;
-};
-
-type CuerpoEmail = CuerpoBase & {
-  canal: "email";
   id_dedup: string;
   to: string;
+  asunto: string;
+  mensaje: string;
   copy: string;
   html: string;
   body: string;
 };
-
-type CuerpoPush = CuerpoBase & {
-  canal: "push";
-  title: string;
-  body: string;
-};
-
-export type CuerpoWebhook = CuerpoTelegram | CuerpoEmail | CuerpoPush;
-
-const CANALES: CanalAviso[] = ["telegram", "push", "email"];
 
 function leer(env: EnvLike, ...claves: string[]): string | null {
   for (const clave of claves) {
@@ -92,32 +66,25 @@ function leer(env: EnvLike, ...claves: string[]): string | null {
   return null;
 }
 
-export function chatTelegramAdmin(env: EnvLike = process.env): string {
-  return leer(env, "ALERTAS_TELEGRAM_CHAT_ID") || TELEGRAM_CHAT_ID_POR_DEFECTO;
-}
-
 export function correoAdmin(env: EnvLike = process.env): string {
   return leer(env, "ALERTAS_ADMIN_EMAIL") || ADMIN_EMAIL_POR_DEFECTO;
 }
 
-export function webhookCanal(canal: CanalAviso, env: EnvLike): string | null {
-  const especifico = leer(
-    env,
-    canal === "telegram"
-      ? "ALERTAS_WEBHOOK_TELEGRAM"
-      : canal === "email"
-        ? "ALERTAS_WEBHOOK_EMAIL"
-        : "ALERTAS_WEBHOOK_PUSH",
-    canal === "telegram"
-      ? "N8N_WEBHOOK_TELEGRAM"
-      : canal === "email"
-        ? "N8N_WEBHOOK_EMAIL"
-        : "N8N_WEBHOOK_PUSH",
-  );
+export function webhookEmail(env: EnvLike): string | null {
+  const especifico = leer(env, "ALERTAS_WEBHOOK_EMAIL", "N8N_WEBHOOK_EMAIL");
   if (especifico) return urlHttps(especifico);
   const generico = leer(env, "N8N_WEBHOOK_ALERTAS", "N8N_WEBHOOK_URL");
   if (generico) return urlHttps(generico);
-  return WEBHOOKS_N8N[canal];
+  return WEBHOOKS_N8N.email;
+}
+
+/**
+ * Secreto de la cabecera X-N8N-Generico-Token (solo servidor). Los genéricos de n8n
+ * pasan a exigirla; mientras no la exijan, mandarla no cambia nada.
+ * ALERTAS_TELEGRAM_WEBHOOK_TOKEN se mantiene porque es la variable que ya existe en Vercel.
+ */
+export function tokenWebhook(env: EnvLike = process.env): string | null {
+  return leer(env, "ALERTAS_WEBHOOK_TOKEN", "ALERTAS_TELEGRAM_WEBHOOK_TOKEN");
 }
 
 function urlHttps(valor: string): string | null {
@@ -130,6 +97,15 @@ function urlHttps(valor: string): string | null {
   }
 }
 
+/** Primeros 8 caracteres del user_id (sin guiones). */
+export function idCorto(userId: string): string {
+  return userId.replace(/-/g, "").slice(0, 8);
+}
+
+function escaparHtml(texto: string): string {
+  return texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 export function mensajeRegistro(aviso: AvisoRegistro, prueba: boolean): { asunto: string; mensaje: string } {
   if (prueba) {
     const mensaje =
@@ -138,136 +114,41 @@ export function mensajeRegistro(aviso: AvisoRegistro, prueba: boolean): { asunto
   }
   const push = aviso.pushActivado ? "sí" : "no";
   const telegram = aviso.telegram === "conectado" ? "conectado" : "pendiente";
+  const avisos =
+    aviso.correoAvisos.trim().toLowerCase() === aviso.email.trim().toLowerCase()
+      ? "el mismo"
+      : escaparHtml(aviso.correoAvisos);
   const mensaje = [
     "Nuevo registro de avisos en Carreras Asturias.",
-    `Correo: ${aviso.email}.`,
-    `Avisos: ${aviso.correoAvisos}.`,
+    `Correo: ${escaparHtml(aviso.email)}.`,
+    `Avisos: ${avisos}.`,
+    `Id: ${idCorto(aviso.userId)}.`,
     `Telegram: ${telegram}.`,
     `Push: ${push}.`,
   ].join(" ");
   return { asunto: "Nuevo registro de avisos · Carreras Asturias", mensaje };
 }
 
-export function cuerpoWebhook(
-  canal: CanalAviso,
-  aviso: AvisoRegistro,
-  prueba: boolean,
-  env: EnvLike,
-): CuerpoWebhook {
+export function cuerpoWebhook(aviso: AvisoRegistro, prueba: boolean, env: EnvLike): CuerpoWebhook {
   const texto = mensajeRegistro(aviso, prueba);
-  const base: CuerpoBase = {
+  return {
     app: "carreras",
     tipo: "registro_alertas",
-    canal,
+    canal: "email",
     prueba,
     ok_emitir: !prueba,
     confirmar: !prueba,
-    correo_usuario: aviso.email,
-    user_id: aviso.userId,
-    correo_destino: correoAdmin(env),
-    chat_id: chatTelegramAdmin(env),
-    external_id: leer(env, "NEXT_PUBLIC_ONESIGNAL_EXTERNAL_ID") || ONESIGNAL_EXTERNAL_ID,
+    id_dedup: `registro-${idCorto(aviso.userId)}`,
+    to: correoAdmin(env),
     asunto: texto.asunto,
     mensaje: texto.mensaje,
-    nombre: aviso.nombre,
-    instagram: aviso.instagram,
-    correo_avisos: aviso.correoAvisos,
-    telegram: aviso.telegram,
-    push_activado: aviso.pushActivado,
+    copy: texto.mensaje,
+    html: texto.mensaje,
+    body: texto.mensaje,
   };
-
-  if (canal === "telegram") {
-    return { ...base, canal, id_dedup: `registro-${aviso.userId}` };
-  }
-  if (canal === "email") {
-    return {
-      ...base,
-      canal,
-      id_dedup: `registro-${aviso.userId}`,
-      to: base.correo_destino,
-      copy: texto.mensaje,
-      html: texto.mensaje,
-      body: texto.mensaje,
-    };
-  }
-  return { ...base, canal, title: texto.asunto, body: texto.mensaje };
 }
 
-async function postJson(
-  fetchImpl: FetchLike,
-  url: string,
-  body: unknown,
-  headers?: Record<string, string>,
-): Promise<{ ok: boolean; status: number }> {
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: { "content-type": "application/json", ...headers },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(8000),
-  });
-  return { ok: response.ok, status: response.status };
-}
-
-async function enviarCanal(
-  canal: CanalAviso,
-  aviso: AvisoRegistro,
-  opciones: Required<Pick<NotificarOpciones, "prueba" | "env" | "fetchImpl">>,
-): Promise<ResultadoCanal> {
-  const cuerpo = cuerpoWebhook(canal, aviso, opciones.prueba, opciones.env);
-  const webhook = webhookCanal(canal, opciones.env);
-
-  try {
-    if (webhook) {
-      const resultado = await postJson(opciones.fetchImpl, webhook, cuerpo);
-      return resultado.ok
-        ? { canal, estado: "enviado" }
-        : { canal, estado: "error", motivo: `http_${resultado.status}` };
-    }
-
-    if (canal === "telegram") {
-      const token = leer(opciones.env, "TELEGRAM_BOT_TOKEN");
-      if (!token) return { canal, estado: "omitido", motivo: "sin_webhook" };
-      const resultado = await postJson(
-        opciones.fetchImpl,
-        `https://api.telegram.org/bot${token}/sendMessage`,
-        {
-          chat_id: cuerpo.chat_id,
-          text: cuerpo.mensaje,
-          disable_web_page_preview: true,
-        },
-      );
-      return resultado.ok
-        ? { canal, estado: "enviado" }
-        : { canal, estado: "error", motivo: `http_${resultado.status}` };
-    }
-
-    if (canal === "push") {
-      const key = leer(opciones.env, "ONESIGNAL_REST_API_KEY");
-      if (!key) return { canal, estado: "omitido", motivo: "sin_webhook" };
-      const resultado = await postJson(
-        opciones.fetchImpl,
-        "https://api.onesignal.com/notifications",
-        {
-          app_id: ONESIGNAL_APP_ID,
-          target_channel: "push",
-          include_aliases: { external_id: [cuerpo.external_id] },
-          headings: { es: cuerpo.asunto, en: cuerpo.asunto },
-          contents: { es: cuerpo.mensaje, en: cuerpo.mensaje },
-        },
-        { authorization: `Key ${key}` },
-      );
-      return resultado.ok
-        ? { canal, estado: "enviado" }
-        : { canal, estado: "error", motivo: `http_${resultado.status}` };
-    }
-
-    return { canal, estado: "omitido", motivo: "sin_webhook" };
-  } catch {
-    return { canal, estado: "error", motivo: "red" };
-  }
-}
-
-/** Avisa al administrador por Telegram, push y correo. No lanza: cada canal informa su estado. */
+/** Avisa al administrador por email. No lanza: devuelve el estado del canal. */
 export async function notificarAdminRegistro(
   aviso: AvisoRegistro,
   opciones: NotificarOpciones = {},
@@ -275,5 +156,21 @@ export async function notificarAdminRegistro(
   const prueba = opciones.prueba === true;
   const env = opciones.env ?? process.env;
   const fetchImpl = opciones.fetchImpl ?? fetch;
-  return Promise.all(CANALES.map((canal) => enviarCanal(canal, aviso, { prueba, env, fetchImpl })));
+  const webhook = webhookEmail(env);
+  if (!webhook) return [{ canal: "email", estado: "omitido", motivo: "sin_webhook" }];
+  const token = tokenWebhook(env);
+  const cabeceras: Record<string, string> = token ? { "x-n8n-generico-token": token } : {};
+  try {
+    const response = await fetchImpl(webhook, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...cabeceras },
+      body: JSON.stringify(cuerpoWebhook(aviso, prueba, env)),
+      signal: AbortSignal.timeout(8000),
+    });
+    return response.ok
+      ? [{ canal: "email", estado: "enviado" }]
+      : [{ canal: "email", estado: "error", motivo: `http_${response.status}` }];
+  } catch {
+    return [{ canal: "email", estado: "error", motivo: "red" }];
+  }
 }

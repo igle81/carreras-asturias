@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { mensajeErrorAvisos, prepararPushRegistro, vincularPushAUsuario } from "@/lib/onesignal-web";
+import { FiltrosAvisosCard } from "@/components/filtros-avisos";
+import type { OpcionesFiltros } from "@/lib/filtros-avisos";
+import { desvincularPush, mensajeErrorAvisos, prepararPushRegistro, vincularPushAUsuario } from "@/lib/onesignal-web";
+import {
+  MENSAJE_CORREO_REACTIVADO,
+  RPC_REACTIVAR_CORREO,
+  TEXTO_VOLVER_CORREO,
+  TEXTO_ACEPTAS_REACTIVAR,
+  TEXTO_CANALES_EN_BAJA,
+  textoBotonTelegram,
+  textoEstadoCorreo,
+} from "@/lib/mis-avisos";
 import { RUTA_ACCESO, RUTA_REGISTRO, urlTelegramBot } from "@/lib/registro-alertas";
 import { cerrarSesion } from "@/lib/sesion-cuenta";
 import { getSupabase } from "@/lib/supabase";
@@ -15,7 +26,7 @@ type Perfil = {
 
 type Telegram = { chat_id: number | null } | null;
 
-export function MisAvisos() {
+export function MisAvisos({ opciones }: { opciones?: OpcionesFiltros } = {}) {
   const [listo, setListo] = useState(false);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [telegram, setTelegram] = useState<Telegram>(null);
@@ -106,6 +117,38 @@ export function MisAvisos() {
     }
   }
 
+  async function desactivarPush() {
+    setError("");
+    const { data } = await getSupabase().auth.getSession();
+    const userId = data.session?.user.id;
+    if (!userId) {
+      window.location.href = RUTA_ACCESO;
+      return;
+    }
+    await desvincularPush();
+    const { error: updateError } = await getSupabaseCarreras()
+      .from("suscripciones_alertas")
+      .update({ push_activado: false, actualizado_en: new Date().toISOString() })
+      .eq("user_id", userId);
+    if (updateError) {
+      setError("No se han podido desactivar las notificaciones.");
+      return;
+    }
+    setPerfil((actual) => (actual ? { ...actual, push_activado: false } : actual));
+    setMensaje("Notificaciones desactivadas. El correo y Telegram siguen como estaban.");
+  }
+
+  async function desconectarTelegram() {
+    setError("");
+    const { data, error: rpcError } = await getSupabaseCarreras().rpc("alertas_telegram_desconectar");
+    if (rpcError || typeof data !== "boolean") {
+      setError("No se ha podido desconectar Telegram. Entra de nuevo e inténtalo.");
+      return;
+    }
+    setTelegram(null);
+    setMensaje("Telegram desconectado. Hemos borrado el identificador de tu chat. El correo y las notificaciones siguen como estaban.");
+  }
+
   async function darseDeBaja() {
     const { data } = await getSupabase().auth.getSession();
     const userId = data.session?.user.id;
@@ -119,7 +162,37 @@ export function MisAvisos() {
       return;
     }
     setPerfil((actual) => (actual ? { ...actual, baja_en: new Date().toISOString() } : actual));
+    setTelegram(null); // la baja borra ya la conexión de Telegram en Supabase
     setMensaje("Te has dado de baja de los avisos. La cuenta sigue existiendo.");
+  }
+
+  async function volverARecibirCorreo() {
+    setError("");
+    setMensaje("");
+    const { data } = await getSupabase().auth.getSession();
+    const userId = data.session?.user.id;
+    if (!userId) {
+      window.location.href = RUTA_ACCESO;
+      return;
+    }
+    const db = getSupabaseCarreras();
+    const { data: hecho, error: rpcError } = await db.rpc(RPC_REACTIVAR_CORREO);
+    if (rpcError || typeof hecho !== "boolean") {
+      setError("No se ha podido reactivar el correo. Entra de nuevo e inténtalo.");
+      return;
+    }
+    const { data: actual } = await db
+      .from("suscripciones_alertas")
+      .select("correo_avisos,baja_en,push_activado")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (actual) setPerfil(actual as Perfil);
+    setTelegram(null); // al volver por correo, Telegram queda desconectado
+    if (actual && (actual as Perfil).baja_en) {
+      setError("No se ha podido reactivar el correo. Comprueba que tu correo está confirmado.");
+      return;
+    }
+    setMensaje(MENSAJE_CORREO_REACTIVADO);
   }
 
   if (!listo) {
@@ -130,12 +203,31 @@ export function MisAvisos() {
     <div className="mt-6 space-y-4">
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm">
         <h2 className="font-display text-lg font-bold text-ink">Correo</h2>
-        <p className="mt-1 text-ink/70">
-          {perfil?.baja_en
-            ? "Los avisos por correo están de baja."
-            : `Te escribimos a ${perfil?.correo_avisos || "tu correo"}.`}
-        </p>
+        <p className="mt-1 text-ink/70">{textoEstadoCorreo(perfil?.baja_en, perfil?.correo_avisos)}</p>
+        {perfil?.baja_en ? (
+          <>
+            <button
+              type="button"
+              onClick={() => void volverARecibirCorreo()}
+              className="mt-3 inline-flex rounded-full bg-forest px-4 py-2 text-xs font-semibold text-white"
+            >
+              {TEXTO_VOLVER_CORREO}
+            </button>
+            <p className="mt-2 text-xs text-ink/70">
+              {TEXTO_ACEPTAS_REACTIVAR}{" "}
+              <Link href="/privacidad" className="text-ink/70 underline underline-offset-2">
+                Privacidad
+              </Link>
+              .
+            </p>
+          </>
+        ) : null}
       </section>
+      {perfil && !perfil.baja_en && opciones ? <FiltrosAvisosCard opciones={opciones} /> : null}
+      {perfil?.baja_en ? (
+        <p className="text-xs text-ink/70">{TEXTO_CANALES_EN_BAJA}</p>
+      ) : (
+        <>
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm">
         <h2 className="font-display text-lg font-bold text-ink">Telegram</h2>
         <p className="mt-1 text-ink/70">
@@ -143,13 +235,24 @@ export function MisAvisos() {
             ? "Conectado. Los avisos llegan a tu chat privado con @AvilesIA_bot."
             : "Aún no está conectado. Es un chat privado contigo, no un canal público."}
         </p>
-        <button
-          type="button"
-          onClick={() => void conectarTelegram()}
-          className="mt-3 inline-flex rounded-full border border-forest/15 bg-white px-4 py-2 text-xs font-semibold text-forest"
-        >
-          Conectar Telegram
-        </button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => void conectarTelegram()}
+            className="inline-flex rounded-full border border-forest/15 bg-white px-4 py-2 text-xs font-semibold text-forest"
+          >
+            {textoBotonTelegram(Boolean(telegram?.chat_id))}
+          </button>
+          {telegram?.chat_id ? (
+            <button
+              type="button"
+              onClick={() => void desconectarTelegram()}
+              className="inline-flex rounded-full border border-forest/15 bg-white px-4 py-2 text-xs font-semibold text-forest"
+            >
+              Desconectar Telegram
+            </button>
+          ) : null}
+        </div>
       </section>
       <section className="rounded-2xl border border-forest/10 bg-white/70 px-4 py-4 text-sm">
         <h2 className="font-display text-lg font-bold text-ink">En este móvil</h2>
@@ -158,30 +261,51 @@ export function MisAvisos() {
             ? "Los avisos de este navegador están activados."
             : "Una notificación en la pantalla. En iPhone, añade antes la web a la pantalla de inicio."}
         </p>
-        <button
-          type="button"
-          onClick={() => void activarPush()}
-          className="mt-3 inline-flex rounded-full bg-forest px-4 py-2 text-xs font-semibold text-white"
-        >
-          Activar avisos en este móvil
-        </button>
+        {perfil?.push_activado ? (
+          <button
+            type="button"
+            onClick={() => void desactivarPush()}
+            className="mt-3 inline-flex rounded-full border border-forest/15 bg-white px-4 py-2 text-xs font-semibold text-forest"
+          >
+            Desactivar notificaciones
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void activarPush()}
+            className="mt-3 inline-flex rounded-full bg-forest px-4 py-2 text-xs font-semibold text-white"
+          >
+            Activar avisos en este móvil
+          </button>
+        )}
       </section>
+        </>
+      )}
       {mensaje ? <p className="text-sm text-ink/70">{mensaje}</p> : null}
       {error ? (
         <p className="text-sm text-fire" role="alert">
           {error}
         </p>
       ) : null}
-      <button type="button" onClick={() => void darseDeBaja()} className="text-sm font-semibold text-forest underline-offset-2 hover:underline">
-        Darme de baja de los avisos
-      </button>
+      <div className="flex flex-col items-start gap-4">
+      {perfil?.baja_en ? null : (
+        <div className="space-y-1">
+          <button type="button" onClick={() => void darseDeBaja()} className="inline-flex min-h-6 items-center text-sm font-semibold text-forest underline-offset-2 hover:underline">
+            Darme de baja de todos los avisos
+          </button>
+          <p className="text-xs text-ink/70">
+            Corta el correo, las notificaciones y Telegram. Si cambias de idea, puedes volver a recibir avisos por correo desde esta página.
+          </p>
+        </div>
+      )}
       <button
         type="button"
         onClick={() => void cerrarSesion().catch(() => setError("No se ha podido cerrar la sesión."))}
-        className="text-sm font-semibold text-ink underline-offset-2 hover:underline"
+        className="inline-flex min-h-6 items-center text-sm font-semibold text-ink underline-offset-2 hover:underline"
       >
         Salir
       </button>
+      </div>
       <p className="text-sm text-ink/70">
         ¿Primera vez?{" "}
         <Link href={RUTA_REGISTRO} className="font-semibold text-forest underline-offset-2 hover:underline">

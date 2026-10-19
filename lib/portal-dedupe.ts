@@ -21,6 +21,9 @@ export const PORTAL_DUPLICATE_OF: Record<string, string> = {
   "vi-trail-minero-santa-barbara-2026-2026-11-28-pie":
     "trail-minero-santa-barbara-2026",
   "trofeo-pico-cueto-relevos-trail-2026": "trofeo-pico-cueto-2026-2026-10-04-pie",
+  // 18-10-2026 (Calidad PR #116): también con duplicado_de en la base.
+  "15-mba-media-maraton-gijon-villa-de-jovellanos-2026-2026-10-10-pie":
+    "mba-media-maraton-gijon-villa-de-jovellanos-2026",
 };
 
 /** Filas de prueba: fuera de listado, hero y recién. No redirigen a otra ficha. */

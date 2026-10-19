@@ -6,6 +6,8 @@ import {
   COLOR_FOG,
   COLOR_GOLD,
   COLOR_GOLD_TEXT,
+  COLOR_FIRE,
+  COLOR_FIRE_CLARO,
   COLOR_INK,
   cumpleAaTexto,
   ratioContraste,
@@ -43,4 +45,18 @@ test("globals define gold-text sin cambiar gold", () => {
   const src = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
   assert.match(src, /--color-gold:\s*#e0b44a/i);
   assert.match(src, /--color-gold-text:\s*#7a5c10/i);
+});
+
+test("I4: el texto rojo de error cumple AA (≥4.5:1) en su fondo", () => {
+  assert.ok(ratioContraste(COLOR_FIRE, "#ffffff") >= 4.5);
+  assert.ok(ratioContraste(COLOR_FIRE, COLOR_FOG) >= 4.5);
+  assert.ok(ratioContraste(COLOR_FIRE_CLARO, COLOR_INK) >= 4.5);
+  assert.equal(cumpleAaTexto(COLOR_FIRE, COLOR_INK), false, "text-fire no vale sobre bg-ink");
+  const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+  assert.match(css, new RegExp(`--color-fire: ${COLOR_FIRE};`));
+  assert.match(css, new RegExp(`--color-fire-claro: ${COLOR_FIRE_CLARO};`));
+  const vip = readFileSync(join(process.cwd(), "components/vip-push-test.tsx"), "utf8");
+  assert.match(vip, /bg-ink/);
+  assert.match(vip, /role="alert" className="[^"]*text-fire-claro/);
+  assert.doesNotMatch(vip, /text-fire"/);
 });

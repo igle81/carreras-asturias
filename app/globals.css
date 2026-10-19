@@ -15,6 +15,8 @@
   --color-ink: #12231c;
   --color-muted: #3a4a43;
   --color-fire: #c62828;
+  /* Rojo de error sobre fondos oscuros (bg-ink): 7,2:1. text-fire ahí solo da 2,9:1. */
+  --color-fire-claro: #ff8a80;
   --color-gold: #e0b44a;
   /* Texto dorado sobre fog/blanco (AA ≥4.5:1). No usar sobre fondos oscuros. */
   --color-gold-text: #7a5c10;

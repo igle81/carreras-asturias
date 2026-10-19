@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { notificarAdminRegistro, type ResultadoCanal } from "./alertas-admin";
 import { avisarAdminAlCrearCuenta, cuentaRegistroValida, redirectConfirmacionCarreras } from "./registro-alertas";
+import { PRIVACIDAD_VERSION } from "./legal";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./supabase";
 
 export type AltaCuenta =
@@ -65,6 +66,7 @@ export async function crearCuentaAlertas(entrada: unknown, origenCabecera: unkno
       correo_avisos: correoAvisos,
       consentimiento: true,
       consentimiento_en: new Date().toISOString(),
+      consentimiento_version: PRIVACIDAD_VERSION,
       push_activado: false,
       origen: "web",
     });
@@ -79,8 +81,6 @@ export async function crearCuentaAlertas(entrada: unknown, origenCabecera: unkno
       ? await notificarAdminRegistro({
           email: correo,
           userId: user.id,
-          nombre: "",
-          instagram: null,
           correoAvisos,
           telegram: "pendiente",
           pushActivado: false,
