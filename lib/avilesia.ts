@@ -2,18 +2,13 @@ import type { ModalidadId } from "@/lib/modalidad";
 import type { Evento } from "@/lib/types";
 
 /**
- * Enlaces a AvilesIA (Javier 2026-10-06). Marca escrita «AvilesIA», sin ®.
- *
- * Ojo: Javier pidió guia.avilesia.es y planes.avilesia.es, pero el 6-oct esos
- * subdominios apuntan al parking de DonDominio (sin web ni certificado). Se usan
- * las URLs reales que enlaza www.avilesia.es. Si se activan esos subdominios,
- * basta con cambiarlos aquí.
+ * Enlaces a AvilesIA. Direcciones finales y sin utm_ (SEO 15-oct-2026): sin
+ * redirecciones (www, asturguia) ni parámetros. Si hay que medir, con un evento
+ * de analítica al hacer clic, nunca en la URL.
  */
-const UTM = "utm_source=carrerasasturias.es&utm_medium=web";
-
-export const AVILESIA_URL = `https://www.avilesia.es/?${UTM}&utm_campaign=ecosistema`;
-export const AVILESIA_GUIA_URL = `https://asturguia.avilesia.es/?${UTM}&utm_campaign=guia`;
-export const AVILESIA_PLANES_URL = `https://planes.avilesia.es/?${UTM}&utm_campaign=planes`;
+export const AVILESIA_URL = "https://avilesia.es/";
+export const AVILESIA_GUIA_URL = "https://audioguias.avilesia.es/";
+export const AVILESIA_PLANES_URL = "https://planes.avilesia.es/";
 
 /** Concejos de Avilés y comarca (sin tildes, en minúscula). */
 const COMARCA_AVILES = [
