@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { notificarAdminRegistro, type ResultadoCanal } from "./alertas-admin";
 import { emailRegistroValido, resolverDatosAlta } from "./registro-alertas";
+import { PRIVACIDAD_VERSION } from "./legal";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./supabase";
 
 export type ConfirmarSuscripcion =
@@ -58,6 +59,7 @@ export async function confirmarSuscripcionAlertas(
     correo_avisos: correoAvisos,
     consentimiento: true,
     consentimiento_en: new Date().toISOString(),
+    consentimiento_version: PRIVACIDAD_VERSION,
     push_activado: datos?.pushActivado ?? false,
     origen: "web",
   });

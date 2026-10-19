@@ -7,6 +7,7 @@ import {
   MENSAJE_CORREO_REACTIVADO,
   RPC_REACTIVAR_CORREO,
   TEXTO_VOLVER_CORREO,
+  TEXTO_ACEPTAS_REACTIVAR,
   textoBotonTelegram,
   textoEstadoCorreo,
 } from "@/lib/mis-avisos";
@@ -158,6 +159,7 @@ export function MisAvisos() {
       return;
     }
     setPerfil((actual) => (actual ? { ...actual, baja_en: new Date().toISOString() } : actual));
+    setTelegram(null); // la baja borra ya la conexión de Telegram en Supabase
     setMensaje("Te has dado de baja de los avisos. La cuenta sigue existiendo.");
   }
 
@@ -182,6 +184,7 @@ export function MisAvisos() {
       .eq("user_id", userId)
       .maybeSingle();
     if (actual) setPerfil(actual as Perfil);
+    setTelegram(null); // al volver por correo, Telegram queda desconectado
     if (actual && (actual as Perfil).baja_en) {
       setError("No se ha podido reactivar el correo. Comprueba que tu correo está confirmado.");
       return;
@@ -207,9 +210,9 @@ export function MisAvisos() {
             >
               {TEXTO_VOLVER_CORREO}
             </button>
-            <p className="mt-2 text-xs text-ink/60">
-              Al pulsarlo aceptas de nuevo recibir avisos de carreras en el correo de tu cuenta.{" "}
-              <Link href="/privacidad" className="underline underline-offset-2">
+            <p className="mt-2 text-xs text-ink/70">
+              {TEXTO_ACEPTAS_REACTIVAR}{" "}
+              <Link href="/privacidad" className="text-ink/70 underline underline-offset-2">
                 Privacidad
               </Link>
               .
@@ -280,7 +283,7 @@ export function MisAvisos() {
           <button type="button" onClick={() => void darseDeBaja()} className="text-sm font-semibold text-forest underline-offset-2 hover:underline">
             Darme de baja de todos los avisos
           </button>
-          <p className="text-xs text-ink/60">
+          <p className="text-xs text-ink/70">
             Corta el correo, las notificaciones y Telegram. Si cambias de idea, puedes volver a recibir avisos por correo desde esta página.
           </p>
         </div>
