@@ -1,4 +1,8 @@
 -- Aplicada en Supabase el 19-10-2026 a las 00:49 (hora de Madrid), version 20261018224933 (carreras_consentimientos_reconstruidos). Después: get_advisors sin hallazgos nuevos.
+-- 19-10-2026 (WARN-2 de Seguridad): en este fichero los user_id reales se han cambiado por los marcadores psql
+-- :'titular' y :'tercero'. Se aplicó con los valores reales el 19-10-2026 a las 00:49 (hora de Madrid) y
+-- NO se debe volver a aplicar (Supabase la tiene registrada por versión 20261018224933; db push no la repite).
+-- Son solo marcadores (psql no los sustituye dentro de DO $$): rehacerla en otra base exigiría cambiarlos a mano.
 -- Carreras Asturias · C1–C3 y F1 de Seguridad (revisión de #123 y #124), 19-10-2026. Solo esquema carreras.
 -- No toca carreras_es ni el Site URL. Compatible con el código de PRO (mismas firmas; columnas nuevas con valor por defecto).
 set local lock_timeout = '5s';
@@ -42,7 +46,7 @@ begin
     from carreras.suscripciones_alertas s
    where s.user_id = c.user_id
      and c.accion = 'alta' and c.origen = 'backfill' and c.reconstruido = false
-     and c.user_id in ('6e0f70d1-854d-4891-be17-b93484c6877c', '518c6251-fe63-4fd0-8126-12f9d76f38f3');
+     and c.user_id in (:'titular', :'tercero');
   get diagnostics n = row_count; t := t + n;
 
   update carreras.consentimientos_log c
@@ -50,14 +54,14 @@ begin
          origen = 'mis_avisos',
          reconstruido = true,
          detalle = 'reconstruido: edge_logs PATCH 204 del titular 22:03:10.482 UTC'
-   where c.user_id = '6e0f70d1-854d-4891-be17-b93484c6877c'
+   where c.user_id = :'titular'
      and c.accion = 'baja' and c.origen = 'backfill' and c.reconstruido = false;
   get diagnostics n = row_count; t := t + n;
 
   update carreras.consentimientos_log c
      set reconstruido = true,
          detalle = 'reconstruido: hora aprox. = actualizado_en (lo puede escribir el cliente)'
-   where c.user_id = '6e0f70d1-854d-4891-be17-b93484c6877c'
+   where c.user_id = :'titular'
      and c.accion = 'reactivar' and c.origen = 'manual_admin_peticion_titular' and c.reconstruido = false;
   get diagnostics n = row_count; t := t + n;
 

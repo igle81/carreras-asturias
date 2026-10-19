@@ -13,7 +13,7 @@
     "test:recien-abiertas": "npx --yes tsx --test lib/recien-abiertas.test.ts",
     "test:filtros": "npx --yes tsx --test lib/filtros-calendario.test.ts",
     "test:mapa": "npx --yes tsx --test lib/mapa-carreras.test.ts lib/correr-listado.test.ts components/mapa-banderillas/datos.test.ts",
-    "test:registro-alertas": "npx --yes tsx --test lib/registro-alertas.test.ts lib/sesion-cuenta.test.ts lib/alertas-admin.test.ts lib/adsense.test.ts lib/afiliado.test.ts lib/auditoria.test.ts lib/contraste.test.ts lib/consentimiento-cookies.test.ts lib/baja-avisos.test.ts lib/mis-avisos.test.ts lib/consentimientos-log.test.ts lib/filtros-avisos.test.ts",
+    "test:registro-alertas": "npx --yes tsx --test lib/registro-alertas.test.ts lib/sesion-cuenta.test.ts lib/alertas-admin.test.ts lib/adsense.test.ts lib/afiliado.test.ts lib/auditoria.test.ts lib/contraste.test.ts lib/consentimiento-cookies.test.ts lib/baja-avisos.test.ts lib/mis-avisos.test.ts lib/consentimientos-log.test.ts lib/filtros-avisos.test.ts lib/datos-personales.test.ts",
     "verify:smoke": "node scripts/verify-smoke.mjs"
   },
   "dependencies": {
