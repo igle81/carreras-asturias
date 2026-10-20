@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
+  ADSENSE_ACCOUNT_META,
   ADSENSE_CLIENT,
   consentimientoRespaldo,
   indiceAnuncioEntreTarjetas,
@@ -54,4 +57,22 @@ test("TCF: solo con decisión y propósito 1 se cargan anuncios", () => {
   assert.equal(tcfPermiteAnuncios({ eventStatus: "useractioncomplete", tcString: "x", purpose: { consents: { "1": false } } }), false);
   assert.equal(tcfPermiteAnuncios({ eventStatus: "useractioncomplete", tcString: "x", purpose: { consents: { "1": true } } }), true);
   assert.equal(tcfPermiteAnuncios({ eventStatus: "tcloaded", tcString: "", purpose: { consents: { "1": true } } }), false);
+});
+
+const raiz = join(__dirname, "..");
+
+test("la meta google-adsense-account lleva el client publicado", () => {
+  assert.deepEqual(ADSENSE_ACCOUNT_META, { "google-adsense-account": "ca-pub-5660728155340779" });
+});
+
+test("el layout publica la meta una sola vez vía metadata.other", () => {
+  const layout = readFileSync(join(raiz, "app/layout.tsx"), "utf8");
+  assert.equal(layout.match(/other:\s*\{\s*\.\.\.ADSENSE_ACCOUNT_META\s*\}/g)?.length, 1);
+  assert.ok(!layout.includes('name="google-adsense-account"'), "sin <meta> a mano duplicada");
+  assert.ok(layout.includes("CONSENT_DEFAULT_SCRIPT"), "el consentimiento por defecto sigue en el <head>");
+});
+
+test("ads.txt sigue publicado con la cuenta de AdSense", () => {
+  const ads = readFileSync(join(raiz, "public/ads.txt"), "utf8");
+  assert.match(ads, /^google\.com, pub-5660728155340779, DIRECT, f08c47fec0942fa0$/m);
 });

@@ -79,7 +79,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Si los eliges en Mis avisos, tus filtros de avisos (a pie o ciclismo, modalidad, concejo, tipo de aviso y distancia). Solo sirven para decidir qué avisos te enviamos.",
           "Registro de consentimientos: cuándo te das de alta, de baja o vuelves a recibir avisos, con la versión de este texto que aceptaste y desde dónde (web, Mis avisos o enlace del correo). Es la prueba de tu consentimiento; solo se añaden líneas, no se modifican.",
           "Cada correo de aviso lleva un enlace de baja de un solo uso. Solo guardamos su huella (hash), no el enlace, junto a tu user_id y su fecha de caducidad.",
-          "Si pulsas el enlace de afiliación, la ruta de la página para contar el clic. Al seguir el enlace, Decathlon (y, en su caso, su red Awin) trata la visita según su propia política.",
+          "Si pulsas un enlace de afiliado de Decathlon, la ruta de la página para contar el clic. El enlace pasa por Awin (awin1.com), la red de afiliación, y llega a Decathlon: los dos tratan la visita según su propia política y pueden usar sus cookies de seguimiento de afiliación.",
           "Si pulsas el aviso VIP, la ruta de la página y la familia del navegador (Chrome, Firefox, Safari u otra). No guardamos el user-agent completo.",
           "Si aceptas las cookies no esenciales, Google AdSense puede guardar identificadores para mostrar y medir anuncios. Hasta que pulsas Aceptar, el script no se descarga.",
         ],
@@ -104,7 +104,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Enviarte el aviso por Telegram a @AvilesIA_bot y por OneSignal si lo activas (consentimiento).",
           "Calcular carreras cercanas cuando activas la geolocalización (consentimiento).",
           "Cookies y publicidad de Google AdSense, solo si pulsas Aceptar (consentimiento).",
-          "Medir clics del enlace de afiliación a Decathlon (interés legítimo).",
+          "Medir clics de los enlaces de afiliado a Decathlon por Awin (interés legítimo).",
           "Atender consultas y el ejercicio de derechos en el buzón de contacto (interés legítimo y, cuando aplique, obligación legal).",
         ],
       },
@@ -119,7 +119,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Google AdSense: publicidad, solo después de Aceptar en el banner. Cliente ca-pub-5660728155340779.",
           "OneSignal: notificaciones en el navegador o el móvil, solo si las activas con la sesión iniciada.",
           "Telegram (@AvilesIA_bot): chat privado de avisos si pulsas Conectar Telegram.",
-          "Decathlon y su red de afiliación Awin: solo si abres el enlace patrocinado. No les enviamos tu correo.",
+          "Decathlon y su red de afiliación Awin (AWIN AG): solo si abres un enlace de afiliado. No les enviamos tu correo ni tu cuenta.",
           `Gmail (Google): buzón de contacto ${email} para consultas y derechos.`,
           "Gmail (Google), cuenta SMTP de AvilesIA: envío de los avisos por correo.",
           "n8n (automatización propia de AvilesIA en un servidor de OVHcloud): prepara y envía los avisos por correo, notificación y Telegram, y guarda el registro de envíos.",
@@ -173,7 +173,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
     title: "Política de cookies",
     description:
       "Cookies y almacenamientos de Carreras Asturias: técnicas, preferencias, Google AdSense y analítica no activa.",
-    updatedLabel: "Actualizado 13 de octubre de 2026",
+    updatedLabel: "Actualizado 19 de octubre de 2026",
     badge: null,
     sections: [
       {
@@ -191,6 +191,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
           "Preferencias: concejo o modalidad si se persisten en el navegador para no preguntar en cada visita.",
           "Analítica: no activa hoy.",
           "Publicidad: Google AdSense, solo si pulsas Aceptar. Puede guardar cookies de Google para mostrar y medir anuncios. En /registro y /avisos no se carga.",
+          "Enlaces de afiliado de Decathlon por Awin: esta web no pone cookies de afiliación. Solo si pulsas uno de esos enlaces, Awin (awin1.com) y Decathlon pueden guardar sus propias cookies en sus dominios para atribuir la compra, según sus políticas.",
         ],
       },
       {
