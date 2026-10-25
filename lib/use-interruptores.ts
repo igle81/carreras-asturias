@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from "react";
 import { pedirInterruptores, type Entorno, type Interruptores } from "./interruptores-anuncios";
 
 const CACHE = "av-anuncios";
@@ -38,10 +38,19 @@ export function cargarInterruptores(): Promise<Interruptores> {
   return enCurso;
 }
 
-/** null mientras carga: los componentes no pintan nada hasta saber el estado. */
+const Contexto = createContext<Interruptores | null>(null);
+
+/** El layout lee el estado en el servidor y lo pasa aquí: el HTML ya sale con o sin bloque (sin hueco ni CLS). */
+export function InterruptoresProvider({ valor, children }: { valor: Interruptores; children: ReactNode }) {
+  return createElement(Contexto.Provider, { value: valor }, children);
+}
+
+/** Estado del servidor si hay proveedor; si no, null mientras carga y los componentes no pintan nada. */
 export function useInterruptores(): Interruptores | null {
-  const [estado, setEstado] = useState<Interruptores | null>(null);
+  const delServidor = useContext(Contexto);
+  const [estado, setEstado] = useState<Interruptores | null>(delServidor);
   useEffect(() => {
+    if (delServidor) return;
     let vivo = true;
     void cargarInterruptores().then((e) => {
       if (vivo) setEstado(e);
@@ -49,6 +58,6 @@ export function useInterruptores(): Interruptores | null {
     return () => {
       vivo = false;
     };
-  }, []);
-  return estado;
+  }, [delServidor]);
+  return delServidor ?? estado;
 }

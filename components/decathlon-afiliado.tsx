@@ -27,9 +27,12 @@ const TEXTOS: Record<Modalidad, { aria: string; titulo: string; texto: string }>
 
 export function DecathlonAfiliado({
   className = "",
+  envoltorio,
   modalidad = "pie",
 }: {
   className?: string;
+  /** Clase de un contenedor que solo se pinta si el bloque sale (evita huecos con el interruptor apagado). */
+  envoltorio?: string;
   modalidad?: Modalidad;
 }) {
   const destinos: DestinoDecathlonId[] = modalidad === "ciclismo" ? DESTINOS_CICLISMO : DESTINOS_PIE;
@@ -48,7 +51,7 @@ export function DecathlonAfiliado({
     });
   }
 
-  return (
+  const contenido = (
     <aside
       aria-label={textos.aria}
       className={`rounded-3xl border border-forest/10 bg-white px-5 py-4 shadow-[0_10px_30px_-22px_rgba(11,61,46,0.45)] ${className}`}
@@ -81,4 +84,5 @@ export function DecathlonAfiliado({
       </ul>
     </aside>
   );
+  return envoltorio ? <div className={envoltorio}>{contenido}</div> : contenido;
 }

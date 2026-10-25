@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { Diferidos } from "@/components/diferidos";
+import { leerInterruptores } from "@/lib/interruptores-anuncios";
+import { InterruptoresProvider } from "@/lib/use-interruptores";
 import { GeoProvider } from "@/components/geo-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -70,6 +72,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const events = await getEventos();
+  const interruptores = await leerInterruptores();
   const concejosPie = uniqueConcejos(filterByModalidad(events, "pie"));
   const concejosBici = uniqueConcejos(filterByModalidad(events, "ciclismo"));
 
@@ -79,6 +82,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: CONSENT_DEFAULT_SCRIPT }} />
       </head>
       <body className={`${outfit.variable} min-h-screen bg-fog font-sans text-ink antialiased`}>
+        <InterruptoresProvider valor={interruptores}>
         <GeoProvider>
           <div className="sticky top-0 z-40">
             <SiteHeader concejosPie={concejosPie} concejosBici={concejosBici} />
@@ -87,6 +91,7 @@ export default async function RootLayout({
           <SiteFooter />
           <Diferidos />
         </GeoProvider>
+        </InterruptoresProvider>
       </body>
     </html>
   );
