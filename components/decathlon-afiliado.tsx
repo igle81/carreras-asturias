@@ -8,6 +8,7 @@ import {
   enlaceAwinDecathlon,
   type DestinoDecathlonId,
 } from "@/lib/awin-decathlon";
+import { useInterruptores } from "@/lib/use-interruptores";
 
 type Modalidad = "pie" | "ciclismo";
 
@@ -33,6 +34,9 @@ export function DecathlonAfiliado({
 }) {
   const destinos: DestinoDecathlonId[] = modalidad === "ciclismo" ? DESTINOS_CICLISMO : DESTINOS_PIE;
   const textos = TEXTOS[modalidad];
+  // Interruptor Decathlon (Cuadro de Mandos): apagado no pinta nada.
+  const interruptores = useInterruptores();
+  if (!interruptores?.decathlon) return null;
 
   function registrarClic(destino: DestinoDecathlonId) {
     const body = JSON.stringify({ path: window.location.pathname, destino });

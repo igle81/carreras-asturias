@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useInterruptores } from "@/lib/use-interruptores";
 
 const AvilesiaBarra = dynamic(() => import("./avilesia-barra").then((m) => m.AvilesiaBarra), { ssr: false });
 const CookieBanner = dynamic(() => import("./cookie-banner").then((m) => m.CookieBanner), { ssr: false });
@@ -21,6 +22,8 @@ type W = Window & {
  */
 export function Diferidos() {
   const [listo, setListo] = useState(false);
+  // Interruptor AdSense (Cuadro de Mandos).
+  const interruptores = useInterruptores();
   // El aviso de respaldo va aparte: su propio temporizador desde la carga,
   // sin depender de `load`, del reposo ni de Google. Se monta a los ~3,5 s
   // para que su chunk esté listo y él mismo decide a los 4,75 s.
@@ -54,7 +57,7 @@ export function Diferidos() {
       {listo ? (
         <>
           <AvilesiaBarra />
-          <AdsenseConsent />
+          {interruptores?.adsense ? <AdsenseConsent /> : null}
         </>
       ) : null}
     </>
