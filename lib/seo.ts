@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { disciplineLabelForEvent } from "./disciplines";
+import { disciplineLabel, disciplineLabelForEvent } from "./disciplines";
 import { formatRangoFecha } from "./dates";
 import { modalidadLabel } from "./modalidad";
 import type { Evento } from "./types";
@@ -107,11 +107,81 @@ export function eventPath(id: string): string {
   return `/evento/${id}`;
 }
 
+/** Meta description de /correr (140-150 caracteres; SEO 26-10-2026). */
+export const CORRER_DESCRIPTION =
+  "Calendario de carreras a pie en Asturias: trail, asfalto, cross y running. Inscripciones recién abiertas, mapa por concejo y fichas de cada prueba.";
+
+/** Límites de la meta description de las fichas (SEO 26-10-2026). */
+export const DESCRIPCION_MIN = 140;
+export const DESCRIPCION_MAX = 150;
+
+/** Distancias reales del evento («10 km, 5 km»); null si no hay. Mismo criterio que formatDistancias. */
+function distanciasTexto(event: Evento): string | null {
+  const partes = (event.distancias ?? [])
+    .map((item) => {
+      if (item.etiqueta) return disciplineLabel(item.etiqueta);
+      if (item.km) return `${Number.isInteger(item.km) ? item.km : item.km.toFixed(1)} km`;
+      return null;
+    })
+    .filter((v): v is string => Boolean(v));
+  return partes.length ? partes.join(", ") : null;
+}
+
+/** Año de la fecha de inicio (YYYY), solo si la fecha es válida. */
+function anioEvento(event: Evento): string | null {
+  const m = /^(\d{4})-\d{2}-\d{2}/.exec(event.fecha_inicio?.trim() ?? "");
+  return m ? m[1] : null;
+}
+
+/**
+ * Coletillas sin datos del evento (nada que pueda faltar en la ficha).
+ * Se prueban de más larga a más corta para dejar la descripción entre 140 y 150 caracteres.
+ */
+const COLETILLAS = [
+  " Consulta la ficha completa en el calendario de carreras y pruebas de Carreras Asturias.",
+  " Consulta la ficha completa en el calendario de Carreras Asturias.",
+  " Ficha completa en el calendario de Carreras Asturias.",
+  " Calendario de carreras de Asturias.",
+  " Ficha en Carreras Asturias.",
+  " Carreras Asturias.",
+  " Calendario.",
+  " Ficha.",
+];
+
+/**
+ * Meta description de la ficha (140-150 caracteres) con datos reales:
+ * nombre, fecha, concejo/localidad, modalidad · disciplina y distancias si existen.
+ */
 export function eventDescription(event: Evento): string {
-  const when = formatRangoFecha(event.fecha_inicio, event.fecha_fin);
-  const where = event.municipio ?? event.localidad ?? "Asturias";
-  const discipline = disciplineLabelForEvent(event);
-  return `${event.nombre} en ${where}. ${when}. ${modalidadLabel(event)} · ${discipline}.`;
+  const fecha = formatRangoFecha(event.fecha_inicio, event.fecha_fin);
+  const anio = anioEvento(event);
+  const cuando = anio && event.fecha_inicio ? `${fecha} de ${anio}` : fecha;
+  const concejo = event.municipio ?? event.localidad ?? event.municipio_meta;
+  const donde = concejo ? `en ${concejo} (Asturias)` : "en Asturias";
+  const tipo = `${modalidadLabel(event)} · ${disciplineLabelForEvent(event)}`;
+  const dist = distanciasTexto(event);
+
+  const cuerpo = (nombre: string, conDist: boolean) =>
+    `${nombre}: ${cuando}, ${donde}. ${tipo}${conDist && dist ? `. Distancias: ${dist}` : ""}.`;
+
+  // 1) Nombre completo y distancias; si no cabe, sin distancias; si aún no, nombre recortado.
+  const nombre = event.nombre.replace(/\s+/g, " ").trim();
+  let base = cuerpo(nombre, true);
+  if (base.length > DESCRIPCION_MAX - 10) base = cuerpo(nombre, false);
+  if (base.length > DESCRIPCION_MAX - 10) {
+    const sobra = base.length - (DESCRIPCION_MAX - 10);
+    const corto = recortarTitulo(nombreCorto(nombre), Math.max(20, nombre.length - sobra));
+    base = cuerpo(corto, false);
+    if (base.length > DESCRIPCION_MAX) base = recortarTitulo(base, DESCRIPCION_MAX);
+  }
+
+  // 2) Rellena con coletillas (sin datos inventados) hasta quedar en 140-150.
+  let out = base;
+  for (const coletilla of COLETILLAS) {
+    if (out.length >= DESCRIPCION_MIN) break;
+    if (out.length + coletilla.length <= DESCRIPCION_MAX) out += coletilla;
+  }
+  return out;
 }
 
 export function pageMetadata({
@@ -377,5 +447,40 @@ export function websiteJsonLd(): JsonLd {
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
     inLanguage: "es",
+  };
+}
+
+export type MigaDePan = { nombre: string; path: string };
+
+/** BreadcrumbList con URL absolutas (www). */
+export function breadcrumbJsonLd(migas: MigaDePan[]): JsonLd {
+  return {
+    "@context": SCHEMA,
+    "@type": "BreadcrumbList",
+    itemListElement: migas.map((miga, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: miga.nombre,
+      item: absoluteUrl(miga.path),
+    })),
+  };
+}
+
+/** ItemList de fichas: nombre y URL absoluta de cada carrera, en el orden recibido. */
+export function itemListEventosJsonLd(
+  nombre: string,
+  eventos: Pick<Evento, "id_canonico" | "nombre">[],
+): JsonLd {
+  return {
+    "@context": SCHEMA,
+    "@type": "ItemList",
+    name: nombre,
+    numberOfItems: eventos.length,
+    itemListElement: eventos.map((evento, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: evento.nombre,
+      url: absoluteUrl(eventPath(evento.id_canonico)),
+    })),
   };
 }

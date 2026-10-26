@@ -2,12 +2,11 @@ import { HomeView } from "@/components/home-view";
 import { getEventos } from "@/lib/events";
 import { SECTIONS } from "@/lib/sections";
 import { JsonLd } from "@/components/json-ld";
-import { organizationsJsonLd, pageMetadata } from "@/lib/seo";
+import { CORRER_DESCRIPTION, organizationsJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Carreras a pie en Asturias",
-  description:
-    "Calendario de trail, asfalto, cross y running en Asturias. Inscripciones recién abiertas, mapa por concejo y dorsales a pie.",
+  description: CORRER_DESCRIPTION,
   path: "/correr",
   keywords: [
     "carreras a pie Asturias",
