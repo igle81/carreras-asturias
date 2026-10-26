@@ -115,7 +115,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocument["slug"], LegalDocument> = {
         ],
         bullets: [
           "Vercel: alojamiento y entrega del sitio.",
-          "Supabase: autenticación de la cuenta, base de datos de eventos y filas de avisos.",
+          "Supabase: autenticación de la cuenta, base de datos de eventos y filas de avisos; también para leer la configuración de anuncios, sin datos personales.",
           "Google AdSense: publicidad, solo después de Aceptar en el banner. Cliente ca-pub-5660728155340779.",
           "OneSignal: notificaciones en el navegador o el móvil, solo si las activas con la sesión iniciada.",
           "Telegram (@AvilesIA_bot): chat privado de avisos si pulsas Conectar Telegram.",
