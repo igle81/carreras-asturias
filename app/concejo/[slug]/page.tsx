@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/json-ld";
 import { PaginaSeo, RejillaEventos } from "@/components/listado-seo";
 import { getEventos } from "@/lib/events";
 import { anioActual, concejoPath, concejosDe, proximasYPasadas } from "@/lib/paginas-seo";
 import { enlacesSeo } from "@/lib/paginas-seo-enlaces";
-import { pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, itemListEventosJsonLd, pageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -32,21 +33,31 @@ export default async function ConcejoPage({ params }: Props) {
   const c = concejosDe(events).get(slug);
   if (!c) notFound();
   const { proximas, pasadas } = proximasYPasadas(c.eventos);
+  // JSON-LD (SEO 26-10-2026): migas Inicio > Concejos > concejo y lista de fichas en el orden de la página.
+  const migas = breadcrumbJsonLd([
+    { nombre: "Inicio", path: "/" },
+    { nombre: "Concejos", path: "/concejo" },
+    { nombre: c.nombre, path: concejoPath(slug) },
+  ]);
+  const lista = itemListEventosJsonLd(`Carreras en ${c.nombre}`, [...proximas, ...pasadas]);
   return (
-    <PaginaSeo
-      h1={`Carreras en ${c.nombre}`}
-      intro={
-        <p>
-          {proximas.length
-            ? `${proximas.length} ${proximas.length === 1 ? "prueba por celebrar" : "pruebas por celebrar"} en ${c.nombre}.`
-            : `Ahora no hay pruebas por celebrar en ${c.nombre}.`}{" "}
-          {pasadas.length ? `Más abajo, las ${pasadas.length} ya celebradas.` : ""}
-        </p>
-      }
-      relacionados={enlacesSeo(events)}
-    >
-      <RejillaEventos titulo="Próximas" eventos={proximas} />
-      <RejillaEventos titulo="Ya celebradas" eventos={pasadas} />
-    </PaginaSeo>
+    <>
+      <JsonLd data={[migas, lista]} />
+      <PaginaSeo
+        h1={`Carreras en ${c.nombre}`}
+        intro={
+          <p>
+            {proximas.length
+              ? `${proximas.length} ${proximas.length === 1 ? "prueba por celebrar" : "pruebas por celebrar"} en ${c.nombre}.`
+              : `Ahora no hay pruebas por celebrar en ${c.nombre}.`}{" "}
+            {pasadas.length ? `Más abajo, las ${pasadas.length} ya celebradas.` : ""}
+          </p>
+        }
+        relacionados={enlacesSeo(events)}
+      >
+        <RejillaEventos titulo="Próximas" eventos={proximas} />
+        <RejillaEventos titulo="Ya celebradas" eventos={pasadas} />
+      </PaginaSeo>
+    </>
   );
 }

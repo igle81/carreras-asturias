@@ -127,10 +127,10 @@ export function HeroCarousel({
     return (
       <section className="relative overflow-hidden bg-forest px-4 py-20 text-white">
         <div className="mx-auto max-w-6xl">
-          <p className="text-sm uppercase tracking-[0.2em] text-gold">A pie y ciclismo</p>
-          <h1 className="mt-3 max-w-2xl font-display text-4xl font-black">
+          <h1 className="text-sm uppercase tracking-[0.2em] text-gold">{kicker}</h1>
+          <p className="mt-3 max-w-2xl font-display text-4xl font-black">
             El calendario de las montañas, el asfalto y la bici
-          </h1>
+          </p>
           <p className="mt-4 max-w-xl text-white">
             Aún no hay dorsales en esta modalidad. Prueba Todas o entra al calendario.
           </p>
@@ -202,9 +202,10 @@ export function HeroCarousel({
 
       <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-20 sm:py-14">
         <div className="max-w-2xl text-white">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+          {/* H1 propio de la sección (/correr, /ciclismo); el nombre de la carrera va en h2 (SEO 26-10-2026). */}
+          <h1 className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
             {kicker}
-          </p>
+          </h1>
           {resolveAperturaBadge(event) ? (
             <p className="mb-3">
               <AperturaBadge event={event} size="hero" />
@@ -214,9 +215,9 @@ export function HeroCarousel({
             {modalidadLabel(event)} · {disciplineLabelForEvent(event)}
             {event.municipio ? ` · ${event.municipio}` : ""}
           </p>
-          <h1 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xl">
+          <h2 className="mt-2 font-display text-4xl font-black leading-tight sm:text-5xl">
             {event.nombre}
-          </h1>
+          </h2>
           <p className="mt-3 text-base text-white sm:text-lg">
             {formatFechaHumana(event.fecha_inicio)}
             {event.localidad ? ` · ${event.localidad}` : ""}
