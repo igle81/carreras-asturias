@@ -3,7 +3,14 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { PaginaSeo, RejillaEventos } from "@/components/listado-seo";
 import { getEventos } from "@/lib/events";
-import { anioActual, concejoPath, concejosDe, proximasYPasadas } from "@/lib/paginas-seo";
+import {
+  anioActual,
+  concejoPath,
+  concejosDe,
+  esPaginaFina,
+  proximasYPasadas,
+  ROBOTS_NOINDEX_FOLLOW,
+} from "@/lib/paginas-seo";
 import { enlacesSeo } from "@/lib/paginas-seo-enlaces";
 import { breadcrumbJsonLd, itemListEventosJsonLd, pageMetadata } from "@/lib/seo";
 
@@ -20,11 +27,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = concejosDe(await getEventos()).get(slug);
   if (!c) notFound();
   const anio = anioActual();
-  return pageMetadata({
+  const meta = pageMetadata({
     title: `Carreras en ${c.nombre} ${anio}: populares, trail y ciclismo`,
     description: `Próximas carreras en ${c.nombre} (Asturias): carreras populares, trail y ciclismo con fecha e inscripción. Calendario actualizado a diario.`,
     path: concejoPath(slug),
   });
+  // Menos de 5 carreras: noindex,follow y fuera del sitemap (SEO 03-11-2026).
+  return esPaginaFina(c.eventos.length) ? { ...meta, robots: ROBOTS_NOINDEX_FOLLOW } : meta;
 }
 
 export default async function ConcejoPage({ params }: Props) {

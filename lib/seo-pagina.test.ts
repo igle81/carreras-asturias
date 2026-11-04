@@ -12,7 +12,15 @@ import {
   tituloConClasificacion,
   SITE_URL,
 } from "./seo";
+import {
+  carrerasConFecha,
+  concejoPath,
+  esPaginaFina,
+  MIN_CARRERAS_INDEXABLE,
+  ROBOTS_NOINDEX_FOLLOW,
+} from "./paginas-seo";
 import { CLASIFICACIONES_MANUALES, FICHAS_SEO, TITULOS_SEO } from "./seo-fichas";
+import { incluirIndiceMeses, seoRows } from "./sitemap-xml";
 import type { Evento } from "./types";
 
 // Datos de ejemplo (ficticios en lo personal; nombres de concejos reales de Asturias).
@@ -121,10 +129,10 @@ test("sin clasificación el title no cambia", () => {
   assert.equal(eventTitle(ejemplo()), "10K Ejemplo 2026 · Carreras Asturias");
 });
 
-test("ajustes por ficha: title ≤60 y description ≤155; ganan al resto de reglas", () => {
+test("ajustes por ficha: title ≤60 y description 140-150; ganan al resto de reglas", () => {
   for (const [id, ajuste] of Object.entries(FICHAS_SEO)) {
     assert.ok(ajuste.title.length <= 60, `${id}: ${ajuste.title.length}`);
-    assert.ok(ajuste.description.length <= 155, `${id}: ${ajuste.description.length}`);
+    assert.ok(enRango(ajuste.description), `${id}: ${ajuste.description.length}`);
     const ev = ejemplo({ id_canonico: id, url_clasificacion: "https://example.com/r" });
     assert.equal(eventTitle(ev), ajuste.title);
     assert.equal(eventDescription(ev), ajuste.description);
@@ -146,4 +154,46 @@ test("titles fijos de clasificación: ≤60 y con «: clasificación»", () => {
     assert.ok(title.includes(": clasificación"), title);
     assert.equal(eventTitle(ejemplo({ id_canonico: id })), title);
   }
+});
+
+// --- Páginas finas (SEO 03-11-2026) ---
+
+function serie(n: number, municipio: string, mes = "12", prefijo = "p"): Evento[] {
+  return Array.from({ length: n }, (_, i) =>
+    ejemplo({
+      id_canonico: `${prefijo}-${municipio}-${i}`,
+      municipio,
+      fecha_inicio: `2026-${mes}-${String(i + 1).padStart(2, "0")}`,
+      fecha_fin: `2026-${mes}-${String(i + 1).padStart(2, "0")}`,
+    }),
+  );
+}
+
+test("páginas finas: menos de 5 carreras = noindex,follow", () => {
+  assert.equal(MIN_CARRERAS_INDEXABLE, 5);
+  assert.equal(esPaginaFina(4), true);
+  assert.equal(esPaginaFina(5), false);
+  assert.deepEqual(ROBOTS_NOINDEX_FOLLOW, { index: false, follow: true });
+});
+
+test("sitemap: fuera meses y concejos con menos de 5 carreras", () => {
+  const now = new Date("2026-11-04T12:00:00Z");
+  // Diciembre: 5 en Laviana + 1 en Tineo = 6 (dentro). Enero 2027: 2 en Laviana (fuera).
+  const events = [
+    ...serie(5, "Laviana"),
+    ...serie(1, "Tineo", "12", "t"),
+    ...serie(2, "Laviana", "01", "e").map((e) => ({
+      ...e,
+      fecha_inicio: e.fecha_inicio.replace("2026", "2027"),
+      fecha_fin: e.fecha_fin?.replace("2026", "2027") ?? null,
+    })),
+  ];
+  const paths = seoRows(events, "2026-11-04", now).map((r) => r.path);
+  assert.ok(paths.includes("/calendario/2026/diciembre"), paths.join(","));
+  assert.ok(!paths.includes("/calendario/2027/enero"), paths.join(","));
+  assert.ok(paths.includes(concejoPath("laviana")));
+  assert.ok(!paths.includes(concejoPath("tineo")));
+  assert.equal(carrerasConFecha(events), 8);
+  assert.equal(incluirIndiceMeses(events), true);
+  assert.equal(incluirIndiceMeses(serie(3, "Laviana")), false);
 });
