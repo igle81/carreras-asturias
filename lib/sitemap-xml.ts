@@ -1,6 +1,16 @@
 import { fetchEventos } from "@/lib/events";
 import { isRaceFinished } from "@/lib/fin-estimado";
-import { concejoPath, concejosDe, mesActualOSiguiente, mesesConPruebas, mesPath, numeroMes } from "@/lib/paginas-seo";
+import {
+  carrerasConFecha,
+  concejoPath,
+  concejosDe,
+  esPaginaFina,
+  eventosDelMes,
+  mesActualOSiguiente,
+  mesesConPruebas,
+  mesPath,
+  numeroMes,
+} from "@/lib/paginas-seo";
 import { absoluteUrl, eventPath, parseEventDate } from "@/lib/seo";
 import type { Evento } from "@/lib/types";
 
@@ -27,19 +37,29 @@ const STATIC_ROUTES: Omit<SitemapRow, "lastmod">[] = [
   { path: "/calendario/meses", changeFrequency: "weekly", priority: "0.6" },
 ];
 
-/** Páginas SEO que dependen de los datos: meses desde el actual y concejos con pruebas. */
+/**
+ * Páginas SEO que dependen de los datos: meses desde el actual y concejos con pruebas.
+ * Las que tienen menos de 5 carreras llevan noindex,follow y no entran (SEO 03-11-2026).
+ */
 export function seoRows(events: Evento[], today: string, now: Date): SitemapRow[] {
   const rows: SitemapRow[] = [];
   const actual = mesActualOSiguiente(events, now);
   const clave = (m: { anio: string; mes: string }) => `${m.anio}-${String(numeroMes(m.mes)).padStart(2, "0")}`;
   for (const m of mesesConPruebas(events)) {
     if (actual && clave(m) < clave(actual)) continue;
+    if (esPaginaFina(eventosDelMes(events, m.anio, m.mes).length)) continue;
     rows.push({ path: mesPath(m), changeFrequency: "daily", priority: "0.7", lastmod: today });
   }
-  for (const slug of concejosDe(events).keys()) {
+  for (const [slug, c] of concejosDe(events)) {
+    if (esPaginaFina(c.eventos.length)) continue;
     rows.push({ path: concejoPath(slug), changeFrequency: "weekly", priority: "0.5", lastmod: today });
   }
   return rows;
+}
+
+/** /calendario/meses solo entra si tiene 5 carreras o más (hoy, siempre). */
+export function incluirIndiceMeses(events: Evento[]): boolean {
+  return !esPaginaFina(carrerasConFecha(events));
 }
 
 function escapeXml(value: string): string {
@@ -149,7 +169,11 @@ export async function buildSitemapXml(): Promise<string> {
     const now = new Date();
     const today = lastmodDay(now, now);
     const events = await loadEventsForSitemap();
-    return renderXml([...staticRows(today), ...seoRows(events, today, now), ...eventRows(events, today, now)]);
+    // Con datos, /calendario/meses sale solo si no es página fina; sin datos se queda la ruta estática.
+    const estaticas = staticRows(today).filter(
+      (row) => row.path !== "/calendario/meses" || !events.length || incluirIndiceMeses(events),
+    );
+    return renderXml([...estaticas, ...seoRows(events, today, now), ...eventRows(events, today, now)]);
   } catch (error) {
     console.error("sitemap: generación falló; se sirven rutas estáticas", error);
     return fallback;

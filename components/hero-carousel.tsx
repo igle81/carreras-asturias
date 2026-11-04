@@ -127,8 +127,8 @@ export function HeroCarousel({
     return (
       <section className="relative overflow-hidden bg-forest px-4 py-20 text-white">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-sm uppercase tracking-[0.2em] text-gold">{kicker}</h1>
-          <p className="mt-3 max-w-2xl font-display text-4xl font-black">
+          <h1 className="max-w-2xl font-display text-4xl font-black leading-tight">{kicker}</h1>
+          <p className="mt-3 max-w-2xl font-display text-2xl font-bold text-gold">
             El calendario de las montañas, el asfalto y la bici
           </p>
           <p className="mt-4 max-w-xl text-white">
@@ -202,8 +202,9 @@ export function HeroCarousel({
 
       <div className="relative mx-auto flex min-h-[34rem] max-w-6xl cursor-grab flex-col justify-end px-4 py-10 active:cursor-grabbing sm:min-h-[36rem] sm:px-20 sm:py-14">
         <div className="max-w-2xl text-white">
-          {/* H1 propio de la sección (/correr, /ciclismo); el nombre de la carrera va en h2 (SEO 26-10-2026). */}
-          <h1 className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+          {/* H1 propio de la sección (/correr, /ciclismo); el nombre de la carrera va en h2 (SEO 26-10-2026).
+              Estilo de título, no de antetítulo (I2 de Calidad, 04-11-2026). */}
+          <h1 className="mb-4 font-display text-3xl font-black leading-tight text-gold sm:text-4xl">
             {kicker}
           </h1>
           {resolveAperturaBadge(event) ? (

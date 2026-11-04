@@ -21,11 +21,11 @@ export const FICHAS_SEO: Record<string, FichaSeo> = {
     description:
       "Mysterioux Race 2026 en Trasona (Corvera de Asturias) el domingo 8 de noviembre: individual, parejas o equipos. Web oficial y clasificación al acabar.",
   },
-  // Reglamento oficial: VII Carrera Popular Llangréu Natural, Ayuntamiento de Langreo, 18-10-2026; cronometra Boomerang.
+  // Reglamento oficial: VII Carrera Popular Llangréu Natural, Ayuntamiento de Langreo, 18-10-2026; cronometra Boomerang. RockTheSport: 10 km.
   "llangreu-natural-2026-vii-carrera-popular-2026-10-18-pie": {
     title: "Llangreu Natural 2026 (Langreo): clasificación y resultados",
     description:
-      "Clasificación de la VII Llangreu Natural, carrera popular de Langreo del 18 de octubre de 2026: resultados oficiales y web de la prueba.",
+      "Clasificación de la VII Llangreu Natural, carrera popular de 10 km en Langreo del 18 de octubre de 2026: resultados oficiales y web de la prueba.",
   },
   // enduroteamrace.com + reglamento + empa-t: 8-11-2026, Cocañín (SMRA), organiza FESORIA EVENTS.
   "enduro-team-race-cocanin-2026-2026-11-08-ciclismo": {

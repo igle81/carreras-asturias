@@ -3,7 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PaginaSeo, RejillaEventos, tituloDia } from "@/components/listado-seo";
 import { getEventos } from "@/lib/events";
-import { agruparPorDia, eventosDelMes, mesesConPruebas, mesPath, mesTitulo } from "@/lib/paginas-seo";
+import {
+  agruparPorDia,
+  esPaginaFina,
+  eventosDelMes,
+  mesesConPruebas,
+  mesPath,
+  mesTitulo,
+  ROBOTS_NOINDEX_FOLLOW,
+} from "@/lib/paginas-seo";
 import { enlacesSeo } from "@/lib/paginas-seo-enlaces";
 import { pageMetadata } from "@/lib/seo";
 
@@ -17,13 +25,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { anio, mes } = await params;
-  if (!eventosDelMes(await getEventos(), anio, mes).length) notFound();
+  const delMes = eventosDelMes(await getEventos(), anio, mes);
+  if (!delMes.length) notFound();
   const t = mesTitulo({ anio, mes });
-  return pageMetadata({
+  const meta = pageMetadata({
     title: `Carreras en Asturias en ${t}: calendario`,
     description: `Calendario de carreras populares, trail y ciclismo en Asturias en ${t}, con fechas, concejos e inscripciones.`,
     path: mesPath({ anio, mes }),
   });
+  // Menos de 5 carreras: noindex,follow y fuera del sitemap (SEO 03-11-2026).
+  return esPaginaFina(delMes.length) ? { ...meta, robots: ROBOTS_NOINDEX_FOLLOW } : meta;
 }
 
 export default async function MesPage({ params }: Props) {

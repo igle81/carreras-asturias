@@ -191,3 +191,19 @@ export function proximasYPasadas(events: Evento[], from = new Date()) {
   const pasadas = events.filter((e) => (fin(e) ?? "9999") < hoy).sort((a, b) => porFecha(b, a));
   return { proximas, pasadas };
 }
+
+// ---------- Páginas finas (SEO 03-11-2026, OK de SEO 04-11) ----------
+
+/** Menos de 5 carreras: noindex,follow y fuera del sitemap. Solo añade noindex; no quita ninguno. */
+export const MIN_CARRERAS_INDEXABLE = 5;
+
+export const ROBOTS_NOINDEX_FOLLOW = { index: false, follow: true } as const;
+
+export function esPaginaFina(numCarreras: number): boolean {
+  return numCarreras < MIN_CARRERAS_INDEXABLE;
+}
+
+/** Carreras con fecha (las que cuenta /calendario/meses). */
+export function carrerasConFecha(events: Evento[]): number {
+  return events.filter((e) => Boolean(inicio(e))).length;
+}
