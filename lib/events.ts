@@ -12,6 +12,7 @@ import { postCarreraCta } from "./post-carrera";
 import { getSupabase } from "./supabase";
 import type { Distancia, Evento } from "./types";
 
+import { clasificacionManual } from "./seo-fichas";
 export { compareListedEvents, listedEvents } from "./post-carrera";
 
 const EVENT_COLUMNS =
@@ -210,7 +211,7 @@ function normalizeEvent(row: Record<string, unknown>): Evento {
       typeof row.imagen_fuente === "string" && row.imagen_fuente.trim()
         ? row.imagen_fuente.trim()
         : null,
-    url_clasificacion: asImageUrl(row.url_clasificacion),
+    url_clasificacion: asImageUrl(row.url_clasificacion) ?? clasificacionManual(idCanonico),
     estado_clasificacion:
       typeof row.estado_clasificacion === "string" && row.estado_clasificacion.trim()
         ? row.estado_clasificacion.trim()

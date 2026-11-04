@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ADSENSE_CLIENT } from "@/lib/adsense";
 import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, parseCookieConsent } from "@/lib/legal";
+import { useInterruptores } from "@/lib/use-interruptores";
 
 /**
  * Bloque in-feed. Si no hay slot, no pinta el <ins>.
@@ -10,6 +11,7 @@ import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, parseCookieConsent } from "@/
  */
 export function AnuncioInfeed({ slot }: { slot: string | null }) {
   const [permitido, setPermitido] = useState(false);
+  const adsense = useInterruptores()?.adsense === true;
 
   useEffect(() => {
     function leer() {
@@ -25,7 +27,7 @@ export function AnuncioInfeed({ slot }: { slot: string | null }) {
   }, []);
 
   useEffect(() => {
-    if (!slot || !permitido) return;
+    if (!slot || !permitido || !adsense) return;
     const ventana = window as Window & { adsbygoogle?: Record<string, unknown>[] };
     ventana.adsbygoogle = ventana.adsbygoogle || [];
     try {
@@ -33,9 +35,9 @@ export function AnuncioInfeed({ slot }: { slot: string | null }) {
     } catch {
       // La cola del script puede rechazar un push duplicado en el mismo hueco.
     }
-  }, [slot, permitido]);
+  }, [slot, permitido, adsense]);
 
-  if (!slot || !permitido) return null;
+  if (!slot || !permitido || !adsense) return null;
 
   return (
     <aside

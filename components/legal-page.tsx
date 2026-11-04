@@ -1,13 +1,26 @@
 import type { ReactNode } from "react";
 import type { LegalDocument } from "@/lib/legal";
+import { frasePermitida, leerInterruptores } from "@/lib/interruptores-anuncios";
 
-export function LegalPage({
-  document,
+export async function LegalPage({
+  document: original,
   accion,
 }: {
   document: LegalDocument;
   accion?: ReactNode;
 }) {
+  // Los textos legales siguen los interruptores de anuncios (Cuadro de Mandos).
+  const interruptores = await leerInterruptores();
+  const document: LegalDocument = {
+    ...original,
+    sections: original.sections
+      .map((s) => ({
+        ...s,
+        paragraphs: s.paragraphs.filter((p) => frasePermitida(p, interruptores)),
+        bullets: s.bullets?.filter((b) => frasePermitida(b, interruptores)),
+      }))
+      .filter((s) => s.paragraphs.length > 0 || (s.bullets?.length ?? 0) > 0),
+  };
   return (
     <article className="mx-auto max-w-3xl px-4 py-12">
       {document.badge ? (

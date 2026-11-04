@@ -84,38 +84,29 @@ test("organizer Organization is reused as performer; no fake person", () => {
   assert.equal(withoutOrg.performer, undefined);
 });
 
-test("offers uses official URL and inscription availability, never a made-up price", () => {
-  const open = eventOffersJsonLd(sampleEvent())!;
-  assert.equal(open["@type"], "Offer");
+test("offers only with a source price: no price means no offers (SEO 03-11)", () => {
+  assert.equal(eventOffersJsonLd(sampleEvent()), undefined);
+  assert.equal(eventOffersJsonLd(sampleEvent({ estado_inscripcion: "cerrada" })), undefined);
+  assert.equal("offers" in sportsEventJsonLd(sampleEvent()), false);
+
+  const free = eventOffersJsonLd(sampleEvent({ etiquetas: ["gratuita"] }))!;
+  assert.equal(free["@type"], "Offer");
   assert.equal(
-    open.url,
+    free.url,
     "https://inscripciones.empa-t.com/inscripcion/xxiv-vuelta-concejo-de-pilona-btt-2026/",
   );
-  assert.equal(open.availability, "https://schema.org/InStock");
-  assert.equal(open.validFrom, "2026-09-01");
-  assert.equal("price" in open, false);
+  assert.equal(free.availability, "https://schema.org/InStock");
+  assert.equal(free.validFrom, "2026-09-01");
 
-  const closed = eventOffersJsonLd(sampleEvent({ estado_inscripcion: "cerrada" }))!;
-  assert.equal(closed.availability, "https://schema.org/SoldOut");
-  assert.equal("price" in closed, false);
-
-  const soon = eventOffersJsonLd(sampleEvent({ estado_inscripcion: "proximamente" }))!;
+  const soon = eventOffersJsonLd(
+    sampleEvent({ estado_inscripcion: "proximamente", etiquetas: ["gratuita"] }),
+  )!;
   assert.equal(soon.availability, "https://schema.org/PreOrder");
 
-  const unknown = eventOffersJsonLd(sampleEvent({ estado_inscripcion: "desconocido" }))!;
-  assert.equal("availability" in unknown, false);
-
-  const pending = eventOffersJsonLd(
-    sampleEvent({
-      estado_inscripcion: "cerrada_pendiente_apertura",
-      url_oficial: "https://www.kangasmountain.es/",
-      url_inscripcion: "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain",
-    }),
-  )!;
-  assert.equal(pending.url, "https://www.321go.es/Carrera/Detail/567-xiiikangasmountain");
-  assert.equal(pending.availability, "https://schema.org/PreOrder");
-
-  assert.equal(eventOffersJsonLd(sampleEvent({ url_oficial: null })), undefined);
+  const sinUrl = eventOffersJsonLd(
+    sampleEvent({ etiquetas: ["gratuita"], url_oficial: null, url_inscripcion: null }),
+  );
+  assert.equal(sinUrl, undefined);
 });
 
 test("gratuita tag is the only case that sets price 0", () => {
