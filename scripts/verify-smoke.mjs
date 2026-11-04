@@ -329,6 +329,12 @@ async function main() {
     });
     failures.push(`/: missing «${HOME_H1_NEEDLE}»`);
   }
+  // H1 SEO de la portada (04-11-2026); el lema de arriba sigue, ahora como párrafo.
+  const HOME_SEO_H1 = "Calendario de carreras en Asturias 2026";
+  if (homeHtml && !new RegExp(`<h1[^>]*>\\s*${HOME_SEO_H1}`).test(homeHtml)) {
+    rows.push({ path: "/#h1", status: 200, note: "missing SEO H1", result: "FAIL" });
+    failures.push(`/: missing H1 «${HOME_SEO_H1}»`);
+  }
 
   const VIP_PROMO_REQUIRED = [
     'id="vip"',

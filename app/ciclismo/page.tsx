@@ -5,7 +5,8 @@ import { JsonLd } from "@/components/json-ld";
 import { organizationsJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Ciclismo en Asturias",
+  title: "Ciclismo en Asturias 2026: BTT, carretera y cicloturismo",
+  absoluteTitle: true,
   description:
     "Calendario de carretera, MTB, BTT, enduro, gravel y cicloturismo en Asturias. Inscripciones recién abiertas y mapa por concejo.",
   path: "/ciclismo",

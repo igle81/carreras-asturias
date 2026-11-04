@@ -6,12 +6,13 @@ export function Landing({ pieCount, biciCount }: { pieCount: number; biciCount: 
     <section className="relative overflow-hidden bg-forest text-white">
       <div className="hero-mountains pointer-events-none absolute inset-0 opacity-30" />
       <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold">
-          A pie y ciclismo en Asturias
-        </p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-black leading-tight sm:text-6xl">
-          Elige tu terreno. Correr o bici, cada uno a lo suyo.
+        {/* H1 propio de la portada (SEO 04-11-2026); el lema sigue igual, ahora como párrafo. */}
+        <h1 className="text-xs font-bold uppercase tracking-[0.22em] text-gold">
+          Calendario de carreras en Asturias 2026
         </h1>
+        <p className="mt-3 max-w-3xl font-display text-4xl font-black leading-tight sm:text-6xl">
+          Elige tu terreno. Correr o bici, cada uno a lo suyo.
+        </p>
         <p className="mt-4 max-w-xl text-lg text-white">
           Carreras a pie por un lado. Ciclismo por el otro. Con su mapa y las
           inscripciones que acaban de abrir.
